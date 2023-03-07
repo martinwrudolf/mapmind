@@ -13,6 +13,10 @@ import { Vector3 } from 'three';
 
 // https://blog.hubspot.com/website/html-dropdown
 
+// https://javascript.plainenglish.io/intro-to-raycasting-in-three-js-211ac4aae768
+
+// https://sbcode.net/threejs/raycaster/
+
 // https://stackoverflow.com/questions/1085801/get-selected-value-in-dropdown-list-using-javascript
 
 // use this? https://github.com/yomotsu/camera-controls
@@ -49,6 +53,7 @@ document.addEventListener("wheel", (event) => {
 });
 
 var div = document.getElementById("viewbox");
+var searchtermbox = document.getElementById("searchterm");
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera( 75, div.clientWidth / div.clientHeight, 10, 6000);
 const renderer = new THREE.WebGLRenderer();
@@ -91,6 +96,20 @@ document.getElementById("submitbutton").addEventListener("click", (e) => {
     parseResponse(objects);
 });
 
+function sendSearchRequest(url, input, callback) {
+    let httpReq = new XMLHttpRequest();
+    // mock http request
+    httpReq.onreadystatechange = function() {
+        if (httpReq.readyState == 4) {
+            callback(JSON.parse(httpReq.responseText));
+        }
+    };
+    httpReq.open("GET", url);
+    httpReq.setRequestHeader("Content-Type", "appilcation/json");
+    httpReq.setRequestHeader("Accept", "appilcation/json");
+    httpReq.send(JSON.stringify(input));
+}
+
 function parseResponse(objects) {
     // get objects and store in list
     list = objects;
@@ -101,6 +120,7 @@ function parseResponse(objects) {
 function generateText(font) {
     theta = 0;
     computeNewCameraPostion();
+    camera.lookAt(0,0,0);
     // clear previously rendered text meshes
     for (let i = 0; i < meshes.length; i++) {
         scene.remove(meshes[i]);
@@ -130,80 +150,43 @@ function generateText(font) {
         // textMesh.rotation.z = 0;
         textMesh.lookAt(camera.position);
     }
+};
+
+function onPointerMove( event ) {
+
+	// calculate pointer position in normalized device coordinates
+	// (-1 to +1) for both components
+
+	pointer.x = ( event.clientX / div.clientWidth ) * 2 - 1;
+	pointer.y = - ( event.clientY / div.clientHeight ) * 2 + 1;
+    console.log(pointer.x + " " + pointer.y);
+
+};
+
+
+function sendInspectRequest(object) {
+    console.log("in function");
+    console.log(object.string);
+    // var inspectReq = new XMLHttpRequest();
+    // inspectReq.onreadystatechange = function() {
+    //     if (httpReq.readyState == 4) {
+            
+    //     }
+    // };
 }
 
 function animate() {
+    raycaster.setFromCamera( pointer, camera );
+    // calculate objects intersecting the picking ray
+    const intersects = raycaster.intersectObjects( scene.children );
+    // console.log(intersects);
+    if (intersects.length > 0) {
+        console.log("Ray detected hit!");
+        sendInspectRequest(intersects[0].object);
+    }
 	requestAnimationFrame( animate );
 	renderer.render( scene, camera );
 };
+window.addEventListener('pointermove', onPointerMove);
+// window.requestAnimationFrame(animate);
 animate();
-
-
-
-
-
-
-
-// function onPointerMove( event ) {
-
-// 	// calculate pointer position in normalized device coordinates
-// 	// (-1 to +1) for both components
-
-// 	pointer.x = ( event.clientX / window.innerWidth ) * 2 - 1;
-// 	pointer.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
-
-// }
-
-
-
-
-
-// function sendSearchRequest(url, input, callback) {
-//     let httpReq = new XMLHttpRequest();
-//     // mock http request
-//     httpReq.onreadystatechange = function() {
-//         if (httpReq.readyState == 4) {
-//             callback(JSON.parse(httpReq.responseText));
-//         }
-//     };
-//     httpReq.open("GET", url);
-//     httpReq.setRequestHeader("Content-Type", "appilcation/json");
-//     httpReq.setRequestHeader("Accept", "appilcation/json");
-//     httpReq.send(JSON.stringify(input));
-// }
-
-
-
-
-
-
-
-// function sendInspectRequest(object) {
-//     var inspectReq = new XMLHttpRequest();
-//     inspectReq.onreadystatechange = function() {
-//         if (httpReq.readyState == 4) {
-            
-//         }
-//     };
-// }
-
-// function animate() {
-
-//     raycaster.setFromCamera( pointer, camera );
-
-// 	// calculate objects intersecting the picking ray
-// 	const intersects = raycaster.intersectObjects( scene.children );
-
-//     if (intersects.length > 0) {
-//         sendInspectRequest(intersects[0].object);
-//     }
-
-//     requestAnimationFrame( animate );
-//     renderer.render( scene, camera );
-// }
-// animate();
-
-
-
-
-
