@@ -22,6 +22,8 @@ import { Vector3 } from 'three';
 // use this? https://github.com/yomotsu/camera-controls
 // https://www.freecodecamp.org/news/here-is-the-most-popular-ways-to-make-an-http-request-in-javascript-954ce8c95aaa/
 
+// https://stackoverflow.com/questions/45353282/how-to-zoom-a-three-js-scene-with-the-mouse-wheel
+
 
 var theta = 0;
 var phi = 90;
@@ -49,7 +51,9 @@ document.addEventListener("keydown", (event) => {
 
 // for zooming in and out, have zoom cap?
 document.addEventListener("wheel", (event) => {
-    camera.zoom += event.deltaY;
+    dis += 0.001 * event.deltaY;
+    computeNewCameraPostion();
+    camera.lookAt(0,0,0);
 });
 
 var div = document.getElementById("viewbox");
