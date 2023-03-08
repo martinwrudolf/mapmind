@@ -28,7 +28,7 @@ for para in doc.paragraphs:
 
 corpus = []
 for sentence in docText:
-    for word in sentence.replace('/',' ').replace('"',' ').replace("'",' S').split():
+    for word in sentence.replace('/',' ').replace('"',' ').replace("'",' ').split():
         corpus.append(word.lower())
 #print(corpus)
 t1 = time.time()
