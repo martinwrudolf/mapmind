@@ -127,20 +127,56 @@ def search(searched_words, kv, num_results, vocab):
     print(results_matrix)
     return results_matrix
 
-def inspect_node(word, searched_words, user_notes, kv):
+def inspect_node(word, searched_words, user_notes, kv, num_results):
     # get indices for all searched words
-    searched_indices = {}
+    searched_words_dict = {}
+    clicked_word = [i for i,x in enumerate(user_notes) if x==word]
     # which word is closest?
     best_similarity = -100
-    search_sorted = []
+    search_sorted_by_sim = []
     for search in searched_words:
         sim = kv.similarity(word, search)
-        search_sorted.append((search, sim))
-        searched_indices[search] = [i for i, x in enumerate(user_notes) if x == search]
-    min_val = len(user_notes)
-    
-    
-    
+        search_sorted_by_sim.append((search, sim))
+        searched_words_dict[search] = [i for i, x in enumerate(user_notes) if x == search]
+
+    search_sorted_by_sim.sort(key=lambda a: a[1], reverse=True)
+    print(search_sorted_by_sim)
+
+    # start with most similar search term and then go down from there
+    results = []
+    thresh = 100
+
+    i=0 # which word index
+    j=0 # the index of the current search word
+    k=0 # which search word
+    # IF WE WANT TO SORT RESULTS BY ONES THAT ARE CLOSE TO THE SEARCHED WORDS, KEEP THIS UNCOMMENTED
+    while (i < len(clicked_word) and k < len(search_sorted_by_sim)):
+        compare_indices = searched_words_dict[search_sorted_by_sim[k][0]]
+        #print(compare_indices)
+        if j == len(compare_indices):
+            j = 0
+            i=0
+            k += 1
+            continue
+        if abs(clicked_word[i] - compare_indices[j]) < thresh:
+            #print(clicked_word[i], compare_indices[j])
+            # found some that are close
+            if user_notes[clicked_word[i]-10:clicked_word[i]+10] not in results:
+                results.append(user_notes[clicked_word[i]-10:clicked_word[i]+10])
+                i+=1
+        if clicked_word[i] > compare_indices[j] + 100:
+            j+=1
+        elif compare_indices[j] > clicked_word[i] + 100:
+            i += 1
+        if len(results) >= num_results:
+            break
+
+    # JUST USE THIS PART IF WE WANT TO JUST DO A BASIC SEARCH OF THE CLICKED WORD IN THE NOTES
+    # DON'T COMMENT THIS OUT THO WE NEED IT WITH THE WHILE LOOP
+    if len(results) < num_results:
+        for i in clicked_word:
+            results.append(user_notes[i-10:i+10])
+    print(results)  
 
 if __name__ == "__main__":
     # Define paths to various sources
@@ -164,29 +200,40 @@ if __name__ == "__main__":
     t1 = time.time()
     print("Time to process user input notes: %s"%(t1-t0))
 
+    # TRAIN MODEL
     # t0 = time.time()
     # coocc_arr = create_cooccurrence(scrubbed_vocab, oov_vocab)
     # finetuned_embed = train_mittens(coocc_arr, oov_vocab, glove_embeddings)
     # t1 = time.time()
     # print("Time to train: %s"%(t1-t0))
 
+    # CREATE KEYEDVECTORS OBJECT
     # t0 = time.time()
     # kv = create_kv_from_embed(finetuned_embed)
     # t1 = time.time()
     # print("Time to create kv: %s"%(t1-t0))
 
+    # SAVE KEYEDVECTORS OBJECT
     # t0 = time.time()
     # save_kv(kv, path2kv)
     # t1 = time.time()
     # print("Time to save kv: %s"%(t1-t0))
 
+    # LOAD KEYEDVECTORS OBJECT
     t0 = time.time()
     kv = load_kv(path2kv)
     t1 = time.time()
     print("Time to load kv: %s"%(t1-t0))
 
+    # SEARCH FOR SOME WORDS AND GET A SIMILARITY MATRIX
     t0 = time.time()
-    searched_words = ["machine", "learning", "automatic"]
-    res_matrix = search(searched_words, kv, 5, scrubbed_vocab)
+    searched_words = ["semaphore", "lock", "binary"]
+    #res_matrix = search(searched_words, kv, 5, scrubbed_vocab)
     t1 = time.time()
     print("Time to search: %s"%(t1-t0))
+
+    # INSPECT A NODE
+    t0 = time.time()
+    click_results = inspect_node("parallel", searched_words, full_corpus, kv, 5)
+    t1 = time.time()
+    print("Time to inspect: %s"%(t1-t0))
