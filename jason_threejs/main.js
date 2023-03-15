@@ -4,6 +4,8 @@ import {TextGeometry} from 'three/addons/geometries/TextGeometry.js'
 import { Vector3 } from 'three';
 // import CameraControls from 'camera-controls'
 
+// https://threejs.org/docs/#api/en/helpers/AxesHelper
+
 // https://stackoverflow.com/questions/13039589/rotate-the-camera-around-an-object-using-the-arrow-keys-in-three-js
 // http://jsfiddle.net/HXms8/4/
 
@@ -30,7 +32,7 @@ import { Vector3 } from 'three';
 
 var theta = 0;
 var phi = 90;
-var dis = 5;
+var dis = 20;
 
 
 function computeNewCameraPostion() {
@@ -48,6 +50,24 @@ document.addEventListener("keydown", (event) => {
     }
     else if (event.key == "ArrowRight") {
         theta += 1;
+        computeNewCameraPostion();
+        camera.lookAt(0,0,0);
+    }
+    else if (event.key == "ArrowUp") {
+        phi -= 1;
+        console.log(phi);
+        if (phi <= 0) {
+            phi = 1;
+        }
+        computeNewCameraPostion();
+        camera.lookAt(0,0,0);
+    }
+      else if (event.key == "ArrowDown") {
+        phi += 1;
+        console.log(phi);
+        if (phi >= 180) {
+            phi = 179;
+        }
         computeNewCameraPostion();
         camera.lookAt(0,0,0);
     }
@@ -78,6 +98,9 @@ const cube = new THREE.Mesh( geometry, material );
 scene.add( cube );
 console.log(cube);
 
+const axesHelper = new THREE.AxesHelper(dis);
+scene.add(axesHelper);
+
 computeNewCameraPostion();
 camera.lookAt(0,0,0);
 
@@ -91,6 +114,7 @@ document.getElementById("submitbutton").addEventListener("click", (e) => {
     const searchBarArray = searchBarInput.split(", ");
     let notebook = document.getElementById("notebookselect");
     // convert search bar input into HTTP request (model endpoint for now)
+    console.log("http://"+location.host+"/api/search/"+notebook.value)
     // sendSearchRequest("http://"+location.host+"/api/search/"+notebook, searchBarArray, parseResponse);
 
     // below is a dummy loop constructing a model HTTP response from server
@@ -130,6 +154,7 @@ function parseResponse(objects) {
 
 function generateText(font) {
     theta = 0;
+    phi = 90;
     computeNewCameraPostion();
     camera.lookAt(0,0,0);
     // clear previously rendered text meshes
@@ -140,7 +165,7 @@ function generateText(font) {
         const geometry = new TextGeometry(list[i].string, {
             font: font,
             size: 1,
-            height: 1
+            height: 1,
         });
         // console.log(geometry);
         const textMesh = new THREE.Mesh(geometry);
