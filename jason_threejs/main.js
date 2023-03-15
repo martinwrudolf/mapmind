@@ -17,6 +17,9 @@ import { Vector3 } from 'three';
 
 // https://sbcode.net/threejs/raycaster/
 
+
+// https://discourse.threejs.org/t/click-event-on-object/1320/2
+
 // https://stackoverflow.com/questions/1085801/get-selected-value-in-dropdown-list-using-javascript
 
 // use this? https://github.com/yomotsu/camera-controls
@@ -27,7 +30,8 @@ import { Vector3 } from 'three';
 
 var theta = 0;
 var phi = 90;
-var dis = 20;
+var dis = 5;
+
 
 function computeNewCameraPostion() {
     camera.position.x = dis * Math.sin(phi * (Math.PI / 180)) * Math.sin(theta * (Math.PI / 180));
@@ -59,10 +63,10 @@ document.addEventListener("wheel", (event) => {
 var div = document.getElementById("viewbox");
 var searchtermbox = document.getElementById("searchterm");
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera( 75, div.clientWidth / div.clientHeight, 10, 6000);
+scene.background = new THREE.Color('skyblue');
+const camera = new THREE.PerspectiveCamera( 75, div.clientWidth / div.clientHeight, 0.1, 6000);
 const renderer = new THREE.WebGLRenderer();
 const raycaster = new THREE.Raycaster();
-const pointer = new THREE.Vector2();
 renderer.setSize(div.clientWidth, div.clientHeight );
 div.appendChild(renderer.domElement);
 
@@ -84,9 +88,12 @@ var list = [];
 document.getElementById("submitbutton").addEventListener("click", (e) => {
     // extract input from search as an array of strings
     var searchBarInput = document.getElementById("searchbar").value;
-    const searchBarArray = searchBarInput.split(", ")
+    const searchBarArray = searchBarInput.split(", ");
+    let notebook = document.getElementById("notebookselect");
     // convert search bar input into HTTP request (model endpoint for now)
-    // sendSearchRequest("http://"+location.host+"/api/search", searchBarArray, parseResponse);
+    // sendSearchRequest("http://"+location.host+"/api/search/"+notebook, searchBarArray, parseResponse);
+
+    // below is a dummy loop constructing a model HTTP response from server
     let objects = [];
     for (let i = 0; i < searchBarArray.length; i++) {
         let pos = []
@@ -137,17 +144,12 @@ function generateText(font) {
         });
         // console.log(geometry);
         const textMesh = new THREE.Mesh(geometry);
-        // add model endpoint assiocated with string, do we need?
+        // add model endpoint assiocated with string, do we need this?
         // textMesh.userData = {URL: "http://"+location.host+"/api/inspect/" + list[i].string}
         textMesh.position.x = list[i].pos[0];
         textMesh.position.y = list[i].pos[2];
         textMesh.position.z = list[i].pos[1];
-        // textMesh.position.x = 0;
-        // textMesh.position.y = 0;
-        // textMesh.position.z = 0;
-        // textMesh.position.z = 0;
         scene.add(textMesh);
-        // console.log(textMesh);
         meshes[i] = textMesh;
         // textMesh.rotation.x = 0;
         // textMesh.rotation.y = 0;
@@ -156,16 +158,23 @@ function generateText(font) {
     }
 };
 
-function onPointerMove( event ) {
+div.addEventListener("mousedown", mouseDown);
 
-	// calculate pointer position in normalized device coordinates
-	// (-1 to +1) for both components
-
-	pointer.x = ( event.clientX / div.clientWidth ) * 2 - 1;
-	pointer.y = - ( event.clientY / div.clientHeight ) * 2 + 1;
-    console.log(pointer.x + " " + pointer.y);
-
-};
+function mouseDown(event) {
+    var mouse = new THREE.Vector2();
+    mouse.x = ( event.clientX / renderer.domElement.clientWidth ) * 2 - 1;
+    mouse.y = - ( event.clientY / renderer.domElement.clientHeight ) * 2 + 1;
+    raycaster.setFromCamera(mouse, camera);
+    var intersects = raycaster.intersectObjects(scene.children, false);
+    console.log(mouse);
+    // console.log(scene.children);
+    if (intersects.length > 0) {
+        sendInspectRequest(intersects[0]);
+    }
+    console.log(intersects);
+    console.log(raycaster);
+    console.log("click!");
+}
 
 
 function sendInspectRequest(object) {
@@ -180,17 +189,7 @@ function sendInspectRequest(object) {
 }
 
 function animate() {
-    raycaster.setFromCamera( pointer, camera );
-    // calculate objects intersecting the picking ray
-    const intersects = raycaster.intersectObjects( scene.children );
-    // console.log(intersects);
-    if (intersects.length > 0) {
-        console.log("Ray detected hit!");
-        sendInspectRequest(intersects[0].object);
-    }
 	requestAnimationFrame( animate );
 	renderer.render( scene, camera );
 };
-window.addEventListener('pointermove', onPointerMove);
-// window.requestAnimationFrame(animate);
 animate();
