@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from .models import Note, Notebook
 
@@ -65,12 +65,25 @@ def create_notebook(request):
         return HttpResponse("Notebook created successfully")
     else:
         return HttpResponse("Notebook creation failed")
-    
-def edit_notebook(request):
-    return HttpResponse(status=200, content="This is the URL where we edit notebooks!")
 
+# Placeholder response for now
+def edit_notebook(request):
+    if not request.user.is_authenticated:
+        return HttpResponse(status=200, content="Need to be logged in to edit notebooks!")
+        # return redirect('login')
+    else:
+        return HttpResponse(status=200, content="This is the URL where we edit notebooks!")
+
+# Placeholder response for now
 def search(request):
+    if not request.user.is_authenticated:
+        return HttpResponse(status=200, content="Need to be logged in to search notes!")
+        # return redirect('login')
     return HttpResponse(status=200, content="This is the URL where we search the notes!")
 
+# Placeholder response for now
 def settings(request):
+    if not request.user.is_authenticated:
+        return HttpResponse(status=200, content="Need to be logged in to access settings!")
+        # return redirect('login')
     return HttpResponse(status=200, content="This is the URL where the settings page will be!")
