@@ -113,9 +113,10 @@ document.getElementById("submitbutton").addEventListener("click", (e) => {
     var searchBarInput = document.getElementById("searchbar").value;
     const searchBarArray = searchBarInput.split(", ");
     let notebook = document.getElementById("notebookselect");
+    var notesonlybool = document.getElementById("notesonly").value;
     // convert search bar input into HTTP request (model endpoint for now)
-    console.log("http://"+location.host+"/api/search/"+notebook.value)
-    // sendSearchRequest("http://"+location.host+"/api/search/"+notebook, searchBarArray, parseResponse);
+    console.log("http://"+location.host+"/api/search/"+notebook.value+"?noteonly="+notesonlybool);
+    // sendSearchRequest("http://"+location.host+"/api/search/"+notebook+"?noteonly="+notesonlybool, searchBarArray, parseResponse);
 
     // below is a dummy loop constructing a model HTTP response from server
     let objects = [];
