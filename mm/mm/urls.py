@@ -21,4 +21,5 @@ urlpatterns = [
     path('', include('mmapp.urls')),
     path('mmapp', include('mmapp.urls')),
     path('accounts/', include('django.contrib.auth.urls')),
+    path('api/', include('mmapp.api.urls'))
 ]

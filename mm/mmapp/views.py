@@ -65,3 +65,12 @@ def create_notebook(request):
         return HttpResponse("Notebook created successfully")
     else:
         return HttpResponse("Notebook creation failed")
+    
+def edit_notebook(request):
+    return HttpResponse(status=200, content="This is the URL where we edit notebooks!")
+
+def search(request):
+    return HttpResponse(status=200, content="This is the URL where we search the notes!")
+
+def settings(request):
+    return HttpResponse(status=200, content="This is the URL where the settings page will be!")
