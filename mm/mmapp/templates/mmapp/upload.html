@@ -1,0 +1,22 @@
+<form action="{% url 'upload' %}" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+  
+    <div>
+      <label for="file">Choose file to upload</label>
+      <input
+        type="file"
+        id="file"
+        name="file"
+        accept=".doc,.docx,.xml,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document, .rtf, .txt"
+      />
+      <label for="notebook">Choose notebook to upload to</label>
+      <select name="notebook" id="notebook">
+        {% for notebook in notebooks %}
+        <option value="{{ notebook.id }}">{{ notebook.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div>
+      <button>Submit</button>
+    </div>
+  </form>

@@ -22,6 +22,11 @@ def index(request):
 Receive a file from the user and save it to the database as a Note.
 """
 def upload(request):
+    # if not request.user.is_authenticated:
+    #     return HttpResponse(status=200, content="Need to be logged in to upload notebooks!")
+
+    # Get the owner from the request
+    owner = request.user
     if request.method == 'POST':
         # Get the file from the request
         print("request", request)
@@ -31,8 +36,6 @@ def upload(request):
         notebook = request.POST['notebook']
         # Get the notebook from the request
         # notebook = request.POST['notebook']
-        # Get the owner from the request
-        owner = request.user
         # Create a new Note
         note = Note(file_name=file.name, file_content=file.read(), file_type=file.content_type, owner=owner)
         # Save the Note
@@ -45,8 +48,12 @@ def upload(request):
         notebook.save()
         # Return a response
         return HttpResponse("File uploaded successfully")
-    else:
-        return HttpResponse("File upload failed")
+    if request.method == 'GET':
+        notebooks = Notebook.objects.filter(owner=owner)
+        context = {
+            "notebooks": notebooks
+        }
+        return render(request, 'mmapp/upload.html', context)
     
 """
 Create a new notebook for the user.
