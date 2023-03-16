@@ -65,14 +65,18 @@ def create_notebook(request):
         return HttpResponse("Notebook created successfully")
     else:
         return HttpResponse("Notebook creation failed")
+    
+def register(request):
+    if request.user.is_authenticated:
+        return HttpResponse(status=200, content="Already logged in, can't register!")
+    return HttpResponse(status=200, content="This is the URL where we edit notebooks!")
 
 # Placeholder response for now
 def edit_notebook(request):
     if not request.user.is_authenticated:
         return HttpResponse(status=200, content="Need to be logged in to edit notebooks!")
         # return redirect('login')
-    else:
-        return HttpResponse(status=200, content="This is the URL where we edit notebooks!")
+    return HttpResponse(status=200, content="This is the URL where we edit notebooks!")
 
 # Placeholder response for now
 def search(request):
