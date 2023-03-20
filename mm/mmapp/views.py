@@ -1,7 +1,12 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
+from django.template import loader
+from django.conf import settings
 from .models import Note, Notebook
-# from ...ML import machine_learning
+from .src.ML import machine_learning as ml
+from .src.spacing import spacing_alg as sp
+import os
+from spellchecker import SpellChecker
 
 # Index page
 def index(request):
@@ -109,13 +114,52 @@ def edit_notebook(request):
     return HttpResponse(status=200, content="This is the URL where we edit notebooks!")
 
 # Placeholder response for now
-def search(request):
-    if not request.user.is_authenticated:
-        return redirect('login')
-    return HttpResponse(status=200, content="This is the URL where we search the notes!")
-
-# Placeholder response for now
 def settings(request):
     if not request.user.is_authenticated:
         return redirect('login')
     return HttpResponse(status=200, content="This is the URL where the settings page will be!")
+def search(request):
+    if not request.user.is_authenticated:
+        return redirect('login')
+    template = loader.get_template("search/search.html")
+    return HttpResponse(template.render())
+
+def search_results(request):
+    template = loader.get_template("search/search_results.html")
+    query = request.GET.get("search_words").split()
+
+    # load scrubbed vocab for this notebook
+    vocab = ml.load_embeddings(os.path.join(settings.BASE_DIR, 'mmapp/src/ML/vocab_scrubbed.pkl'))
+    # load keyedvectors object for this notebook
+    kv = ml.load_kv(os.path.join(settings.BASE_DIR, "mmapp/src/ML/finetuned_embed.kv"))
+    
+    # spell check
+    # TODO: add a spell check toggle so they can override this if they want
+    spell = SpellChecker()
+    misspelled = spell.unknown(query)
+    spell_checked = {}
+    for word in misspelled:
+        correct_word = spell.correction(word)
+        query.remove(word)
+        query.append(correct_word)
+        spell_checked[word] = correct_word
+        print(word)
+
+    # perform search
+    res_matrix, words = ml.search(query, kv, 1, vocab)
+
+    # send results to spacing alg
+    positions = sp.fruchterman_reingold(res_matrix)
+    #print(res)
+    #words = [line[0] for line in res]
+
+    # create object of words and positions
+    words_pos = {words[i]: positions[i] for i in range(len(words))}
+    print(words_pos)
+    context = {
+        "res": res_matrix,
+        "words_pos": words_pos,
+        "spell_checked": spell_checked
+    }
+
+    return render(request, "search/search_results.html", context)
