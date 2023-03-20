@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- Bootstrap CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC"
+      crossorigin="anonymous"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.0/css/all.min.css"
+      integrity="sha384-KyZXEAg3QhqLMpG8r+Knujsl5/a1H3wzLl9x3XZrUJr59lW6pXb5JNp3gHy7hE4j"
+      crossorigin="anonymous"
+    />
+    <link rel="stylesheet" href="../styles.css" />
+    <title>MapMind</title>
+  </head>
+  <body>
+    <div class="container">
+      <div class="row">
+        <div class="col-12 text-center mt-3">
+          <button
+            class="btn btn-primary w-50 dropdown-toggle rounded"
+            type="button"
+            id="dropdownMenuButton"
+            data-bs-toggle="dropdown"
+            aria-expanded="false"
+          >
+            Dropdown
+          </button>
+          <ul
+            class="dropdown-menu dropdown-menu-center mt-2 rounded w-50 mx-auto"
+            aria-labelledby="dropdownMenuButton"
+          >
+            <li>
+              <!-- Create Notebook -->
+              <form action="{% url 'create_notebook' %}" method="post">
+                {% csrf_token %}
+                <div>
+                  <label for="notebook">Name</label>
+                  <input
+                    type="text"
+                    id="notebook"
+                    name="notebook"
+                    class="form-control rounded"
+                    placeholder="Create New Notebook"
+                  />
+                </div>
+                <div>
+                  <button>Submit</button>
+                </div>
+              </form>
+            </li>
+            <li><hr class="dropdown-divider" /></li>
+            <li><a class="dropdown-item" href="#">Some Notebook</a></li>
+            <li><a class="dropdown-item" href="#">Another Notebook</a></li>
+            <li><a class="dropdown-item" href="#">Best Notebook</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-8">
+          <img
+            src="../../static/img/1200px-SocialNetworkAnalysis.png"
+            alt="iframe of mapmind"
+            class="img-fluid my-5 rounded mx-auto d-block"
+          />
+        </div>
+        <div class="col-md-4">
+          <ul class="list-group my-5 mx-2 rounded">
+            <li class="list-group-item rounded">Item 1</li>
+            <li class="list-group-item rounded">Item 2</li>
+            <li class="list-group-item rounded">Item 3</li>
+            <li class="list-group-item rounded">Item 4</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="search-bar">
+      <form
+        class="d-flex justify-content-center mb-5"
+        action="{% url 'search_results' %}"
+        method="get"
+      >
+        <input
+          type="text"
+          id="search_words"
+          name="search_words"
+          class="form-control w-50 rounded"
+          placeholder="Search..."
+        />
+        <button type="submit" class="btn btn-primary ms-2 rounded">
+          Search
+        </button>
+      </form>
+    </div>
+
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+      crossorigin="anonymous"
+    ></script>
+  </body>
+</html>

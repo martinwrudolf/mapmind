@@ -7,6 +7,7 @@ from .src.ML import machine_learning as ml
 from .src.spacing import spacing_alg as sp
 import os
 from spellchecker import SpellChecker
+from mm.settings import BASE_DIR
 
 # Index page
 def index(request):
@@ -130,9 +131,14 @@ def search_results(request):
         query = request.GET.get("search_words").split()
 
     # load scrubbed vocab for this notebook
-    vocab = ml.load_embeddings(os.path.join(settings.BASE_DIR, 'mmapp/src/ML/vocab_scrubbed.pkl'))
+    print("BASE_DIR", BASE_DIR)
+    print(os.path.join(BASE_DIR, 'mmapp/src/ML/vocab_scrubbed.pkl'))
+    # TODO: Unable to load vocab_scrubbed.pkl as it doesn't exist
+    vocab = ml.load_embeddings(os.path.join(BASE_DIR, 'mmapp/src/ML/vocab_scrubbed.pkl'))
     # load keyedvectors object for this notebook
-    kv = ml.load_kv(os.path.join(settings.BASE_DIR, "mmapp/src/ML/finetuned_embed.kv"))
+    print(os.path.join(BASE_DIR, "mmapp/src/ML/finetuned_embed.kv"))
+    # TODO: Unable to load finetuned_embed.kv as it doesn't exist
+    kv = ml.load_kv(os.path.join(BASE_DIR, "mmapp/src/ML/finetuned_embed.kv"))
     
     # spell check
     # TODO: add a spell check toggle so they can override this if they want
@@ -164,3 +170,7 @@ def search_results(request):
     }
 
     return render(request, "search/search_results.html", context)
+
+def results(request):
+    template = loader.get_template("search/results.html")
+    return HttpResponse(template.render())

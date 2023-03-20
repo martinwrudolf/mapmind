@@ -11,5 +11,6 @@ urlpatterns = [
     path('search', views.search, name='search'),
     path('settings', views.settings, name='settings'),
     path('register', views.register, name='register'),
-    path('search_results', views.search_results, name='search_results')
+    path('search_results', views.search_results, name='search_results'),
+    path('results', views.results, name='results'),
 ]
