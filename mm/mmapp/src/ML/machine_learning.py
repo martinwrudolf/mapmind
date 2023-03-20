@@ -144,11 +144,11 @@ def search(searched_words, kv, num_results, vocab):
 
     # now we have list of all the words that will be displayed
     for i in range(nrows):
-        results_matrix[i][0] = result_words[i]
+        #results_matrix[i][0] = result_words[i]
         for j in range(nrows):
             results_matrix[i][j] = kv.similarity(result_words[i],result_words[j])
 
-    #print(result_words)
+    print(result_words)
     return results_matrix, result_words, skipwords
 
 def inspect_node(word, searched_words, user_notes, kv, num_results):
