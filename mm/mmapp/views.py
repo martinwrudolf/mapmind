@@ -126,7 +126,8 @@ def search(request):
 
 def search_results(request):
     template = loader.get_template("search/search_results.html")
-    query = request.GET.get("search_words").split()
+    if request.method == 'GET' and request.GET.get("search_words"):
+        query = request.GET.get("search_words").split()
 
     # load scrubbed vocab for this notebook
     vocab = ml.load_embeddings(os.path.join(settings.BASE_DIR, 'mmapp/src/ML/vocab_scrubbed.pkl'))
