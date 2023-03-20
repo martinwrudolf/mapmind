@@ -11,4 +11,4 @@ class Note(models.Model):
     file_content = models.TextField()
     file_type = models.CharField(max_length=200)
     owner = models.ForeignKey(User, on_delete=models.CASCADE)
-    notebooks = models.ForeignKey(Notebook, on_delete=models.CASCADE)
+    notebooks = models.ForeignKey(Notebook, related_name="notes", on_delete=models.CASCADE)
