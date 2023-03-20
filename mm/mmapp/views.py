@@ -7,6 +7,7 @@ from .src.ML import machine_learning as ml
 from .src.spacing import spacing_alg as sp
 import os
 from spellchecker import SpellChecker
+from mm.settings import BASE_DIR
 
 # Index page
 def index(request):
@@ -139,11 +140,11 @@ def search_results(request):
 
     if notesonly:
         # load scrubbed vocab for this notebook
-        vocab = ml.load_embeddings(os.path.join(settings.BASE_DIR, 'mmapp/src/ML/vocab_scrubbed.pkl'))
+        vocab = ml.load_embeddings(r"C:\Users\clair\Documents\Year 5\ECE 493\Project\Testing_ML\mapmind\mm\mmapp\src\ML\vocab_scrubbed.pkl")
     else:
         vocab = None
     # load keyedvectors object for this notebook
-    kv = ml.load_kv(os.path.join(settings.BASE_DIR, "mmapp/src/ML/finetuned_embed.kv"))
+    kv = ml.load_kv(r"C:\Users\clair\Documents\Year 5\ECE 493\Project\Testing_ML\mapmind\mm\mmapp\src\ML\finetuned_embed.kv")
     
     # spell check
     spell_checked = {}
