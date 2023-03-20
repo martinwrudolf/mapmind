@@ -13,24 +13,31 @@ import pickle
 import json
 import time
 import os
+from spellchecker import SpellChecker
 
 # This is the real machine learning code! woo
 
 # PROCESS USER NOTES
 def process_user_notes(path2notes, embed):
-    doc = docx.Document(path2notes)
-
-    docText = []
-    for para in doc.paragraphs:
-        docText.append(para.text)
-
     translator = str.maketrans(dict.fromkeys(string.punctuation.replace('-',''))) #map punctuation to space
-
     corpus = []
-    for sentence in docText:
-        sentence = sentence.translate(translator)
-        #for word in sentence.replace('/',' ').replace('"',' ').replace("'",' ').split():
-        for word in sentence.split():
+    if path2notes[-5:] == ".docx":
+        doc = docx.Document(path2notes)
+
+        docText = []
+        for para in doc.paragraphs:
+            docText.append(para.text)
+        
+        for sentence in docText:
+            sentence = sentence.translate(translator)
+            #for word in sentence.replace('/',' ').replace('"',' ').replace("'",' ').split():
+            for word in sentence.split():
+                corpus.append(word.lower())
+    elif path2notes[-4:] == ".txt":
+        f = open(path2notes, 'r')
+        notes_str = f.read()
+        notes_str = notes_str.translate(translator)
+        for word in notes_str.split():
             corpus.append(word.lower())
 
     vocab_scrubbed = remove_stop_words(corpus)
@@ -119,13 +126,13 @@ def search(searched_words, kv, num_results, vocab):
 
     # now we have list of all the words that will be displayed
     for i in range(nrows):
-        #results_matrix[i][0] = result_words[i]
-        for j in range(ncols):
+        results_matrix[i][0] = result_words[i]
+        for j in range(nrows):
             results_matrix[i][j] = kv.similarity(result_words[i],result_words[j])
 
     #print(result_words)
     print(results_matrix)
-    return results_matrix
+    return results_matrix, result_words
 
 def inspect_node(word, searched_words, user_notes, kv, num_results):
     # get indices for all searched words
@@ -229,7 +236,7 @@ if __name__ == "__main__":
     t0 = time.time()
     searched_words = ["semaphore", "lock", "binary"]
     # search function needs SCRUBBED VOCAB only
-    #res_matrix = search(searched_words, kv, 5, scrubbed_vocab)
+    #res_matrix, spell_check = search(searched_words, kv, 5, scrubbed_vocab)
     t1 = time.time()
     print("Time to search: %s"%(t1-t0))
 
