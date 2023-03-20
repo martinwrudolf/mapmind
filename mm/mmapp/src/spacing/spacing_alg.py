@@ -12,7 +12,7 @@ def fruchterman_reingold(cosine_similarities, dim=3, iterations=50, k=None, temp
     positions = np.random.rand(len(cosine_similarities), dim)
     # Calculate the initial distance matrix
     distances = np.sqrt(np.sum((positions[:, np.newaxis, :] - positions[np.newaxis, :, :]) ** 2, axis=-1))
-
+    #print(cosine_similarities)
     # Apply the Fruchterman-Reingold algorithm
     for _ in range(iterations):
         # Calculate the attractive and repulsive forces

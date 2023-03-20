@@ -15,6 +15,7 @@ import time
 import os
 
 # This is the real machine learning code! woo
+# REAL VERSION IS IN THE ACTUAL DJANGO PROJECT - DON'T USE THIS ANYMORE
 
 # PROCESS USER NOTES
 def process_user_notes(path2notes, embed):
@@ -103,11 +104,19 @@ def search(searched_words, kv, num_results, vocab):
         count = 0
         for sim_word, sim_val in similar_words:
             # TODO: deal with lemmatization?
-            if sim_word in vocab and sim_word not in result_words:
-                result_words.append(sim_word)
-                count+=1
-            if count == num_results:
-                break
+            if vocab is not None:
+                # we are only including words in their notes
+                if sim_word in vocab and sim_word not in result_words:
+                    result_words.append(sim_word)
+                    count+=1
+                if count == num_results:
+                    break
+            else:
+                if sim_word not in result_words:
+                    result_words.append(sim_word)
+                    count += 1
+                if count == num_results:
+                    break
     
     #result_words = list(set(result_words))
     #print(result_words)

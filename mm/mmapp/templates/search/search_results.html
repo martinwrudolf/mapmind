@@ -8,6 +8,13 @@
         </p>
     </div>
     {% endfor %}
+    {% for word in skipwords %}
+    <div>
+        <p>
+            {{word}} not in model - skipped
+        </p>
+    </div>
+    {% endfor %}
     {% for word, pos in words_pos.items %}
     <div>
     <p>{{word}}: {{pos}}</p>
