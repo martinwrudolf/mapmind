@@ -188,5 +188,16 @@ def search_results(request):
     return render(request, "search/search_results.html", context)
 
 def results(request):
-    template = loader.get_template("search/results.html")
-    return HttpResponse(template.render())
+    if not request.user.is_authenticated:
+        return redirect('login')
+    # Get the user
+    user = request.user
+    # Get the user's notebooks
+    notebooks = Notebook.objects.filter(owner=user)
+    # Get the user's notes
+    notes = Note.objects.filter(owner=user)
+    context = {
+        'notebooks': notebooks,
+        'notes': notes
+    }
+    return render(request, "search/results.html", context)

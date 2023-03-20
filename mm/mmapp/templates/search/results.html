@@ -32,7 +32,7 @@
             data-bs-toggle="dropdown"
             aria-expanded="false"
           >
-            Dropdown
+            Select Notebook
           </button>
           <ul
             class="dropdown-menu dropdown-menu-center mt-2 rounded w-50 mx-auto"
@@ -58,9 +58,26 @@
               </form>
             </li>
             <li><hr class="dropdown-divider" /></li>
-            <li><a class="dropdown-item" href="#">Some Notebook</a></li>
-            <li><a class="dropdown-item" href="#">Another Notebook</a></li>
-            <li><a class="dropdown-item" href="#">Best Notebook</a></li>
+            <div>
+              {% for notebook in notebooks %}
+              <l value="{{ notebook.id }}">
+                <a class="dropdown-item" href="#" value="{{ notebook.id }}"
+                  >{{ notebook.name }}</a
+                >
+                <!-- Delete Notebook -->
+                <form
+                  action="{% url 'delete_notebook' %}"
+                  method="post"
+                  value="{{ notebook.id }}"
+                >
+                  {% csrf_token %}
+                  <div>
+                    <button name="notebook" value="{{ notebook.id }}">Delete</button>
+                  </div>
+                </form>
+              </li>
+              {% endfor %}
+            </div>
           </ul>
         </div>
       </div>
@@ -87,7 +104,7 @@
     <div class="search-bar">
       <form
         class="d-flex justify-content-center mb-5"
-        action="{% url 'search_results' %}"
+        action="{% url 'results' %}"
         method="get"
       >
         <input
