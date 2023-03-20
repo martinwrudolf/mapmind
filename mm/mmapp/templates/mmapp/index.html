@@ -29,6 +29,22 @@
       </div>
     </form>
 
+    <!-- Delete Notebook -->
+    <form action="{% url 'delete_notebook' %}" method="post">
+      {% csrf_token %}
+      <div>
+        <label for="notebook">Name</label>
+        <select name="notebook" id="notebook">
+          {% for notebook in notebooks %}
+          <option value="{{ notebook.id }}">{{ notebook.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div>
+        <button>Delete</button>
+      </div>
+    </form>
+
     <!-- Upload File-->
     <form
       action="{% url 'upload' %}"

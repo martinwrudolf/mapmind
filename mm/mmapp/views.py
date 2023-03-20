@@ -101,6 +101,22 @@ def create_notebook(request):
     else:
         return HttpResponse("Notebook creation failed")
     
+def delete_notebook(request):
+    """Deletes a notebook and all notes associated with it."""
+    if not request.user.is_authenticated:
+        return redirect('login')
+    if request.method == 'POST':
+        # Get the notebook name from the request
+        notebook = request.POST['notebook']
+        # Get the owner from the request
+        owner = request.user
+        # Delete the Notebook
+        notebook = Notebook.objects.get(id=notebook)
+        notebook.delete()
+        # Return a response
+        return HttpResponse("Notebook deleted successfully")
+
+    
 # Do we need this to return a register page or does Django have a built in register route?
 def register(request):
     if request.user.is_authenticated:
