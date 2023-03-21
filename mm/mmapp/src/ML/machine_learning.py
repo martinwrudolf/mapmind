@@ -9,11 +9,12 @@ from sklearn.feature_extraction.text import ENGLISH_STOP_WORDS
 from sklearn.metrics.pairwise import cosine_similarity
 from gensim.models import KeyedVectors
 import string
-import pickle
+import compress_pickle as pickle
 import json
 import time
 import os
 from spellchecker import SpellChecker
+from nltk.stem import WordNetLemmatizer
 
 # This is the real machine learning code! woo
 
@@ -100,21 +101,38 @@ def load_kv(path2model):
 
 def search(searched_words, kv, num_results, vocab):
     result_words = []
+    skipwords = []
+    lemmatizer = WordNetLemmatizer()
     for word in searched_words:
         # for each word do the search
-        result_words.append(word)
         # TODO: GET RID OF STOP WORDS IN RESULTS
         # GET RID OF STOP WORDS IN MODEL ALTOGETHER? COULD MAKE IT SMALLER
         # search for more words than we need because we are filtering by words in our vocab
-        similar_words = kv.most_similar(positive=word, topn=10000)
+        try:
+            similar_words = kv.most_similar(positive=word, topn=10000)
+        except:
+            # word not in model, probably misspelled or super weird obscure word
+            # just skip it
+            skipwords.append(word)
+            continue
+        if word not in result_words:
+            result_words.append(word)
         count = 0
         for sim_word, sim_val in similar_words:
             # TODO: deal with lemmatization?
-            if sim_word in vocab and sim_word not in result_words:
-                result_words.append(sim_word)
-                count+=1
-            if count == num_results:
-                break
+            if vocab:
+                if sim_word in vocab and sim_word not in result_words and sim_word not in searched_words:
+                    result_words.append(sim_word)
+                    count+=1
+                if count == num_results:
+                    break
+            else:
+                if sim_word not in result_words and sim_word not in searched_words:
+                    result_words.append(sim_word)
+                    count+=1
+                if count == num_results:
+                    break
+                
     
     #result_words = list(set(result_words))
     #print(result_words)
@@ -126,13 +144,12 @@ def search(searched_words, kv, num_results, vocab):
 
     # now we have list of all the words that will be displayed
     for i in range(nrows):
-        results_matrix[i][0] = result_words[i]
+        #results_matrix[i][0] = result_words[i]
         for j in range(nrows):
             results_matrix[i][j] = kv.similarity(result_words[i],result_words[j])
 
-    #print(result_words)
-    print(results_matrix)
-    return results_matrix, result_words
+    print(result_words)
+    return results_matrix, result_words, skipwords
 
 def inspect_node(word, searched_words, user_notes, kv, num_results):
     # get indices for all searched words
@@ -190,6 +207,7 @@ if __name__ == "__main__":
     path2notes = r"C:/Users/clair/Documents/Year 5/ECE 493/Project/Testing_ML/Study notes.docx"
     path2glovetxt = r"C:/Users/clair/Documents/Year 5/ECE 493/Project/Testing_ML/glove.6B.300d.txt"
     path2glovepickle = "glove_embed.pkl"
+    path2glovecompressedpickle = "glove_embed_compressed.bz"
     path2kv = "finetuned_embed.kv"
     
     # LOAD EMBEDDINGS FROM THE ORIGINAL TEXT FILE
