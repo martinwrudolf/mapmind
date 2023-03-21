@@ -155,7 +155,6 @@ def search_results(request):
 
     # create object of words and positions
     words_pos = {words[i]: positions[i] for i in range(len(words))}
-    print(words_pos)
     context = {
         "res": res_matrix,
         "words_pos": words_pos,
