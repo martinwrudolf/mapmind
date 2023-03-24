@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
-<!-- Search -->
-<form action="{% url 'search_results' %}" method="get">
+  <!-- Search -->
+  <form action="{% url 'search_results' %}" method="get">
     {% csrf_token %}
     <div>
       <label for="search_words">Search</label>
@@ -12,6 +12,14 @@
     <div>
       <input type="checkbox" id="spellcheck" name="spellcheck" checked>
       <label>Perform spell check?</label>
+    </div>
+    <div>
+      <label for="notebook">Choose notebook to upload to</label>
+      <select name="notebook" id="notebook">
+        {% for notebook in notebooks %}
+        <option value="{{ notebook.id }}">{{ notebook.name }}</option>
+        {% endfor %}
+      </select>
     </div>
     <div>
       <button>Submit</button>

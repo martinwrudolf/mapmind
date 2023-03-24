@@ -15,15 +15,17 @@ import time
 import os
 from spellchecker import SpellChecker
 from nltk.stem import WordNetLemmatizer
+import boto3
+from io import TextIOWrapper
 
 # This is the real machine learning code! woo
 
 # PROCESS USER NOTES
-def process_user_notes(path2notes, embed):
+def process_user_notes(notefile, keys):
     translator = str.maketrans(dict.fromkeys(string.punctuation.replace('-',''))) #map punctuation to space
-    corpus = []
-    if path2notes[-5:] == ".docx":
-        doc = docx.Document(path2notes)
+    corpus = ""
+    if notefile.content_type in ['application/msword','application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/rtf']:
+        doc = docx.Document(notefile)
 
         docText = []
         for para in doc.paragraphs:
@@ -33,29 +35,37 @@ def process_user_notes(path2notes, embed):
             sentence = sentence.translate(translator)
             #for word in sentence.replace('/',' ').replace('"',' ').replace("'",' ').split():
             for word in sentence.split():
-                corpus.append(word.lower())
-    elif path2notes[-4:] == ".txt":
-        f = open(path2notes, 'r')
-        notes_str = f.read()
+                word = word.strip('-')
+                corpus+=word.lower()
+                corpus+=" "
+    elif notefile.content_type == 'text/plain':
+        #f = open(notefile, 'r')
+        text_f = TextIOWrapper(notefile, encoding='utf-8')
+        notes_str = text_f.read()
         notes_str = notes_str.translate(translator)
+        print(notes_str.split())
         for word in notes_str.split():
-            corpus.append(word.lower())
+            word = word.strip('-')
+            corpus += word.lower()
+            corpus += " "
 
     vocab_scrubbed = remove_stop_words(corpus)
-    oov = [token for token in vocab_scrubbed if token not in embed.keys()]
-    return list(set(oov)), vocab_scrubbed, corpus
+    oov = [token for token in vocab_scrubbed.split() if token not in keys]
+    oov = list(set(oov))
+    return oov, vocab_scrubbed, corpus.strip()
     
     
 def remove_stop_words(corpus):
     stopwords = list(ENGLISH_STOP_WORDS)
     #translator = str.maketrans(dict.fromkeys(string.punctuation))
-    vocab_scrubbed = [token.lower() for token in corpus if (token.lower() not in stopwords and token != '')]
-    return vocab_scrubbed
+    vocab_scrubbed = [token.lower() for token in corpus.split() if (token.lower() not in stopwords and token != '')]
+    vocab_scrubbed_str = ' '.join(word for word in vocab_scrubbed)
+    return vocab_scrubbed_str
 
 def load_embeddings_from_txt(path2txt):
     with open(path2txt, encoding='utf-8') as f:
         reader = csv.reader(f, delimiter=' ', quoting=csv.QUOTE_NONE)
-        embed = {line[0]: np.array(list(map(float,line[1:]))) for line in reader}
+        embed = {line[0]: list(map(float,line[1:])) for line in reader}
     return embed
 
 def save_embeddings(embed, path2pkl):
@@ -68,15 +78,18 @@ def load_embeddings(path2pkl):
     return embed
 
 def create_cooccurrence(vocab_scrubbed, oov):
-    my_doc = [' '.join(vocab_scrubbed)]
+    #my_doc = [' '.join(vocab_scrubbed)]
+    #new_oov = oov.split()
     cv = CountVectorizer(ngram_range=(1,1), vocabulary=oov)
-    X = cv.fit_transform(my_doc)
+    X = cv.fit_transform([vocab_scrubbed])
     Xc = (X.T * X)
     Xc.setdiag(0)
     coocc_arr = Xc.toarray()
     return coocc_arr
 
 def train_mittens(coocc_arr, oov, embed):
+    #oov_new = oov.split()
+    print(len(embed))
     model = Mittens(n=300, max_iter=1000)
     new_embed = model.fit(
         coocc_arr,
@@ -85,6 +98,7 @@ def train_mittens(coocc_arr, oov, embed):
     )
     result_embed = dict(zip(oov, new_embed))
     embed.update(result_embed)
+    print(len(embed))
     return embed
 
 def create_kv_from_embed(embed):
@@ -100,16 +114,20 @@ def load_kv(path2model):
     return kv
 
 def search(searched_words, kv, num_results, vocab):
+    n = 10000
     result_words = []
     skipwords = []
-    lemmatizer = WordNetLemmatizer()
+    #lemmatizer = WordNetLemmatizer()
+    if vocab:
+        vocab_list = vocab.split()
     for word in searched_words:
         # for each word do the search
         # TODO: GET RID OF STOP WORDS IN RESULTS
         # GET RID OF STOP WORDS IN MODEL ALTOGETHER? COULD MAKE IT SMALLER
         # search for more words than we need because we are filtering by words in our vocab
         try:
-            similar_words = kv.most_similar(positive=word, topn=10000)
+            similar_words = kv.most_similar(positive=word, topn=n)
+            print(len(similar_words))
         except:
             # word not in model, probably misspelled or super weird obscure word
             # just skip it
@@ -121,7 +139,8 @@ def search(searched_words, kv, num_results, vocab):
         for sim_word, sim_val in similar_words:
             # TODO: deal with lemmatization?
             if vocab:
-                if sim_word in vocab and sim_word not in result_words and sim_word not in searched_words:
+                #print(sim_word)
+                if sim_word in vocab_list and sim_word not in result_words and sim_word not in searched_words:
                     result_words.append(sim_word)
                     count+=1
                 if count == num_results:
@@ -132,10 +151,28 @@ def search(searched_words, kv, num_results, vocab):
                     count+=1
                 if count == num_results:
                     break
-                
-    
-    #result_words = list(set(result_words))
-    #print(result_words)
+    print(result_words)
+    if len(result_words) == 1:
+        # didn't get enough results
+        # do again with like all the words
+        similar_words = kv.most_similar(result_words[0],topn=400000)
+        print(len(similar_words))
+        for sim_word, sim_val in similar_words:
+            # TODO: deal with lemmatization?
+            if vocab:
+                #print(sim_word)
+                if sim_word in vocab_list and sim_word not in result_words and sim_word not in searched_words:
+                    result_words.append(sim_word)
+                    count+=1
+                if count == num_results:
+                    break
+            else:
+                if sim_word not in result_words and sim_word not in searched_words:
+                    result_words.append(sim_word)
+                    count+=1
+                if count == num_results:
+                    break
+
     # NUMPY ARRAYS: (ROW, COLUMN) OR [ROW][COLUMN]
     nrows = len(result_words)
     ncols = nrows+1
@@ -204,6 +241,7 @@ def inspect_node(word, searched_words, user_notes, kv, num_results):
 
 if __name__ == "__main__":
     # Define paths to various sources
+    # TODO: Change these to relative paths
     path2notes = r"C:/Users/clair/Documents/Year 5/ECE 493/Project/Testing_ML/Study notes.docx"
     path2glovetxt = r"C:/Users/clair/Documents/Year 5/ECE 493/Project/Testing_ML/glove.6B.300d.txt"
     path2glovepickle = "glove_embed.pkl"
