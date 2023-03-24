@@ -101,6 +101,22 @@ def create_notebook(request):
     else:
         return HttpResponse("Notebook creation failed")
     
+def delete_notebook(request):
+    """Deletes a notebook and all notes associated with it."""
+    if not request.user.is_authenticated:
+        return redirect('login')
+    if request.method == 'POST':
+        # Get the notebook name from the request
+        notebook = request.POST['notebook']
+        # Get the owner from the request
+        owner = request.user
+        # Delete the Notebook
+        notebook = Notebook.objects.get(id=notebook)
+        notebook.delete()
+        # Return a response
+        return HttpResponse("Notebook deleted successfully")
+
+    
 # Do we need this to return a register page or does Django have a built in register route?
 def register(request):
     if request.user.is_authenticated:
@@ -138,13 +154,15 @@ def search_results(request):
     else:
         spellcheck = False
 
-    if notesonly:
-        # load scrubbed vocab for this notebook
-        vocab = ml.load_embeddings(r"C:\Users\clair\Documents\Year 5\ECE 493\Project\Testing_ML\mapmind\mm\mmapp\src\ML\vocab_scrubbed.pkl")
-    else:
-        vocab = None
+    # load scrubbed vocab for this notebook
+    print("BASE_DIR", BASE_DIR)
+    print(os.path.join(BASE_DIR, 'mmapp/src/ML/vocab_scrubbed.pkl'))
+    # TODO: Unable to load vocab_scrubbed.pkl as it doesn't exist
+    vocab = ml.load_embeddings(os.path.join(BASE_DIR, 'mmapp/src/ML/vocab_scrubbed.pkl'))
     # load keyedvectors object for this notebook
-    kv = ml.load_kv(r"C:\Users\clair\Documents\Year 5\ECE 493\Project\Testing_ML\mapmind\mm\mmapp\src\ML\finetuned_embed.kv")
+    print(os.path.join(BASE_DIR, "mmapp/src/ML/finetuned_embed.kv"))
+    # TODO: Unable to load finetuned_embed.kv as it doesn't exist
+    kv = ml.load_kv(os.path.join(BASE_DIR, "mmapp/src/ML/finetuned_embed.kv"))
     
     # spell check
     spell_checked = {}
@@ -178,3 +196,18 @@ def search_results(request):
     }
 
     return render(request, "search/search_results.html", context)
+
+def results(request):
+    if not request.user.is_authenticated:
+        return redirect('login')
+    # Get the user
+    user = request.user
+    # Get the user's notebooks
+    notebooks = Notebook.objects.filter(owner=user)
+    # Get the user's notes
+    notes = Note.objects.filter(owner=user)
+    context = {
+        'notebooks': notebooks,
+        'notes': notes
+    }
+    return render(request, "search/results.html", context)
