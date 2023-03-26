@@ -37,11 +37,13 @@ def index(request):
     # Render the index page
     return render(request, 'mmapp/index.html', context)
 
+
 # Redirect to Django provided login page
 def login(request):
     if request.user.is_authenticated:
         return redirect('index')
     return redirect('login')
+
 
 # https://stackoverflow.com/questions/3222549/how-to-automatically-login-a-user-after-registration-in-django
 def register(request):
@@ -68,6 +70,7 @@ def register(request):
                 )
                 newUser.save()
                 return redirect('login')
+
     
 """
 Receive a file from the user and save it to the database as a Note.
@@ -159,7 +162,6 @@ def edit_notebook(request):
         return redirect('login')
     return HttpResponse(status=200, content="This is the URL where we edit notebooks!")
 
-
 def merge_notebooks(request):
     """Merges notebooks into one notebook."""
     if not request.user.is_authenticated:
@@ -200,6 +202,24 @@ def notebooks(request):
         "notes": notes,
     }
     return render(request, "mmapp/notebooks.html", context)
+
+def delete_notes(request):
+    """Deletes a note."""
+    if not request.user.is_authenticated:
+        return redirect('login')
+    if request.method == 'POST':
+        # Get the notebook name from the request
+        print("Request: ", request.POST)
+        notes = request.POST.getlist('note')
+        # Get the owner from the request
+        owner = request.user
+        # Delete the Notebook
+        for n in notes:
+            n = Note.objects.get(id=n)
+            n.delete()
+        # Return a response
+        print("Notes deleted successfully")
+    return HttpResponse("Notes deleted successfully")
 
 # Placeholder response for now
 def settings(request):
@@ -258,7 +278,7 @@ def search(request):
     return HttpResponse(template.render())
 
 def search_results(request):
-    template = loader.get_template("search/search_results.html")
+    template = loader.get_template("search/results.html")
     if request.method == 'GET' and request.GET.get("search_words"):
         query = request.GET.get("search_words").split()
     if 'notesonly' in request.GET:
@@ -316,17 +336,3 @@ def search_results(request):
     }
     return render(request, "search/results.html", context)
 
-def results(request):
-    if not request.user.is_authenticated:
-        return redirect('login')
-    # Get the user
-    user = request.user
-    # Get the user's notebooks
-    notebooks = Notebook.objects.filter(owner=user)
-    # Get the user's notes
-    notes = Note.objects.filter(owner=user)
-    context = {
-        'notebooks': notebooks,
-        'notes': notes
-    }
-    return render(request, "search/results.html", context)
