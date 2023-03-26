@@ -4,15 +4,13 @@ import time
 import random
 
 # Define the Fruchterman-Reingold algorithm
-def fruchterman_reingold(cosine_similarities, dim=3, iterations=50, k=None, temperature=1.0, cooling_factor=0.95):
-    # Set default value for k
-    """ if k is None:
-        k = np.sqrt(1.0 / len(cosine_similarities)) """
+def fruchterman_reingold(cosine_similarities, dim=3, iterations=50, temperature=1.0, cooling_factor=0.95):
+
     # Initialize the positions randomly in a 3D space
     positions = np.random.rand(len(cosine_similarities), dim)
     # Calculate the initial distance matrix
     distances = np.sqrt(np.sum((positions[:, np.newaxis, :] - positions[np.newaxis, :, :]) ** 2, axis=-1))
-    #print(cosine_similarities)
+
     # Apply the Fruchterman-Reingold algorithm
     for _ in range(iterations):
         # Calculate the attractive and repulsive forces

@@ -43,7 +43,6 @@ def process_user_notes(notefile, keys):
         text_f = TextIOWrapper(notefile, encoding='utf-8')
         notes_str = text_f.read()
         notes_str = notes_str.translate(translator)
-        print(notes_str.split())
         for word in notes_str.split():
             word = word.strip('-')
             corpus += word.lower()
@@ -88,8 +87,6 @@ def create_cooccurrence(vocab_scrubbed, oov):
     return coocc_arr
 
 def train_mittens(coocc_arr, oov, embed):
-    #oov_new = oov.split()
-    print(len(embed))
     model = Mittens(n=300, max_iter=1000)
     new_embed = model.fit(
         coocc_arr,
@@ -98,7 +95,6 @@ def train_mittens(coocc_arr, oov, embed):
     )
     result_embed = dict(zip(oov, new_embed))
     embed.update(result_embed)
-    print(len(embed))
     return embed
 
 def create_kv_from_embed(embed):
@@ -117,17 +113,13 @@ def search(searched_words, kv, num_results, vocab):
     n = 10000
     result_words = []
     skipwords = []
-    #lemmatizer = WordNetLemmatizer()
     if vocab:
         vocab_list = vocab.split()
     for word in searched_words:
         # for each word do the search
-        # TODO: GET RID OF STOP WORDS IN RESULTS
-        # GET RID OF STOP WORDS IN MODEL ALTOGETHER? COULD MAKE IT SMALLER
         # search for more words than we need because we are filtering by words in our vocab
         try:
             similar_words = kv.most_similar(positive=word, topn=n)
-            print(len(similar_words))
         except:
             # word not in model, probably misspelled or super weird obscure word
             # just skip it
@@ -137,9 +129,7 @@ def search(searched_words, kv, num_results, vocab):
             result_words.append(word)
         count = 0
         for sim_word, sim_val in similar_words:
-            # TODO: deal with lemmatization?
             if vocab:
-                #print(sim_word)
                 if sim_word in vocab_list and sim_word not in result_words and sim_word not in searched_words:
                     result_words.append(sim_word)
                     count+=1
@@ -151,16 +141,12 @@ def search(searched_words, kv, num_results, vocab):
                     count+=1
                 if count == num_results:
                     break
-    print(result_words)
     if len(result_words) == 1:
         # didn't get enough results
         # do again with like all the words
         similar_words = kv.most_similar(result_words[0],topn=400000)
-        print(len(similar_words))
         for sim_word, sim_val in similar_words:
-            # TODO: deal with lemmatization?
             if vocab:
-                #print(sim_word)
                 if sim_word in vocab_list and sim_word not in result_words and sim_word not in searched_words:
                     result_words.append(sim_word)
                     count+=1
@@ -175,17 +161,14 @@ def search(searched_words, kv, num_results, vocab):
 
     # NUMPY ARRAYS: (ROW, COLUMN) OR [ROW][COLUMN]
     nrows = len(result_words)
-    ncols = nrows+1
 
     results_matrix = np.zeros(shape=(nrows,nrows), dtype=object)
 
     # now we have list of all the words that will be displayed
     for i in range(nrows):
-        #results_matrix[i][0] = result_words[i]
         for j in range(nrows):
             results_matrix[i][j] = kv.similarity(result_words[i],result_words[j])
 
-    print(result_words)
     return results_matrix, result_words, skipwords
 
 def inspect_node(word, searched_words, user_notes, kv, num_results):
@@ -193,7 +176,6 @@ def inspect_node(word, searched_words, user_notes, kv, num_results):
     searched_words_dict = {}
     clicked_word = [i for i,x in enumerate(user_notes) if x==word]
     # which word is closest?
-    best_similarity = -100
     search_sorted_by_sim = []
     for search in searched_words:
         sim = kv.similarity(word, search)
@@ -201,7 +183,6 @@ def inspect_node(word, searched_words, user_notes, kv, num_results):
         searched_words_dict[search] = [i for i, x in enumerate(user_notes) if x == search]
 
     search_sorted_by_sim.sort(key=lambda a: a[1], reverse=True)
-    print(search_sorted_by_sim)
 
     # start with most similar search term and then go down from there
     results = []
@@ -213,14 +194,12 @@ def inspect_node(word, searched_words, user_notes, kv, num_results):
     # IF WE WANT TO SORT RESULTS BY ONES THAT ARE CLOSE TO THE SEARCHED WORDS, KEEP THIS UNCOMMENTED
     while (i < len(clicked_word) and k < len(search_sorted_by_sim)):
         compare_indices = searched_words_dict[search_sorted_by_sim[k][0]]
-        #print(compare_indices)
         if j == len(compare_indices):
             j = 0
             i=0
             k += 1
             continue
         if abs(clicked_word[i] - compare_indices[j]) < thresh:
-            #print(clicked_word[i], compare_indices[j])
             # found some that are close
             if user_notes[clicked_word[i]-10:clicked_word[i]+10] not in results:
                 results.append(user_notes[clicked_word[i]-10:clicked_word[i]+10])
@@ -234,10 +213,11 @@ def inspect_node(word, searched_words, user_notes, kv, num_results):
 
     # JUST USE THIS PART IF WE WANT TO JUST DO A BASIC SEARCH OF THE CLICKED WORD IN THE NOTES
     # DON'T COMMENT THIS OUT THO WE NEED IT WITH THE WHILE LOOP
-    if len(results) < num_results:
-        for i in clicked_word:
-            results.append(user_notes[i-10:i+10])
-    print(results)  
+    i = 0
+    while len(results) < num_results and i < len(clicked_word):
+        results.append(user_notes[i-10:i+10])
+        i += 1
+    return results
 
 if __name__ == "__main__":
     # Define paths to various sources
