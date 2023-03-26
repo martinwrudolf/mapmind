@@ -1,0 +1,39 @@
+<!-- https://www.w3schools.com/howto/howto_js_popup.asp -->
+<!-- https://www.w3schools.com/jsref/met_win_confirm.asp -->
+<p>Edit your username, email, and password</p>
+<form method="POST" action="{% url 'edit_username' %}">
+    {% csrf_token %}
+    <label for="username">Username: </label><input type="text" 
+                                                   name="username" 
+                                                   value="{{user.username}}"
+                                                   required></input>
+    <br>
+    <input type="submit" value="Edit Username">
+</form>
+<form method="POST" action="{% url 'edit_email' %}">
+    {% csrf_token %}
+    <label for="email">Email: </label> <input type="email" 
+                                              name="email" 
+                                              required
+                                              value="{{user.email}}"></input>
+    <br>
+    <input type="submit" value="Edit Email">
+</form> 
+<p><a href="{% url 'password_reset' %}">Reset your password here</a></p>
+<button onclick="deleteAccount()">Delete Account</button>
+<script>
+    function deleteAccount() {
+        if (confirm("Are you sure you want to delete your account?")) {
+            fetch("/delete_account", {
+                method: "POST",
+                headers: {
+                    "X-CSRFToken": "{{ csrf_token }}"
+                }
+            }).then((response) => {
+                if (response.status == 302) {
+                    window.location.reload();
+                }
+            })
+        }
+    };
+</script>

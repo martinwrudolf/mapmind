@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- Bootstrap CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC"
+      crossorigin="anonymous"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.0/css/all.min.css"
+      integrity="sha384-KyZXEAg3QhqLMpG8r+Knujsl5/a1H3wzLl9x3XZrUJr59lW6pXb5JNp3gHy7hE4j"
+      crossorigin="anonymous"
+    />
+    <link rel="stylesheet" href="../styles.css" />
+    <title>MapMind</title>
+  </head>
+  <body>
+    <div class="container">
+      <div class="row">
+        <div class="col-12 text-center mt-3">
+          <button
+            class="btn btn-primary w-50 dropdown-toggle rounded"
+            type="button"
+            id="dropdownMenuButton"
+            data-bs-toggle="dropdown"
+            aria-expanded="false"
+          >
+            Select Notebook
+          </button>
+          <ul
+            class="dropdown-menu dropdown-menu-center mt-2 rounded w-50 mx-auto"
+            aria-labelledby="dropdownMenuButton"
+          >
+            <li>
+              <!-- Create Notebook -->
+              <form action="{% url 'create_notebook' %}" method="post">
+                {% csrf_token %}
+                <div>
+                  <label for="notebook">Name</label>
+                  <input
+                    type="text"
+                    id="notebook"
+                    name="notebook"
+                    class="form-control rounded"
+                    placeholder="Create New Notebook"
+                  />
+                </div>
+                <div>
+                  <button>Submit</button>
+                </div>
+              </form>
+            </li>
+            <li><hr class="dropdown-divider" /></li>
+            <div>
+              {% for notebook in notebooks %}
+              <l value="{{ notebook.id }}">
+                <a class="dropdown-item" href="#" value="{{ notebook.id }}"
+                  >{{ notebook.name }}</a
+                >
+                <!-- Delete Notebook -->
+                <form
+                  action="{% url 'delete_notebook' %}"
+                  method="post"
+                  value="{{ notebook.id }}"
+                >
+                  {% csrf_token %}
+                  <div>
+                    <button name="notebook" value="{{ notebook.id }}">Delete</button>
+                  </div>
+                </form>
+              </li>
+              {% endfor %}
+            </div>
+          </ul>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-8">
+          <div id="viewbox" style="height: 400px; width: 300px"></div>
+        </div>
+        <div class="col-md-4">
+          <ul class="list-group my-5 mx-2 rounded" id="sidebar">
+            <!-- <li class="list-group-item rounded">Item 1</li>
+            <li class="list-group-item rounded">Item 2</li>
+            <li class="list-group-item rounded">Item 3</li>
+            <li class="list-group-item rounded">Item 4</li> -->
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="search-bar">
+      <form
+        class="d-flex justify-content-center mb-5"
+        action="{% url 'results' %}"
+        method="get"
+      >
+        <input
+          type="text"
+          id="search_words"
+          name="search_words"
+          class="form-control w-50 rounded"
+          placeholder="Search..."
+        />
+        <button type="submit" class="btn btn-primary ms-2 rounded">
+          Search
+        </button>
+      </form>
+    </div>
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+      crossorigin="anonymous"
+    ></script>
+    <script async src="https://unpkg.com/es-module-shims@1.3.6/dist/es-module-shims.js"></script>
+<script type="importmap">
+    {
+        "imports": {
+  "three": "https://unpkg.com/three@0.138.3/build/three.module.js",
+  "three/addons/": "https://unpkg.com/three@0.138.3/examples/jsm/"
+}
+}
+</script>
+<script type="module">
+import * as THREE from 'three';
+import {FontLoader} from 'three/addons/loaders/FontLoader.js'
+import {TextGeometry} from 'three/addons/geometries/TextGeometry.js'
+import { Vector3 } from 'three';
+// Spherical coordinates of camera
+var theta = 0;
+var phi = 90;
+var dis = 20;
+
+// Function that computes the new position of the camera after a rotation or zoom
+function computeNewCameraPostion() {
+    camera.position.x = dis * Math.sin(phi * (Math.PI / 180)) * Math.sin(theta * (Math.PI / 180));
+    camera.position.z = dis * Math.sin(phi * (Math.PI / 180)) * Math.cos(theta * (Math.PI / 180));
+    camera.position.y = dis * Math.cos(phi * (Math.PI / 180));
+    console.log(camera.position.x + " " + camera.position.y  + " "    + camera.position.z);
+};
+
+// Rotation logic
+document.addEventListener("keydown", (event) => {
+    if (event.key == "ArrowLeft") {
+        theta -= 1;
+        computeNewCameraPostion();
+        camera.lookAt(0,0,0);
+    }
+    else if (event.key == "ArrowRight") {
+        theta += 1;
+        computeNewCameraPostion();
+        camera.lookAt(0,0,0);
+    }
+    else if (event.key == "ArrowUp") {
+        phi -= 1;
+        console.log(phi);
+        if (phi <= 0) {
+            phi = 1;
+        }
+        computeNewCameraPostion();
+        camera.lookAt(0,0,0);
+    }
+      else if (event.key == "ArrowDown") {
+        phi += 1;
+        console.log(phi);
+        if (phi >= 180) {
+            phi = 179;
+        }
+        computeNewCameraPostion();
+        camera.lookAt(0,0,0);
+    }
+});
+
+// For zooming in and out with scroll wheel
+document.addEventListener("wheel", (event) => {
+    dis += 0.001 * event.deltaY;
+    // min zoom
+    if (dis < 5.0) {
+      dis = 5;
+    }
+    // max zoom
+    else if (dis > 50.0) {
+      dis = 50;
+    }
+    computeNewCameraPostion();
+    camera.lookAt(0,0,0);
+});
+
+var div = document.getElementById("viewbox");
+const scene = new THREE.Scene();
+scene.background = new THREE.Color('skyblue');
+const camera = new THREE.PerspectiveCamera( 75, div.clientWidth / div.clientHeight, 0.1, 6000);
+const renderer = new THREE.WebGLRenderer();
+const raycaster = new THREE.Raycaster();
+renderer.setSize(div.clientWidth, div.clientHeight );
+div.appendChild(renderer.domElement);
+
+// const geometry = new THREE.BoxGeometry( 1, 1, 1 );
+// const material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
+// const cube = new THREE.Mesh( geometry, material );
+// scene.add( cube );
+
+const axesHelper = new THREE.AxesHelper(dis);
+scene.add(axesHelper);
+
+computeNewCameraPostion();
+camera.lookAt(0,0,0);
+
+const loader = new FontLoader();
+loader.load('https://unpkg.com/three@0.138.3/examples/fonts/helvetiker_regular.typeface.json', generateText);
+
+var meshes = [];
+var searched_terms = [];
+
+function generateText(font) {
+    //https://stackoverflow.com/questions/43305020/how-to-use-the-context-variables-passed-from-django-in-javascript
+    var list = JSON.parse('{{words_pos|escapejs}}')
+    console.log(list);
+    for (let i = 0; i < list.length; i++) {
+        const geometry = new TextGeometry(list[i].string, {
+            font: font,
+            size: 1,
+            height: 1,
+        });
+        const textMesh = new THREE.Mesh(geometry);
+        textMesh.position.x = 5 * list[i].pos[0];
+        textMesh.position.y = 5 * list[i].pos[2];
+        textMesh.position.z = 5 * list[i].pos[1];
+        textMesh.userData = list[i].string;
+        searched_terms.push(list[i].string);
+        scene.add(textMesh);
+        meshes.push(textMesh);
+        textMesh.lookAt(camera.position);
+    }
+
+    div.addEventListener("mousedown", mouseDown);
+
+function generateSidebar(results) {
+  var sidebar = document.getElementById("sidebar");
+  sidebar.innerHTML = "";
+  for (let result of results) {
+      let newRow = document.createElement("li");
+      newRow.className = "list-group-item rounded";
+      newRow.textContent = escapeHtml(result);
+      sidebar.appendChild(newRow);
+  }
+};
+
+// https://stackoverflow.com/questions/6234773/can-i-escape-html-special-chars-in-javascript
+function escapeHtml(unsafe)
+{
+    return unsafe
+         .replace(/&/g, "&amp;")
+         .replace(/</g, "&lt;")
+         .replace(/>/g, "&gt;")
+         .replace(/"/g, "&quot;")
+         .replace(/'/g, "&#039;");
+ };
+
+function mouseDown(event) {
+    // https://stackoverflow.com/questions/34892328/detection-with-raycaster-not-completely-accurate-when-the-width-of-div-is-reduce
+    var rect = renderer.domElement.getBoundingClientRect();
+    const mouse = new THREE.Vector2();
+    mouse.x = ( (event.clientX - rect.left) / renderer.domElement.clientWidth ) * 2 - 1;
+    mouse.y = - ( (event.clientY - rect.top) / renderer.domElement.clientHeight ) * 2 + 1;
+    raycaster.setFromCamera(mouse, camera);
+    const intersects = raycaster.intersectObjects(meshes, false);
+    if (intersects.length > 0) {
+        console.log();
+        generateSidebar(["hello", "world", "item", "yes"])
+        // var request = new XMLHttpRequest();
+        // request.open("GET", "/inspect_node");
+        // request.onreadystatechange = function () {
+        //     if (request.readyState == 4) {
+        //         if (request.status==200) {
+        //           let obj = JSON.parse(request.responseText);
+        //         }
+        //     }
+        // };
+        // request.send();       
+    }
+};
+    function animate() {
+	requestAnimationFrame( animate );
+	renderer.render( scene, camera );
+};
+animate();
+};
+</script>
+  </body>
+</html>

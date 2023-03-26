@@ -87,19 +87,19 @@ scene.background = new THREE.Color('skyblue');
 const camera = new THREE.PerspectiveCamera( 75, div.clientWidth / div.clientHeight, 0.1, 6000);
 const renderer = new THREE.WebGLRenderer();
 const raycaster = new THREE.Raycaster();
+raycaster.params.Mesh.threshold = 1;
 renderer.setSize(div.clientWidth, div.clientHeight );
 div.appendChild(renderer.domElement);
 
 // for centering, for now
 const geometry = new THREE.BoxGeometry( 1, 1, 1 );
-console.log(geometry);
 const material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
 const cube = new THREE.Mesh( geometry, material );
 scene.add( cube );
 console.log(cube);
 
-const axesHelper = new THREE.AxesHelper(dis);
-scene.add(axesHelper);
+// const axesHelper = new THREE.AxesHelper(dis);
+// scene.add(axesHelper);
 
 computeNewCameraPostion();
 camera.lookAt(0,0,0);
@@ -187,13 +187,18 @@ function generateText(font) {
 div.addEventListener("mousedown", mouseDown);
 
 function mouseDown(event) {
-    var mouse = new THREE.Vector2();
-    mouse.x = ( event.clientX / renderer.domElement.clientWidth ) * 2 - 1;
-    mouse.y = - ( event.clientY / renderer.domElement.clientHeight ) * 2 + 1;
+    console.log(event);
+    var rect = renderer.domElement.getBoundingClientRect();
+    const mouse = new THREE.Vector2();
+    console.log(rect.left);
+    console.log(rect.top);
+    mouse.x = ( (event.clientX - rect.left) / renderer.domElement.clientWidth ) * 2 - 1;
+    mouse.y = - ( (event.clientY - rect.top) / renderer.domElement.clientHeight ) * 2 + 1;
+    console.log(event.clientX + " " + (event.clientY - rect.top));
     raycaster.setFromCamera(mouse, camera);
-    var intersects = raycaster.intersectObjects(scene.children, false);
+ 
+    const intersects = raycaster.intersectObjects(scene.children, true);
     console.log(mouse);
-    // console.log(scene.children);
     if (intersects.length > 0) {
         sendInspectRequest(intersects[0]);
     }

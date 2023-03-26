@@ -1,4 +1,5 @@
 <h1>Search Results</h1>
+<div id="viewbox" style="width: 300px; height: 400px"></div>
 <script async src="https://unpkg.com/es-module-shims@1.3.6/dist/es-module-shims.js"></script>
 <script type="importmap">
     {
@@ -8,9 +9,126 @@
 }
 }
 </script>
-<script>
+<script type="module">
 import * as THREE from 'three';
 import {FontLoader} from 'three/addons/loaders/FontLoader.js'
 import {TextGeometry} from 'three/addons/geometries/TextGeometry.js'
 import { Vector3 } from 'three';
+// Spherical coordinates of camera
+var theta = 0;
+var phi = 90;
+var dis = 20;
+
+// Function that computes the new position of the camera after a rotation or zoom
+function computeNewCameraPostion() {
+    camera.position.x = dis * Math.sin(phi * (Math.PI / 180)) * Math.sin(theta * (Math.PI / 180));
+    camera.position.z = dis * Math.sin(phi * (Math.PI / 180)) * Math.cos(theta * (Math.PI / 180));
+    camera.position.y = dis * Math.cos(phi * (Math.PI / 180));
+    console.log(camera.position.x + " " + camera.position.y  + " "    + camera.position.z);
+};
+
+// Rotation logic
+document.addEventListener("keydown", (event) => {
+    if (event.key == "ArrowLeft") {
+        theta -= 1;
+        computeNewCameraPostion();
+        camera.lookAt(0,0,0);
+    }
+    else if (event.key == "ArrowRight") {
+        theta += 1;
+        computeNewCameraPostion();
+        camera.lookAt(0,0,0);
+    }
+    else if (event.key == "ArrowUp") {
+        phi -= 1;
+        console.log(phi);
+        if (phi <= 0) {
+            phi = 1;
+        }
+        computeNewCameraPostion();
+        camera.lookAt(0,0,0);
+    }
+      else if (event.key == "ArrowDown") {
+        phi += 1;
+        console.log(phi);
+        if (phi >= 180) {
+            phi = 179;
+        }
+        computeNewCameraPostion();
+        camera.lookAt(0,0,0);
+    }
+});
+
+// For zooming in and out with scroll wheel
+document.addEventListener("wheel", (event) => {
+    dis += 0.001 * event.deltaY;
+    // min zoom
+    if (dis < 5.0) {
+      dis = 5;
+    }
+    // max zoom
+    else if (dis > 50.0) {
+      dis = 50;
+    }
+    computeNewCameraPostion();
+    camera.lookAt(0,0,0);
+});
+
+var div = document.getElementById("viewbox");
+const scene = new THREE.Scene();
+scene.background = new THREE.Color('skyblue');
+const camera = new THREE.PerspectiveCamera( 75, div.clientWidth / div.clientHeight, 0.1, 6000);
+const renderer = new THREE.WebGLRenderer();
+const raycaster = new THREE.Raycaster();
+renderer.setSize(div.clientWidth, div.clientHeight );
+div.appendChild(renderer.domElement);
+
+// for centering, for now
+const geometry = new THREE.BoxGeometry( 1, 1, 1 );
+const material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
+const cube = new THREE.Mesh( geometry, material );
+scene.add( cube );
+
+const axesHelper = new THREE.AxesHelper(dis);
+scene.add(axesHelper);
+
+computeNewCameraPostion();
+camera.lookAt(0,0,0);
+
+const loader = new FontLoader();
+loader.load('https://unpkg.com/three@0.138.3/examples/fonts/helvetiker_regular.typeface.json', generateText);
+
+var meshes = [];
+
+function generateText(font) {
+    //https://stackoverflow.com/questions/43305020/how-to-use-the-context-variables-passed-from-django-in-javascript
+    var list = JSON.parse('{{words_pos|escapejs}}')
+    console.log(list);
+    for (let i = 0; i < list.length; i++) {
+        const geometry = new TextGeometry(list[i].string, {
+            font: font,
+            size: 1,
+            height: 1,
+        });
+        // console.log(geometry);
+        const textMesh = new THREE.Mesh(geometry);
+        // add model endpoint assiocated with string, do we need this?
+        // textMesh.userData = {URL: "http://"+location.host+"/api/inspect/" + list[i].string}
+        textMesh.position.x = list[i].pos[0];
+        textMesh.position.y = list[i].pos[2];
+        textMesh.position.z = list[i].pos[1];
+        scene.add(textMesh);
+        meshes[i] = textMesh;
+        // textMesh.rotation.x = 0;
+        // textMesh.rotation.y = 0;
+        // textMesh.rotation.z = 0;
+        textMesh.lookAt(camera.position);
+    }
+};
+
+function animate() {
+	requestAnimationFrame( animate );
+	renderer.render( scene, camera );
+};
+animate();
 </script>
