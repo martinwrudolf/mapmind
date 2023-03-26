@@ -204,6 +204,7 @@ def inspect_node(word, searched_words, user_notes, kv, num_results):
 
 if __name__ == "__main__":
     # Define paths to various sources
+    # TODO: Change these to relative paths
     path2notes = r"C:/Users/clair/Documents/Year 5/ECE 493/Project/Testing_ML/Study notes.docx"
     path2glovetxt = r"C:/Users/clair/Documents/Year 5/ECE 493/Project/Testing_ML/glove.6B.300d.txt"
     path2glovepickle = "glove_embed.pkl"

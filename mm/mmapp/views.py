@@ -101,6 +101,42 @@ def create_notebook(request):
     else:
         return HttpResponse("Notebook creation failed")
     
+def delete_notebook(request):
+    """Deletes a notebook and all notes associated with it."""
+    if not request.user.is_authenticated:
+        return redirect('login')
+    if request.method == 'POST':
+        # Get the notebook name from the request
+        print("Request: ", request.POST)
+        notebook = request.POST['notebook']
+        # Get the owner from the request
+        owner = request.user
+        # Delete the Notebook
+        notebook = Notebook.objects.get(id=notebook)
+        notebook.delete()
+        # Return a response
+    return HttpResponse("Notebook deleted successfully")
+
+def delete_notes(request):
+    """Deletes a note."""
+    if not request.user.is_authenticated:
+        return redirect('login')
+    if request.method == 'POST':
+        # Get the notebook name from the request
+        print("Request: ", request.POST)
+        notes = request.POST.getlist('note')
+        # Get the owner from the request
+        owner = request.user
+        # Delete the Notebook
+        for n in notes:
+            n = Note.objects.get(id=n)
+            n.delete()
+        # Return a response
+        print("Notes deleted successfully")
+    return HttpResponse("Notes deleted successfully")
+
+
+    
 # Do we need this to return a register page or does Django have a built in register route?
 def register(request):
     if request.user.is_authenticated:
@@ -114,11 +150,54 @@ def edit_notebook(request):
         # return redirect('login')
     return HttpResponse(status=200, content="This is the URL where we edit notebooks!")
 
+
+def merge_notebooks(request):
+    """Merges notebooks into one notebook."""
+    if not request.user.is_authenticated:
+        return redirect('login')
+    if request.method == 'POST':
+        # Get the notebook name from the request
+        notebooks = request.POST.getlist('notebooks')
+        merged_notebook_name = request.POST['merged_notebook_name']
+        print("Notebooks: ", notebooks)
+        print("Merged notebook name: ", merged_notebook_name)
+        # Get the owner from the request
+        owner = request.user
+        # Create a new Notebook
+        notebook = Notebook(name=merged_notebook_name, owner=owner)
+        # Save the Notebook
+        notebook.save()
+        # Return a response
+        for n in notebooks:
+            n = Notebook.objects.get(id=n)
+            notes = Note.objects.filter(notebooks=n)
+            for note in notes:
+                new_note = Note(file_name=note.file_name, 
+                        file_content=note.file_content, 
+                        file_type=note.file_type, 
+                        owner=owner,
+                        notebooks=notebook)
+                new_note.save()
+        return HttpResponse("Notebooks merged successfully")
+
+def notebooks(request):
+    if not request.user.is_authenticated:
+        return redirect('login')
+    owner = request.user
+    notebooks = Notebook.objects.filter(owner=owner)
+    notes = Note.objects.filter(owner=owner)
+    context = {
+        "notebooks": notebooks,
+        "notes": notes,
+    }
+    return render(request, "mmapp/notebooks.html", context)
+
 # Placeholder response for now
 def settings(request):
     if not request.user.is_authenticated:
         return redirect('login')
     return HttpResponse(status=200, content="This is the URL where the settings page will be!")
+
 def search(request):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -138,13 +217,15 @@ def search_results(request):
     else:
         spellcheck = False
 
-    if notesonly:
-        # load scrubbed vocab for this notebook
-        vocab = ml.load_embeddings(r"C:\Users\clair\Documents\Year 5\ECE 493\Project\Testing_ML\mapmind\mm\mmapp\src\ML\vocab_scrubbed.pkl")
-    else:
-        vocab = None
+    # load scrubbed vocab for this notebook
+    print("BASE_DIR", BASE_DIR)
+    print(os.path.join(BASE_DIR, 'mmapp/src/ML/vocab_scrubbed.pkl'))
+    # TODO: Unable to load vocab_scrubbed.pkl as it doesn't exist
+    vocab = ml.load_embeddings(os.path.join(BASE_DIR, 'mmapp/src/ML/vocab_scrubbed.pkl'))
     # load keyedvectors object for this notebook
-    kv = ml.load_kv(r"C:\Users\clair\Documents\Year 5\ECE 493\Project\Testing_ML\mapmind\mm\mmapp\src\ML\finetuned_embed.kv")
+    print(os.path.join(BASE_DIR, "mmapp/src/ML/finetuned_embed.kv"))
+    # TODO: Unable to load finetuned_embed.kv as it doesn't exist
+    kv = ml.load_kv(os.path.join(BASE_DIR, "mmapp/src/ML/finetuned_embed.kv"))
     
     # spell check
     spell_checked = {}
@@ -178,3 +259,18 @@ def search_results(request):
     }
 
     return render(request, "search/search_results.html", context)
+
+def results(request):
+    if not request.user.is_authenticated:
+        return redirect('login')
+    # Get the user
+    user = request.user
+    # Get the user's notebooks
+    notebooks = Notebook.objects.filter(owner=user)
+    # Get the user's notes
+    notes = Note.objects.filter(owner=user)
+    context = {
+        'notebooks': notebooks,
+        'notes': notes
+    }
+    return render(request, "search/results.html", context)

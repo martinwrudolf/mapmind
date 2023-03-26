@@ -1,16 +1,15 @@
 <!DOCTYPE html>
 <html>
-<!-- Search -->
-<form action="{% url 'search_results' %}" method="get">
-    {% csrf_token %}
+  <!-- Search -->
+  <form action="{% url 'results' %}" method="get">
     <div>
       <label for="search_words">Search</label>
       <input type="text" id="search_words" name="search_words" />
-      <input type="checkbox" id="notesonly" name="notesonly" checked>
+      <input type="checkbox" id="notesonly" name="notesonly" checked />
       <label>Generate words only in your notes?</label>
     </div>
     <div>
-      <input type="checkbox" id="spellcheck" name="spellcheck" checked>
+      <input type="checkbox" id="spellcheck" name="spellcheck" checked />
       <label>Perform spell check?</label>
     </div>
     <div>
