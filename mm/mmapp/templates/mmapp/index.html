@@ -28,7 +28,7 @@
         <button>Submit</button>
       </div>
     </form>
-
+    <br />
     <!-- Delete Notebook -->
     <form action="{% url 'delete_notebook' %}" method="post">
       {% csrf_token %}
@@ -44,7 +44,7 @@
         <button>Delete</button>
       </div>
     </form>
-
+    <br />
     <!-- Upload File-->
     <form
       action="{% url 'upload' %}"
