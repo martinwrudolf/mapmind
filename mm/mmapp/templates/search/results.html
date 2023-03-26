@@ -220,6 +220,9 @@ loader.load('https://unpkg.com/three@0.138.3/examples/fonts/helvetiker_regular.t
 var meshes = [];
 var searched_terms = [];
 
+// setup for when select menu implmented
+// let notebookId = document.getElementById("notebowndropdown").value
+
 function generateText(font) {
     //https://stackoverflow.com/questions/43305020/how-to-use-the-context-variables-passed-from-django-in-javascript
     var list = JSON.parse('{{words_pos|escapejs}}')
@@ -277,16 +280,25 @@ function mouseDown(event) {
     if (intersects.length > 0) {
         console.log();
         generateSidebar(["hello", "world", "item", "yes"])
-        // var request = new XMLHttpRequest();
-        // request.open("GET", "/inspect_node");
-        // request.onreadystatechange = function () {
-        //     if (request.readyState == 4) {
-        //         if (request.status==200) {
-        //           let obj = JSON.parse(request.responseText);
-        //         }
-        //     }
-        // };
-        // request.send();       
+        var request = new XMLHttpRequest();
+        request.open("GET", "/inspect_node");
+        request.onreadystatechange = function () {
+            if (request.readyState == 4) {
+                if (request.status==200) {
+                  let obj = JSON.parse(request.responseText);
+                  generateSidebar(obj);
+                }
+            }
+        };
+     
+        let send_obj_json = {
+          // need the dropdown menu for notebook id
+          // "notebook": notebookId
+          "notebook":"dummynotebookid",
+          "searchedTerms":searched_terms,
+          "searchedWord": intersects[0].obj.userData,
+        }
+        request.send(JSON.stringify(send_obj_json));       
     }
 };
     function animate() {
