@@ -19,7 +19,11 @@
     <br>
     <input type="submit" value="Edit Email">
 </form> 
-<p><a href="{% url 'password_reset' %}">Reset your password here</a></p>
+<form method="POST" action="{% url 'password_reset' %}">
+    {% csrf_token %}
+    <input type="hidden" name="email" value="{{user.email}}">
+    <input type="Submit" value="Reset password">
+</form>
 <button onclick="deleteAccount()">Delete Account</button>
 <script>
     function deleteAccount() {

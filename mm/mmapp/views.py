@@ -5,9 +5,12 @@ from django.http import HttpResponse
 from django.template import loader
 from django.conf import settings
 from django.contrib.auth import authenticate, login
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
 from .models import Note, Notebook, User
 from .src.ML import machine_learning as ml
 from .src.spacing import spacing_alg as sp
+from django.conf import settings
 import json
 import os
 from spellchecker import SpellChecker
@@ -18,6 +21,11 @@ from mm.settings import BASE_DIR
 
 # Password reset
 # https://learndjango.com/tutorials/django-password-reset-tutorial
+# https://www.sitepoint.com/django-send-email/
+# https://www.geeksforgeeks.org/setup-sending-email-in-django-project/
+# https://suhailvs.github.io/blog02.html#mail-setup-on-django-using-gmail
+# https://stackoverflow.com/questions/73422664/django-email-sending-smtp-error-cant-send-a-mail
+# https://stackoverflow.com/questions/10147455/how-to-send-an-email-with-gmail-as-provider-using-python/27515833#27515833
 
 # Index page
 def index(request):
@@ -37,15 +45,15 @@ def index(request):
     # Render the index page
     return render(request, 'mmapp/index.html', context)
 
-
 # Redirect to Django provided login page
 def login(request):
     if request.user.is_authenticated:
         return redirect('index')
     return redirect('login')
 
-
-# https://stackoverflow.com/questions/3222549/how-to-automatically-login-a-user-after-registration-in-django
+# Register page
+# https://docs.djangoproject.com/en/4.1/topics/auth/passwords/#password-validation
+# https://docs.djangoproject.com/en/4.1/topics/settings/
 def register(request):
     if request.method == "GET":
         if request.user.is_authenticated:
@@ -54,6 +62,7 @@ def register(request):
     elif request.method == "POST":
         username = request.POST["username"]
         password = request.POST["password"]
+       
         email = request.POST["email"]
         try:
             user = User.objects.get(username=username)
@@ -68,10 +77,15 @@ def register(request):
                     email,
                     password
                 )
-                newUser.save()
-                return redirect('login')
-
-    
+                try:
+                    validate_password(password, newUser, None)
+                    newUser.save()
+                    return redirect('login')
+                except ValidationError as error:
+                    newUser.delete()
+                    return HttpResponse(str(error.args[0]))
+          
+   
 """
 Receive a file from the user and save it to the database as a Note.
 """
@@ -154,7 +168,6 @@ def delete_notebook(request):
         notebook.delete()
         # Return a response
         return HttpResponse("Notebook deleted successfully")
-
 
 # Placeholder response for now
 def edit_notebook(request):
