@@ -18,11 +18,7 @@
       <hr />
 
       <!-- Notebook creation form -->
-      <form
-        id="notebook-form"
-        action="{% url 'create_notebook' %}"
-        method="post"
-      >
+      <form id="create-notebook-form">
         {% csrf_token %}
         <div class="input-group mb-3">
           <input
@@ -40,12 +36,7 @@
       </form>
       <br />
       <!-- Merge notebooks form -->
-      <form
-        id="merge-notebooks-form"
-        action="{% url 'merge_notebooks' %}"
-        method="post"
-        class="mt-4"
-      >
+      <form id="merge-notebooks-form" method="post" class="mt-4">
         {% csrf_token %}
         <div class="mb-3">
           <select
@@ -118,9 +109,10 @@
               <!-- Add note form -->
               <form
                 class="my-3"
-                action="{% url 'upload' %}"
                 method="post"
+                action="{% url 'upload' %}"
                 enctype="multipart/form-data"
+                id="upload-note-form"
               >
                 {% csrf_token %}
                 <input
@@ -197,6 +189,44 @@
             xhr.setRequestHeader("X-CSRFToken", csrftoken);
           }
         },
+      });
+
+      // Create notebook form event listener
+      $("#create-notebook-form").submit(function (e) {
+        e.preventDefault();
+        const notebookName = $("#notebook").val();
+        console.log(notebookName, "notebookName");
+        $.ajax({
+          url: `{% url 'create_notebook' %}`,
+          type: "POST",
+          data: {
+            notebook: notebookName,
+          },
+          success: function () {
+            location.reload();
+          },
+        });
+      });
+
+      // Merge notebooks form event listener
+      $("#merge-notebooks-form").submit(function (e) {
+        e.preventDefault();
+        // Get the selected notebooks
+        const notebooks = $("#notebooks-select").val();
+        console.log(notebooks, "notebooks");
+        const mergedNotebookName = $("#merged-notebook-name").val();
+        $.ajax({
+          url: `{% url 'merge_notebooks' %}`,
+          type: "POST",
+          data: {
+            notebooks: notebooks,
+            merged_notebook_name: mergedNotebookName,
+          },
+          success: function () {
+            console.log("Success with merging notebooks: ", notebooks);
+            location.reload();
+          },
+        });
       });
 
       // Delete note button event listener
