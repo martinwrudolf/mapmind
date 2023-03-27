@@ -12,7 +12,7 @@ import string
 import compress_pickle as pickle
 import json
 import time
-import os
+import os, sys, glob
 from spellchecker import SpellChecker
 from nltk.stem import WordNetLemmatizer
 import boto3
@@ -171,7 +171,7 @@ def search(searched_words, kv, num_results, vocab):
 
     return results_matrix, result_words, skipwords
 
-def inspect_node(word, searched_words, user_notes, kv, num_results):
+def inspect_node(word, searched_words, user_notes, kv, num_results=10):
     # get indices for all searched words
     searched_words_dict = {}
     clicked_word = [i for i,x in enumerate(user_notes) if x==word]

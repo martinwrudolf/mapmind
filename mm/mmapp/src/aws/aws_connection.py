@@ -24,3 +24,17 @@ def s3_read(s3_client, filename):
     with open('s3://mapmind-ml-models/'+filename, mode='r', transport_params={'client': s3_client}) as f:
         contents = f.read()
     return contents
+
+def notebook_update_files(s3_client, notebook, notes_list):
+    vocab = ""
+    corpus = ""
+    for note in notes_list:
+        vocab += s3_read(s3_client, note.vocab) + " "
+        corpus += s3_read(s3_client, note.corpus) + " "
+    # update notebook text files on s3
+    s3_write(s3_client, notebook.vocab, vocab.strip())
+    s3_write(s3_client, notebook.corpus, corpus.strip())
+
+def move_file(s3_resource, src, dest):
+    s3_resource.Object('mapmind-ml-models', dest).copy_from(CopySource='mapmind-ml-models/' + src)
+    s3_resource.Object('mapmind-ml-models', src).delete()
