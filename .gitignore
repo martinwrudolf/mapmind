@@ -128,3 +128,9 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+#ignore test .pkl files
+corpus.pkl
+finetuned_embed.kv
+finetuned_embed.kv.vectors.npy
+vocab_scrubbed.pkl

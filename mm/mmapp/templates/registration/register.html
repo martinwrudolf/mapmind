@@ -1,0 +1,15 @@
+<p>Enter your username, password, and email: </p>
+<form method="POST" action="{% url 'register' %}">
+    {% csrf_token %}
+    <label for="username">Username: </label><input type="text" name="username" required></input>
+    <br>
+    <label for="password">Password: </label><input type="password" 
+                                                   name="password" 
+                                                   minlength="8"
+                                                   required></input>
+    <br>
+    <label for="email">Email: </label> <input type="email" name="email" required></input>
+    <br>
+    <input type="submit">
+</form>
+<p><a href="{% url 'login' %}">Already have an account? Login here</a></p>
