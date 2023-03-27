@@ -62,6 +62,14 @@ db.sqlite3
 db.sqlite3-journal
 db.sqlite3.dev
 
+# ML model files
+*.pkl
+*.bz
+*.kv
+*.npy
+*.docx
+testnotes.txt
+
 # Flask stuff:
 instance/
 .webassets-cache
@@ -128,3 +136,9 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+#ignore test .pkl files
+corpus.pkl
+finetuned_embed.kv
+finetuned_embed.kv.vectors.npy
+vocab_scrubbed.pkl

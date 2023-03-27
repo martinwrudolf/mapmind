@@ -12,18 +12,20 @@ import string
 import compress_pickle as pickle
 import json
 import time
-import os
+import os, sys, glob
 from spellchecker import SpellChecker
 from nltk.stem import WordNetLemmatizer
+import boto3
+from io import TextIOWrapper
 
 # This is the real machine learning code! woo
 
 # PROCESS USER NOTES
-def process_user_notes(path2notes, embed):
+def process_user_notes(notefile, keys):
     translator = str.maketrans(dict.fromkeys(string.punctuation.replace('-',''))) #map punctuation to space
-    corpus = []
-    if path2notes[-5:] == ".docx":
-        doc = docx.Document(path2notes)
+    corpus = ""
+    if notefile.content_type in ['application/msword','application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/rtf']:
+        doc = docx.Document(notefile)
 
         docText = []
         for para in doc.paragraphs:
@@ -33,29 +35,36 @@ def process_user_notes(path2notes, embed):
             sentence = sentence.translate(translator)
             #for word in sentence.replace('/',' ').replace('"',' ').replace("'",' ').split():
             for word in sentence.split():
-                corpus.append(word.lower())
-    elif path2notes[-4:] == ".txt":
-        f = open(path2notes, 'r')
-        notes_str = f.read()
+                word = word.strip('-')
+                corpus+=word.lower()
+                corpus+=" "
+    elif notefile.content_type == 'text/plain':
+        #f = open(notefile, 'r')
+        text_f = TextIOWrapper(notefile, encoding='utf-8')
+        notes_str = text_f.read()
         notes_str = notes_str.translate(translator)
         for word in notes_str.split():
-            corpus.append(word.lower())
+            word = word.strip('-')
+            corpus += word.lower()
+            corpus += " "
 
     vocab_scrubbed = remove_stop_words(corpus)
-    oov = [token for token in vocab_scrubbed if token not in embed.keys()]
-    return list(set(oov)), vocab_scrubbed, corpus
+    oov = [token for token in vocab_scrubbed.split() if token not in keys]
+    oov = list(set(oov))
+    return oov, vocab_scrubbed, corpus.strip()
     
     
 def remove_stop_words(corpus):
     stopwords = list(ENGLISH_STOP_WORDS)
     #translator = str.maketrans(dict.fromkeys(string.punctuation))
-    vocab_scrubbed = [token.lower() for token in corpus if (token.lower() not in stopwords and token != '')]
-    return vocab_scrubbed
+    vocab_scrubbed = [token.lower() for token in corpus.split() if (token.lower() not in stopwords and token != '')]
+    vocab_scrubbed_str = ' '.join(word for word in vocab_scrubbed)
+    return vocab_scrubbed_str
 
 def load_embeddings_from_txt(path2txt):
     with open(path2txt, encoding='utf-8') as f:
         reader = csv.reader(f, delimiter=' ', quoting=csv.QUOTE_NONE)
-        embed = {line[0]: np.array(list(map(float,line[1:]))) for line in reader}
+        embed = {line[0]: list(map(float,line[1:])) for line in reader}
     return embed
 
 def save_embeddings(embed, path2pkl):
@@ -68,9 +77,10 @@ def load_embeddings(path2pkl):
     return embed
 
 def create_cooccurrence(vocab_scrubbed, oov):
-    my_doc = [' '.join(vocab_scrubbed)]
+    #my_doc = [' '.join(vocab_scrubbed)]
+    #new_oov = oov.split()
     cv = CountVectorizer(ngram_range=(1,1), vocabulary=oov)
-    X = cv.fit_transform(my_doc)
+    X = cv.fit_transform([vocab_scrubbed])
     Xc = (X.T * X)
     Xc.setdiag(0)
     coocc_arr = Xc.toarray()
@@ -100,16 +110,16 @@ def load_kv(path2model):
     return kv
 
 def search(searched_words, kv, num_results, vocab):
+    n = 10000
     result_words = []
     skipwords = []
-    lemmatizer = WordNetLemmatizer()
+    if vocab:
+        vocab_list = vocab.split()
     for word in searched_words:
         # for each word do the search
-        # TODO: GET RID OF STOP WORDS IN RESULTS
-        # GET RID OF STOP WORDS IN MODEL ALTOGETHER? COULD MAKE IT SMALLER
         # search for more words than we need because we are filtering by words in our vocab
         try:
-            similar_words = kv.most_similar(positive=word, topn=10000)
+            similar_words = kv.most_similar(positive=word, topn=n)
         except:
             # word not in model, probably misspelled or super weird obscure word
             # just skip it
@@ -119,9 +129,8 @@ def search(searched_words, kv, num_results, vocab):
             result_words.append(word)
         count = 0
         for sim_word, sim_val in similar_words:
-            # TODO: deal with lemmatization?
             if vocab:
-                if sim_word in vocab and sim_word not in result_words and sim_word not in searched_words:
+                if sim_word in vocab_list and sim_word not in result_words and sim_word not in searched_words:
                     result_words.append(sim_word)
                     count+=1
                 if count == num_results:
@@ -132,31 +141,41 @@ def search(searched_words, kv, num_results, vocab):
                     count+=1
                 if count == num_results:
                     break
-                
-    
-    #result_words = list(set(result_words))
-    #print(result_words)
+    if len(result_words) == 1:
+        # didn't get enough results
+        # do again with like all the words
+        similar_words = kv.most_similar(result_words[0],topn=400000)
+        for sim_word, sim_val in similar_words:
+            if vocab:
+                if sim_word in vocab_list and sim_word not in result_words and sim_word not in searched_words:
+                    result_words.append(sim_word)
+                    count+=1
+                if count == num_results:
+                    break
+            else:
+                if sim_word not in result_words and sim_word not in searched_words:
+                    result_words.append(sim_word)
+                    count+=1
+                if count == num_results:
+                    break
+
     # NUMPY ARRAYS: (ROW, COLUMN) OR [ROW][COLUMN]
     nrows = len(result_words)
-    ncols = nrows+1
 
     results_matrix = np.zeros(shape=(nrows,nrows), dtype=object)
 
     # now we have list of all the words that will be displayed
     for i in range(nrows):
-        #results_matrix[i][0] = result_words[i]
         for j in range(nrows):
             results_matrix[i][j] = kv.similarity(result_words[i],result_words[j])
 
-    print(result_words)
     return results_matrix, result_words, skipwords
 
-def inspect_node(word, searched_words, user_notes, kv, num_results):
+def inspect_node(word, searched_words, user_notes, kv, num_results=10):
     # get indices for all searched words
     searched_words_dict = {}
     clicked_word = [i for i,x in enumerate(user_notes) if x==word]
     # which word is closest?
-    best_similarity = -100
     search_sorted_by_sim = []
     for search in searched_words:
         sim = kv.similarity(word, search)
@@ -164,7 +183,6 @@ def inspect_node(word, searched_words, user_notes, kv, num_results):
         searched_words_dict[search] = [i for i, x in enumerate(user_notes) if x == search]
 
     search_sorted_by_sim.sort(key=lambda a: a[1], reverse=True)
-    print(search_sorted_by_sim)
 
     # start with most similar search term and then go down from there
     results = []
@@ -176,14 +194,12 @@ def inspect_node(word, searched_words, user_notes, kv, num_results):
     # IF WE WANT TO SORT RESULTS BY ONES THAT ARE CLOSE TO THE SEARCHED WORDS, KEEP THIS UNCOMMENTED
     while (i < len(clicked_word) and k < len(search_sorted_by_sim)):
         compare_indices = searched_words_dict[search_sorted_by_sim[k][0]]
-        #print(compare_indices)
         if j == len(compare_indices):
             j = 0
             i=0
             k += 1
             continue
         if abs(clicked_word[i] - compare_indices[j]) < thresh:
-            #print(clicked_word[i], compare_indices[j])
             # found some that are close
             if user_notes[clicked_word[i]-10:clicked_word[i]+10] not in results:
                 results.append(user_notes[clicked_word[i]-10:clicked_word[i]+10])
@@ -197,10 +213,11 @@ def inspect_node(word, searched_words, user_notes, kv, num_results):
 
     # JUST USE THIS PART IF WE WANT TO JUST DO A BASIC SEARCH OF THE CLICKED WORD IN THE NOTES
     # DON'T COMMENT THIS OUT THO WE NEED IT WITH THE WHILE LOOP
-    if len(results) < num_results:
-        for i in clicked_word:
-            results.append(user_notes[i-10:i+10])
-    print(results)  
+    i = 0
+    while len(results) < num_results and i < len(clicked_word):
+        results.append(user_notes[i-10:i+10])
+        i += 1
+    return results
 
 if __name__ == "__main__":
     # Define paths to various sources
