@@ -13,6 +13,14 @@
       <label>Perform spell check?</label>
     </div>
     <div>
+      <label for="notebook">Choose notebook to upload to</label>
+      <select name="notebook" id="notebook">
+        {% for notebook in notebooks %}
+        <option value="{{ notebook.id }}">{{ notebook.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div>
       <button>Submit</button>
     </div>
   </form>
