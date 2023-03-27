@@ -1,10 +1,17 @@
 from django.shortcuts import render, redirect
+from django.urls import reverse_lazy
+from django.views.generic import CreateView
 from django.http import HttpResponse
 from django.template import loader
 from django.conf import settings
-from .models import Note, Notebook
+from django.contrib.auth import authenticate, login
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
+from .models import Note, Notebook, User
 from .src.ML import machine_learning as ml
 from .src.spacing import spacing_alg as sp
+from django.conf import settings
+import json
 from .src.aws import aws_connection as aws
 import os
 from spellchecker import SpellChecker
@@ -16,6 +23,17 @@ import boto3
 import glob
 from smart_open import open
 import json
+
+# Registration form
+# https://studygyaan.com/django/how-to-create-sign-up-registration-view-in-django
+
+# Password reset
+# https://learndjango.com/tutorials/django-password-reset-tutorial
+# https://www.sitepoint.com/django-send-email/
+# https://www.geeksforgeeks.org/setup-sending-email-in-django-project/
+# https://suhailvs.github.io/blog02.html#mail-setup-on-django-using-gmail
+# https://stackoverflow.com/questions/73422664/django-email-sending-smtp-error-cant-send-a-mail
+# https://stackoverflow.com/questions/10147455/how-to-send-an-email-with-gmail-as-provider-using-python/27515833#27515833
 
 # Index page
 def index(request):
@@ -40,7 +58,42 @@ def login(request):
     if request.user.is_authenticated:
         return redirect('index')
     return redirect('login')
-    
+
+# Register page
+# https://docs.djangoproject.com/en/4.1/topics/auth/passwords/#password-validation
+# https://docs.djangoproject.com/en/4.1/topics/settings/
+def register(request):
+    if request.method == "GET":
+        if request.user.is_authenticated:
+            return redirect('index')
+        return render(request, 'registration/register.html')
+    elif request.method == "POST":
+        username = request.POST["username"]
+        password = request.POST["password"]
+       
+        email = request.POST["email"]
+        try:
+            user = User.objects.get(username=username)
+            return HttpResponse("Username is not unique!")
+        except User.DoesNotExist:
+            try: 
+                user = User.objects.get(email=email)
+                return HttpResponse("Email is not unique!")
+            except User.DoesNotExist:
+                newUser = User.objects.create_user(
+                    username,
+                    email,
+                    password
+                )
+                try:
+                    validate_password(password, newUser, None)
+                    newUser.save()
+                    return redirect('login')
+                except ValidationError as error:
+                    newUser.delete()
+                    return HttpResponse(str(error.args[0]))
+          
+   
 """
 Receive a file from the user and save it to the database as a Note.
 """
@@ -207,7 +260,6 @@ def delete_notebook(request):
         return redirect('login')
     if request.method == 'POST':
         # Get the notebook name from the request
-        print("Request: ", request.POST)
         notebook = request.POST['notebook']
         # Get the owner from the request
         owner = request.user
@@ -219,7 +271,7 @@ def delete_notebook(request):
         notebook.delete()
 
         # Return a response
-    return HttpResponse("Notebook deleted successfully")
+        return HttpResponse("Notebook deleted successfully")
 
 def delete_notes(request):
     """Deletes a note."""
@@ -306,9 +358,7 @@ def register(request):
 def edit_notebook(request):
     if not request.user.is_authenticated:
         return redirect('login')
-        # return redirect('login')
     return HttpResponse(status=200, content="This is the URL where we edit notebooks!")
-
 
 def merge_notebooks(request):
     """Merges notebooks into one notebook."""
@@ -419,11 +469,73 @@ def notebooks(request):
     }
     return render(request, "mmapp/notebooks.html", context)
 
+def delete_notes(request):
+    """Deletes a note."""
+    if not request.user.is_authenticated:
+        return redirect('login')
+    if request.method == 'POST':
+        # Get the notebook name from the request
+        print("Request: ", request.POST)
+        notes = request.POST.getlist('note')
+        # Get the owner from the request
+        owner = request.user
+        # Delete the Notebook
+        for n in notes:
+            n = Note.objects.get(id=n)
+            n.delete()
+        # Return a response
+        print("Notes deleted successfully")
+    return HttpResponse("Notes deleted successfully")
+
 # Placeholder response for now
 def settings(request):
     if not request.user.is_authenticated:
         return redirect('login')
-    return HttpResponse(status=200, content="This is the URL where the settings page will be!")
+    return render(request, 'mmapp/profile.html')
+
+def edit_username(request):
+    if request.method == "POST":
+        if not request.user.is_authenticated:
+            return HttpResponse(status=401)
+        username = request.POST["username"]
+        try:
+            user = User.objects.get(username=username)
+            return HttpResponse("Username is not unique!")
+        except User.DoesNotExist:
+            request.user.username = username
+            request.user.save()
+            return redirect('settings')
+    else:
+        return HttpResponse(status=405)
+    
+def edit_email(request):
+    if request.method == "POST":
+        if not request.user.is_authenticated:
+            return HttpResponse(status=401)
+        email = request.POST["email"]
+        try: 
+            user = User.objects.get(email=email)
+            return HttpResponse("Email is not unique!")
+        except User.DoesNotExist:
+            request.user.email = email
+            request.user.save()
+            return redirect('settings')
+    else:
+        return HttpResponse(status=405)
+    
+def delete_account(request):
+    if request.method == "POST":
+        if not request.user.is_authenticated:
+            return HttpResponse(status=401)
+        try:
+            user = User.objects.get(username=request.user.username)
+            user.delete()
+            return redirect('index')
+        except User.DoesNotExist:
+            # should never happen....but who knows?
+            return HttpResponse(status=400)
+    else:
+        return HttpResponse(status=405)
 
 def search(request):
     if not request.user.is_authenticated:
@@ -507,27 +619,16 @@ def search_results(request):
 
     # create object of words and positions
     words_pos = {words[i]: positions[i] for i in range(len(words))}
+    word_list = []
+    for word in words_pos:
+        word_list.append({"string":word, "pos":list(words_pos[word])})
+    print(word_list)
+    # https://stackoverflow.com/questions/43305020/how-to-use-the-context-variables-passed-from-django-in-javascript
     context = {
         "res": res_matrix,
-        "words_pos": words_pos,
+        "words_pos": json.dumps(word_list),
         "spell_checked": spell_checked,
         "skipwords": skipwords
-    }
-
-    return render(request, "search/search_results.html", context)
-
-def results(request):
-    if not request.user.is_authenticated:
-        return redirect('login')
-    # Get the user
-    user = request.user
-    # Get the user's notebooks
-    notebooks = Notebook.objects.filter(owner=user)
-    # Get the user's notes
-    notes = Note.objects.filter(owner=user)
-    context = {
-        'notebooks': notebooks,
-        'notes': notes
     }
     return render(request, "search/results.html", context)
 
