@@ -12,11 +12,10 @@ urlpatterns = [
     path('merge_notebooks', views.merge_notebooks, name='merge_notebooks'),
     path('search', views.search, name='search'),
     path('settings', views.settings, name='settings'),
-    path('register', views.register, name='register'),
-    path('search_results', views.search_results, name='search_results'),
+    path('register/', views.register, name='register'),
+    path('', views.search_results, name='search_results'),
     path('edit_username', views.edit_username, name='edit_username'),
     path('edit_email', views.edit_email, name='edit_email'),
     path('delete_account', views.delete_account, name='delete_account'),
-    path('', views.results, name='results'),
     path('notebooks', views.notebooks, name='notebooks'),
 ]

@@ -37,6 +37,7 @@ import json
 
 # Index page
 def index(request):
+    print("getting to nindexs")
     if not request.user.is_authenticated:
         return redirect('login')
     # Get the user
@@ -63,9 +64,12 @@ def login(request):
 # https://docs.djangoproject.com/en/4.1/topics/auth/passwords/#password-validation
 # https://docs.djangoproject.com/en/4.1/topics/settings/
 def register(request):
+    print("etting to reegisteaf")
     if request.method == "GET":
         if request.user.is_authenticated:
-            return redirect('index')
+            print("in register getasdfas")
+            return redirect('')
+        print("in register get")
         return render(request, 'registration/register.html')
     elif request.method == "POST":
         username = request.POST["username"]
@@ -352,13 +356,6 @@ def delete_notes(request):
     return HttpResponse("Notes deleted successfully")
 
 
-    
-# Do we need this to return a register page or does Django have a built in register route?
-def register(request):
-    if request.user.is_authenticated:
-        return redirect('index')
-    return HttpResponse(status=200, content="This is where we register users!")
-
 # Placeholder response for now
 def edit_notebook(request):
     if not request.user.is_authenticated:
@@ -371,7 +368,7 @@ def merge_notebooks(request):
         return redirect('login')
     if request.method == 'POST':
         # Get the notebook name from the request
-        notebooks_to_merge = request.POST.getlist('notebooks')
+        notebooks_to_merge = request.POST.getlist('notebooks[]')
         merged_notebook_name = request.POST['merged_notebook_name']
         print("Notebooks: ", notebooks_to_merge)
         print("Merged notebook name: ", merged_notebook_name)
@@ -383,6 +380,10 @@ def merge_notebooks(request):
         kv_filename = str(owner.id)+"/"+merged_notebook_name+"/kv.kv"
         kv_vectors_filename = str(owner.id)+"/"+merged_notebook_name+"/kv.kv.vectors.npy"
         # Create a new Notebook
+        if Notebook.objects.filter(name=merged_notebook_name,
+                                   owner=owner).exists():
+            # notebook already exists
+            return HttpResponse("Notebook already exists")
         new_notebook = Notebook(name=merged_notebook_name, 
                             owner=owner,
                             vocab=vocab_filename,
@@ -413,6 +414,7 @@ def merge_notebooks(request):
                 aws.move_file(s3_res, note.corpus, new_note.corpus)
             # need to delete old notebook data
             aws.s3_delete_folder(s3_res, str(owner.id)+'/'+n.name+'/')
+            print("deleting notebook: ", n.name)
             n.delete()
         # update notebook files
         notes_list = Note.objects.filter(notebooks=new_notebook)
@@ -491,12 +493,7 @@ def delete_notes(request):
         # Return a response
         print("Notes deleted successfully")
     return HttpResponse("Notes deleted successfully")
-    
-# Do we need this to return a register page or does Django have a built in register route?
-def register(request):
-    if request.user.is_authenticated:
-        return redirect('index')
-    return HttpResponse(status=200, content="This is where we register users!")
+
 
 # Placeholder response for now
 def edit_notebook(request):
@@ -505,38 +502,6 @@ def edit_notebook(request):
         # return redirect('login')
     return HttpResponse(status=200, content="This is the URL where we edit notebooks!")
 
-
-def merge_notebooks(request):
-    """Merges notebooks into one notebook."""
-    if not request.user.is_authenticated:
-        return redirect('login')
-    if request.method == 'POST':
-        # Get the notebook name from the request
-        print("Request: ", request.POST)
-        notebooks = request.POST.getlist('notebooks[]')
-        merged_notebook_name = request.POST['merged_notebook_name']
-        print("Notebooks: ", notebooks)
-        print("Merged notebook name: ", merged_notebook_name)
-        # Get the owner from the request
-        owner = request.user
-        # Create a new Notebook
-        notebook = Notebook(name=merged_notebook_name, owner=owner)
-        # Save the Notebook
-        notebook.save()
-        # Return a response
-        for n in notebooks:
-            n = Notebook.objects.get(id=n)
-            print("Notebook: ", n)
-            notes = Note.objects.filter(notebooks=n)
-            for note in notes:
-                new_note = Note(file_name=note.file_name, 
-                        file_content=note.file_content, 
-                        file_type=note.file_type, 
-                        owner=owner,
-                        notebooks=notebook)
-                new_note.save()
-        print("Notebooks merged successfully")
-        return HttpResponse("Notebooks merged successfully")
 
 def notebooks(request):
     if not request.user.is_authenticated:
@@ -616,9 +581,20 @@ def search_results(request):
     if not request.user.is_authenticated:
         return redirect('login')
     user = request.user
+    if request.method == 'GET' and not request.GET.get("search_words"):
+        user = request.user
+        # Get the user's notebooks
+        notebooks = Notebook.objects.filter(owner=user)
+        # Get the user's notes
+        notes = Note.objects.filter(owner=user)
+        context = {
+            'notebooks': notebooks,
+            'notes': notes
+        }
+        return render(request, "search/results.html", context)
     if request.method == 'GET' and request.GET.get("search_words"):
         query = request.GET.get("search_words").split()
-        notebook_id = request.GET.get("notebook")
+        notebook_id = request.GET.get("notebook") if request.GET.get("notebook") else None
     if 'notesonly' in request.GET:
         notesonly = True
     else:
@@ -627,6 +603,10 @@ def search_results(request):
         spellcheck = True
     else:
         spellcheck = False
+
+    print("notesonly: ", notesonly)
+    print("spellcheck: ", spellcheck)
+    
 
     notebook = Notebook.objects.get(owner=user, id=notebook_id)
 
@@ -643,7 +623,9 @@ def search_results(request):
             vocab = None
     else:
         vocab = None
-
+    if not os.path.exists('mmapp/ml_models'):
+        print('making path')
+        os.makedirs('mmapp/ml_models')
     # Check if kv object is stored locally
     if len(glob.glob(MODEL_PATH.format(notebook.kv.replace("/","_")))) == 0:
         # doesn't already exist so load it
@@ -687,11 +669,16 @@ def search_results(request):
         word_list.append({"string":word, "pos":list(words_pos[word])})
     print(word_list)
     # https://stackoverflow.com/questions/43305020/how-to-use-the-context-variables-passed-from-django-in-javascript
+    
+    user = request.user
+    notebooks = Notebook.objects.filter(owner=user)
+    
     context = {
         "res": res_matrix,
         "words_pos": json.dumps(word_list),
         "spell_checked": spell_checked,
-        "skipwords": skipwords
+        "skipwords": skipwords,
+        "notebooks": notebooks,
     }
     return render(request, "search/results.html", context)
 
@@ -732,3 +719,19 @@ def inspect_node(request):
         'inspect_node_results': results
     }
     return render(request, "search/search_results.html", context)
+
+
+def results(request):
+    if not request.user.is_authenticated:
+        return redirect('login')
+    # Get the user
+    user = request.user
+    # Get the user's notebooks
+    notebooks = Notebook.objects.filter(owner=user)
+    # Get the user's notes
+    notes = Note.objects.filter(owner=user)
+    context = {
+        'notebooks': notebooks,
+        'notes': notes
+    }
+    return render(request, "search/results.html", context)
