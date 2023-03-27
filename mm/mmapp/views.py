@@ -101,8 +101,10 @@ def upload(request):
     if not request.user.is_authenticated:
         return redirect('login')
     # Get the owner from the request
+    print("in upload")
     owner = request.user
     if request.method == 'POST':
+        print("if to post upload")
         accepted_content_types = ['text/plain',
                               'application/rtf',
                               'application/msword',
@@ -112,6 +114,8 @@ def upload(request):
         THRESHOLD = 20000
         try:
             # Get the file from the request
+            print("request.FILES['file']", request.FILES['file'])
+            print("request.POST['notebook']", request.POST['notebook'])
             file = request.FILES['file']
             if file.content_type not in accepted_content_types:
                 return HttpResponse("File is not of correct format")
@@ -212,7 +216,7 @@ def upload(request):
         context = {
             "notebooks": notebooks
         }
-        return render(request, 'mmapp/upload.html', context)
+        return render(request, 'mmapp/notebooks.html', context)
     
 """
 Create a new notebook for the user.
@@ -222,6 +226,7 @@ def create_notebook(request):
         return redirect('login')
     if request.method == 'POST':
         # Get the notebook name from the request
+        print("Request: ", request.POST)
         notebook = request.POST['notebook']
         # Get the owner from the request
         owner = request.user
@@ -486,6 +491,64 @@ def delete_notes(request):
         # Return a response
         print("Notes deleted successfully")
     return HttpResponse("Notes deleted successfully")
+    
+# Do we need this to return a register page or does Django have a built in register route?
+def register(request):
+    if request.user.is_authenticated:
+        return redirect('index')
+    return HttpResponse(status=200, content="This is where we register users!")
+
+# Placeholder response for now
+def edit_notebook(request):
+    if not request.user.is_authenticated:
+        return redirect('login')
+        # return redirect('login')
+    return HttpResponse(status=200, content="This is the URL where we edit notebooks!")
+
+
+def merge_notebooks(request):
+    """Merges notebooks into one notebook."""
+    if not request.user.is_authenticated:
+        return redirect('login')
+    if request.method == 'POST':
+        # Get the notebook name from the request
+        print("Request: ", request.POST)
+        notebooks = request.POST.getlist('notebooks[]')
+        merged_notebook_name = request.POST['merged_notebook_name']
+        print("Notebooks: ", notebooks)
+        print("Merged notebook name: ", merged_notebook_name)
+        # Get the owner from the request
+        owner = request.user
+        # Create a new Notebook
+        notebook = Notebook(name=merged_notebook_name, owner=owner)
+        # Save the Notebook
+        notebook.save()
+        # Return a response
+        for n in notebooks:
+            n = Notebook.objects.get(id=n)
+            print("Notebook: ", n)
+            notes = Note.objects.filter(notebooks=n)
+            for note in notes:
+                new_note = Note(file_name=note.file_name, 
+                        file_content=note.file_content, 
+                        file_type=note.file_type, 
+                        owner=owner,
+                        notebooks=notebook)
+                new_note.save()
+        print("Notebooks merged successfully")
+        return HttpResponse("Notebooks merged successfully")
+
+def notebooks(request):
+    if not request.user.is_authenticated:
+        return redirect('login')
+    owner = request.user
+    notebooks = Notebook.objects.filter(owner=owner)
+    notes = Note.objects.filter(owner=owner)
+    context = {
+        "notebooks": notebooks,
+        "notes": notes,
+    }
+    return render(request, "mmapp/notebooks.html", context)
 
 # Placeholder response for now
 def settings(request):
