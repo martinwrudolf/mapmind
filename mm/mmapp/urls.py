@@ -18,4 +18,5 @@ urlpatterns = [
     path('edit_email', views.edit_email, name='edit_email'),
     path('delete_account', views.delete_account, name='delete_account'),
     path('notebooks', views.notebooks, name='notebooks'),
+    path('inspect_node', views.inspect_node, name='inspect_node')
 ]

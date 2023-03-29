@@ -684,11 +684,11 @@ def search_results(request):
 
 def inspect_node(request):
     # somehow get notebook_id from request
-    notebook_id = request.POST.get('notebook_id')
-    searched_words = request.POST.get('searched_words')
-    clicked_word = request.POST.get('word')
-
-    notebook = Notebook.Objects.get(id=notebook_id)
+    body = json.loads(request.body)
+    notebook_id =  body['notebook_id']
+    searched_words = body['searched_words']
+    clicked_word = body['word']
+    notebook = Notebook.objects.get(id=notebook_id)
     s3 = boto3.client('s3')
     user_notes = aws.s3_read(s3, notebook.corpus)
 
