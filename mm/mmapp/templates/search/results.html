@@ -310,6 +310,7 @@
               if (request.readyState == 4) {
                 if (request.status == 200) {
                   let obj = JSON.parse(request.responseText);
+                  console.log(obj);
                   generateSidebar(obj);
                 }
               }

@@ -688,6 +688,7 @@ def inspect_node(request):
     notebook_id =  body['notebook_id']
     searched_words = body['searched_words']
     clicked_word = body['word']
+    print(notebook_id)
     notebook = Notebook.objects.get(id=notebook_id)
     s3 = boto3.client('s3')
     user_notes = aws.s3_read(s3, notebook.corpus)
@@ -714,11 +715,7 @@ def inspect_node(request):
 
     # do the inspection
     results = ml.inspect_node(clicked_word, searched_words, user_notes, kv)
-    context = {
-        'notebook': notebook,
-        'inspect_node_results': results
-    }
-    return render(request, "search/search_results.html", context)
+    return HttpResponse(status=200, content=json.dumps(results))
 
 
 def results(request):
