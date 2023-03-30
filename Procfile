@@ -1,1 +1,1 @@
-web: gunicorn mmapp.wsgi
+web: gunicorn mm.wsgi
