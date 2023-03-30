@@ -51,12 +51,12 @@ def similarity_scores(num_words, num_scores, words):
     return scores
 
 import sys
-sys.path.append(r'C:\Users\clair\Documents\Year 5\ECE 493\Project\Testing_ML\mapmind\ML')
+# sys.path.append(r'C:\Users\clair\Documents\Year 5\ECE 493\Project\Testing_ML\mapmind\ML')
 import machine_learning
 # Generate cosine similarity scores
 words = ['apple', 'banana', 'cherry', 'date', 'elderberry', 'fig', 'grape', 'honeydew', 'kiwi', 'lemon', 'mango', 'nectarine', 'orange', 'pear', 'quince', 'raspberry', 'strawberry', 'tangerine', 'watermelon', 'cat', 'dog', 'mouse']
 words = ['computer', 'microprocessor', 'fortran', 'cpu', 'apple', 'fruit', 'man', 'woman', 'keyboard', 'mouse']
-kv = machine_learning.load_kv(r"C:\Users\clair\Documents\Year 5\ECE 493\Project\Testing_ML\mapmind\ML\finetuned_embed.kv")
+# kv = machine_learning.load_kv(r"C:\Users\clair\Documents\Year 5\ECE 493\Project\Testing_ML\mapmind\ML\finetuned_embed.kv")
 scores = np.zeros(shape=(len(words),len(words)+1), dtype=object)
 for i in range(len(words)):
     scores[i][0] = words[i]
