@@ -1,1 +1,1 @@
-web: gunicorn mapmind.wsgi
+web: gunicorn mmapp.wsgi
