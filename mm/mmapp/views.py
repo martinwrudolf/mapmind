@@ -105,7 +105,7 @@ def upload(request):
     if not request.user.is_authenticated:
         return redirect('login')
     # Get the owner from the request
-    print("in upload")
+    #print("in upload")
     owner = request.user
     if request.method == 'POST':
         print("if to post upload")
@@ -457,7 +457,7 @@ def merge_notebooks(request):
             ml.save_kv(kv, MODEL_PATH.format(new_notebook.kv.replace("/","_")))
 
             # upload all the files
-            print("would upload kv to s3 here")
+            #print("would upload kv to s3 here")
             aws.s3_upload(s3_client, MODEL_PATH.format(new_notebook.kv.replace("/","_")), new_notebook.kv)
             aws.s3_upload(s3_client, MODEL_PATH.format(new_notebook.kv_vectors.replace("/","_")), new_notebook.kv_vectors)
         else:
