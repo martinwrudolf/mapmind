@@ -684,16 +684,19 @@ def search_results(request):
 
 def inspect_node(request):
     # somehow get notebook_id from request
-    notebook_id = request.POST.get('notebook_id')
-    searched_words = request.POST.get('searched_words')
-    clicked_word = request.POST.get('word')
-
-    notebook = Notebook.Objects.get(id=notebook_id)
+    body = json.loads(request.body)
+    notebook_id =  body['notebook_id']
+    searched_words = body['searched_words']
+    clicked_word = body['word']
+    print(notebook_id, searched_words, clicked_word)
+    notebook = Notebook.objects.get(id=notebook_id)
     s3 = boto3.client('s3')
     user_notes = aws.s3_read(s3, notebook.corpus)
+    print(user_notes)
 
     MODEL_PATH = 'mmapp/ml_models/{0}'
     path2glove = MODEL_PATH.format('glove.pkl')
+    print(path2glove)
     if len(glob.glob(MODEL_PATH.format(notebook.kv.replace("/","_")))) == 0:
         # doesn't already exist so load it
         # download the files
@@ -713,12 +716,10 @@ def inspect_node(request):
         kv = ml.load_kv(MODEL_PATH.format(notebook.kv.replace('/','_')))
 
     # do the inspection
+    print(kv)
     results = ml.inspect_node(clicked_word, searched_words, user_notes, kv)
-    context = {
-        'notebook': notebook,
-        'inspect_node_results': results
-    }
-    return render(request, "search/search_results.html", context)
+    print(results)
+    return HttpResponse(status=200, content=json.dumps(results))
 
 
 def results(request):

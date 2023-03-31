@@ -60,10 +60,6 @@
         <div id="viewbox" style="height: 80%; width: 70%"></div>
         <div class="col-md-4">
           <ul class="list-group my-5 mx-2 rounded" id="sidebar">
-            <!-- <li class="list-group-item rounded">Item 1</li>
-            <li class="list-group-item rounded">Item 2</li>
-            <li class="list-group-item rounded">Item 3</li>
-            <li class="list-group-item rounded">Item 4</li> -->
           </ul>
         </div>
       </div>
@@ -98,7 +94,6 @@
                   <option value="{{ current_notebook.id }}">
                     {{ current_notebook.name }}
                   </option>
-                  {% for notebook in notebooks %}
                   <option value="{{ notebook.id }}">{{ notebook.name }}</option>
                   {% endfor %}
                 </select>
@@ -255,7 +250,7 @@
       var searched_terms = [];
 
       // setup for when select menu implmented
-      // let notebookId = document.getElementById("notebowndropdown").value
+      var notebookId = document.getElementById("notebook").value;
 
       function generateText(font) {
         //https://stackoverflow.com/questions/43305020/how-to-use-the-context-variables-passed-from-django-in-javascript
@@ -318,25 +313,25 @@
           const intersects = raycaster.intersectObjects(meshes, false);
           if (intersects.length > 0) {
             // just to verify the sidebar function works
-            generateSidebar(["hello", "world", "item", "yes"]);
+            // generateSidebar(["hello", "world", "item", "yes"]);
 
             // send request to backend
             var request = new XMLHttpRequest();
-            request.open("GET", "/inspect_node");
+            request.open("POST", "/inspect_node");
+            request.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
             request.onreadystatechange = function () {
               if (request.readyState == 4) {
                 if (request.status == 200) {
                   let obj = JSON.parse(request.responseText);
+                  console.log(obj);
                   generateSidebar(obj);
                 }
               }
             };
             let send_obj_json = {
-              // need the dropdown menu for notebook id
-              // "notebook": notebookId
-              notebook: "dummynotebookid",
-              searchedTerms: searched_terms,
-              searchedWord: intersects[0].object.userData,
+              "notebook_id": document.getElementById("notebook").value,
+              "searched_words": searched_terms,
+              "word": intersects[0].object.userData,
             };
             request.send(JSON.stringify(send_obj_json));
             console.log(intersects[0].object.userData);
