@@ -122,14 +122,16 @@ def upload(request):
             print("request.POST['notebook']", request.POST['notebook'])
             file = request.FILES['file']
             if file.content_type not in accepted_content_types:
+                print("File is not of correct format")
                 return HttpResponse("File is not of correct format")
             if file.size > THRESHOLD:
+                print("File is too large")
                 return HttpResponse("File is too large")
             
             notebook = request.POST['notebook']
             # Get the notebook from the database
             notebook = Notebook.objects.get(id=notebook, owner=owner)
-
+            print("notebook", notebook)
             if Note.objects.filter(file_name=file.name,
                                    owner=owner,
                                    notebooks=notebook).exists():
@@ -138,8 +140,9 @@ def upload(request):
             else:
                 # note doesn't exist i notebook so must process notes
                 MODEL_PATH = 'mmapp/ml_models/{0}'
+                print("MODEL_PATH", MODEL_PATH)
                 s3 = boto3.client("s3")
-
+                print("s3", s3)
                 path2glovekeys = MODEL_PATH.format('glove_keys.pkl')
                 path2glove = MODEL_PATH.format('glove.pkl')
                 # get original embeddings
@@ -164,11 +167,13 @@ def upload(request):
                     notebook_vocab += " "+vocab
                 except:
                     # notebook did not have an associated vocab
+                    print("Notebook did not have an associated vocab")
                     return HttpResponse("Database error: Notebook does not have a vocab file")
                 try:
                     notebook_corpus = aws.s3_read(s3, notebook.corpus)
                     notebook_corpus += " "+corpus
                 except:
+                    print("Notebook did not have an associated corpus")
                     return HttpResponse("Database error: Notebook does not have a corpus file")
 
                 notebook_oov = [word for word in notebook_vocab.split() if word not in glove_keys]
@@ -212,8 +217,10 @@ def upload(request):
                 note.save()
                 return HttpResponse("File uploaded successfully")
         except Notebook.DoesNotExist:
+            print("Notebook does not exists")
             return HttpResponse("Notebook does not exists")
         except:
+            print("Bad request")
             return HttpResponse("Bad request")
     if request.method == 'GET':
         notebooks = Notebook.objects.filter(owner=owner)
