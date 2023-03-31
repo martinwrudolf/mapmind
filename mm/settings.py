@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure--i^6-zl536xpmjtr@3%+z^y_64woxt%@cv+3+a5+7m#8%n3h_q
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['aqueous-scrubland-59263.herokuapp.com', '127.0.0.1']
 
 
 # Application definition
@@ -78,7 +78,7 @@ WSGI_APPLICATION = 'mm.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3.dev',
+        'NAME': BASE_DIR / 'prod-db.sqlite3',
     }
 }
 
