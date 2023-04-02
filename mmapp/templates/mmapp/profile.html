@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Settings - MapMind</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Bootstrap CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC"
+      crossorigin="anonymous"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.0/css/all.min.css"
+      integrity="sha384-KyZXEAg3QhqLMpG8r+Knujsl5/a1H3wzLl9x3XZrUJr59lW6pXb5JNp3gHy7hE4j"
+      crossorigin="anonymous"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../styles.css" />
+    <style>
+      html,
+      body {
+        height: 100%;
+      }
+      .content-container {
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        margin-top: 25%;
+        height: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="row my-1">
+        <div class="col-10"></div>
+        <div class="col">
+          <a href="/" class="mx-2">
+            <i class="bi bi-house-door" style="font-size: 2rem"></i>
+          </a>
+          <a href="/notebooks" class="mx-2">
+            <i class="bi bi-journal-text" style="font-size: 2rem"></i>
+          </a>
+          <a href="/settings" class="mx-2">
+            <i class="bi bi-gear" style="font-size: 2rem"></i>
+          </a>
+        </div>
+      </div>
+      <div class="content-container">
+        <div class="row justify-content-center">
+          <div class="col-md-12">
+            <h1>Settings</h1>
+            <form method="POST" action="{% url 'edit_username' %}">
+              {% csrf_token %}
+              <div class="mb-3">
+                <label for="username" class="form-label rounded-pill"
+                  >Username:</label
+                >
+                <input
+                  type="text"
+                  name="username"
+                  value="{{user.username}}"
+                  required
+                />
+                <input
+                  type="submit"
+                  value="Edit Username"
+                  class="btn btn-primary"
+                />
+              </div>
+            </form>
+            <form method="POST" action="{% url 'edit_email' %}">
+              {% csrf_token %}
+              <div class="mb-3">
+                <label for="email" class="form-label rounded-pill"
+                  >Email:</label
+                >
+                <input
+                  type="email"
+                  name="email"
+                  required
+                  value="{{user.email}}"
+                />
+                <input
+                  type="submit"
+                  value="Edit Email"
+                  class="btn btn-primary"
+                />
+              </div>
+            </form>
+            <form method="POST" action="{% url 'password_reset' %}">
+              {% csrf_token %}
+              <input type="hidden" name="email" value="{{user.email}}" />
+              <input
+                type="submit"
+                value="Reset Password"
+                class="btn btn-primary"
+              />
+            </form>
+            <button onclick="deleteAccount()" class="btn btn-danger">
+              Delete Account
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script>
+      function deleteAccount() {
+        if (confirm("Are you sure you want to delete your account?")) {
+          fetch("/delete_account", {
+            method: "POST",
+            headers: {
+              "X-CSRFToken": "{{ csrf_token }}",
+            },
+          }).then((response) => {
+            if (response.status == 302) {
+              window.location.reload();
+            }
+          });
+        }
+      }
+    </script>
+  </body>
+</html>
