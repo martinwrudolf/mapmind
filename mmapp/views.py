@@ -35,47 +35,49 @@ import json
 # https://stackoverflow.com/questions/73422664/django-email-sending-smtp-error-cant-send-a-mail
 # https://stackoverflow.com/questions/10147455/how-to-send-an-email-with-gmail-as-provider-using-python/27515833#27515833
 
-# Index page
 def index(request):
-    print("getting to nindexs")
+    """" Display the index page. """
+    print("Got to index page.")
     if not request.user.is_authenticated:
+        print("User not authenticated.")
         return redirect('login')
-    # Get the user
     user = request.user
-    # Get the user's notebooks
     notebooks = Notebook.objects.filter(owner=user)
-    # Get the user's notes
     notes = Note.objects.filter(owner=user)
-    # Create a context
     context = {
         'notebooks': notebooks,
         'notes': notes
     }
-    # Render the index page
+    print("Rendering index page with context ", context)
     return render(request, 'mmapp/index.html', context)
 
-# Redirect to Django provided login page
 def login(request):
+    """ Redirect to Django provided login page. """
     if request.user.is_authenticated:
+        print("User is authenticated. Sending to index.")
         return redirect('index')
+    print("User is not authenticated. Sending to login.")
     return redirect('login')
 
 # Register page
 # https://docs.djangoproject.com/en/4.1/topics/auth/passwords/#password-validation
 # https://docs.djangoproject.com/en/4.1/topics/settings/
 def register(request):
-    print("etting to reegisteaf")
+    """ Register a new user. """
+    print("Got to register page.")
     if request.method == "GET":
+        print("Got to GET request.")
         if request.user.is_authenticated:
-            print("in register getasdfas")
+            print("User is authenticated. Sending to index.")
             return redirect('')
-        print("in register get")
+        print("User is not authenticated. Sending to register.")
         return render(request, 'registration/register.html')
     elif request.method == "POST":
+        print("Got to POST request.")
         username = request.POST["username"]
         password = request.POST["password"]
-       
         email = request.POST["email"]
+        print("username", username, "password", password, "email", email)
         try:
             user = User.objects.get(username=username)
             return HttpResponse("Username is not unique!")
@@ -92,23 +94,23 @@ def register(request):
                 try:
                     validate_password(password, newUser, None)
                     newUser.save()
+                    print("Creating new user, ", newUser)
                     return redirect('login')
                 except ValidationError as error:
                     newUser.delete()
                     return HttpResponse(str(error.args[0]))
           
    
-"""
-Receive a file from the user and save it to the database as a Note.
-"""
 def upload(request):
+    """ Upload a new note. """
+    print("Got to upload page.")
     if not request.user.is_authenticated:
+        print("User not authenticated.")
         return redirect('login')
-    # Get the owner from the request
-    print("in upload")
+
     owner = request.user
     if request.method == 'POST':
-        print("if to post upload")
+        print("Got to POST request.")
         accepted_content_types = ['text/plain',
                               'application/rtf',
                               'application/msword',
@@ -122,32 +124,32 @@ def upload(request):
             print("request.POST['notebook']", request.POST['notebook'])
             file = request.FILES['file']
             if file.content_type not in accepted_content_types:
-                print("File is not of correct format")
+                print(f"File {file.name} is not of correct format")
                 return HttpResponse("File is not of correct format")
             if file.size > THRESHOLD:
-                print("File is too large")
+                print(f"File {file.name} is too large")
                 return HttpResponse("File is too large")
             
             notebook = request.POST['notebook']
-            # Get the notebook from the database
             notebook = Notebook.objects.get(id=notebook, owner=owner)
             print("notebook", notebook)
             if Note.objects.filter(file_name=file.name,
                                    owner=owner,
                                    notebooks=notebook).exists():
-                # note already exists
-                return HttpResponse("Note file already exists")
+                print(f"Note file {file.name} already exists in this notebook")
+                return HttpResponse("Note file already exists in this notebook")
             else:
                 # note doesn't exist i notebook so must process notes
                 MODEL_PATH = 'mmapp/ml_models/{0}'
-                print("MODEL_PATH", MODEL_PATH)
+                print("MODEL_PATH: ", MODEL_PATH)
                 s3 = boto3.client("s3")
-                print("s3", s3)
+                print("s3 client: ", s3)
                 path2glovekeys = MODEL_PATH.format('glove_keys.pkl')
                 path2glove = MODEL_PATH.format('glove.pkl')
                 # get original embeddings
                 if len(glob.glob(path2glovekeys+"*")) == 0:
                     # glove words not there, need to redownload
+                    print("glove_keys.pkl not found, downloading from s3")
                     aws.s3_download(s3, "glove_keys.pkl", path2glovekeys)
 
                 glove_keys = ml.load_embeddings(path2glovekeys)
@@ -157,6 +159,7 @@ def upload(request):
                 corpus_filename = str(owner.id)+"/"+notebook.name+"/"+file.name+"/corpus.txt"
                 
                 # save new note files
+                print(f"Saving {vocab_filename} and {corpus_filename} to s3")
                 aws.s3_write(s3, vocab_filename, vocab)
                 aws.s3_write(s3, corpus_filename, corpus)
 
@@ -167,13 +170,13 @@ def upload(request):
                     notebook_vocab += " "+vocab
                 except:
                     # notebook did not have an associated vocab
-                    print("Notebook did not have an associated vocab")
+                    print(f"Notebook {notebook} did not have an associated vocab")
                     return HttpResponse("Database error: Notebook does not have a vocab file")
                 try:
                     notebook_corpus = aws.s3_read(s3, notebook.corpus)
                     notebook_corpus += " "+corpus
                 except:
-                    print("Notebook did not have an associated corpus")
+                    print(f"Notebook {notebook} did not have an associated corpus")
                     return HttpResponse("Database error: Notebook does not have a corpus file")
 
                 notebook_oov = [word for word in notebook_vocab.split() if word not in glove_keys]
@@ -181,6 +184,7 @@ def upload(request):
                 notebook_oov = list(set(notebook_oov))
 
                 # save new notebook files
+                print(f"Saving {notebook.vocab} and {notebook.corpus} to s3")
                 aws.s3_write(s3, notebook.vocab, notebook_vocab.strip())
                 aws.s3_write(s3, notebook.corpus, notebook_corpus.strip())
 
@@ -190,6 +194,8 @@ def upload(request):
                     coocc_arr = ml.create_cooccurrence(notebook_vocab, notebook_oov)
 
                     if len(glob.glob(path2glove)) == 0:
+                        # glove not there, need to redownload
+                        print("glove.pkl not found, downloading from s3")
                         aws.s3_download(s3, "glove.pkl", path2glove)
 
                     embed = ml.load_embeddings(path2glove)
@@ -215,6 +221,7 @@ def upload(request):
                             vocab=vocab_filename,
                             corpus=corpus_filename)
                 note.save()
+                print(f"Note {note} saved to database")
                 return HttpResponse("File uploaded successfully")
         except Notebook.DoesNotExist:
             print("Notebook does not exists")
@@ -227,6 +234,7 @@ def upload(request):
         context = {
             "notebooks": notebooks
         }
+        print("Rendering notebooks.html with context: ", context)
         return render(request, 'mmapp/notebooks.html', context)
     
 """
