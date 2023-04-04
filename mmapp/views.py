@@ -150,8 +150,9 @@ def upload(request):
                 if len(glob.glob(path2glovekeys+"*")) == 0:
                     # glove words not there, need to redownload
                     print("glove_keys.pkl not found, downloading from s3")
+                    print("Downloading glove_keys.pkl from s3 to ", path2glovekeys)
                     aws.s3_download(s3, "glove_keys.pkl", path2glovekeys)
-                    print("Downloading glove.pkl from s3 to ", path2glove)
+                    print("Downloading glove.pkl from s3 to ", path2glovekeys)
 
                 glove_keys = ml.load_embeddings(path2glovekeys)
                 oov, vocab, corpus = ml.process_user_notes(file, glove_keys)
