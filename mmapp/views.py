@@ -151,6 +151,7 @@ def upload(request):
                     # glove words not there, need to redownload
                     print("glove_keys.pkl not found, downloading from s3")
                     aws.s3_download(s3, "glove_keys.pkl", path2glovekeys)
+                    print("Downloading glove.pkl from s3 to ", path2glove)
 
                 glove_keys = ml.load_embeddings(path2glovekeys)
                 oov, vocab, corpus = ml.process_user_notes(file, glove_keys)
@@ -197,6 +198,7 @@ def upload(request):
                         # glove not there, need to redownload
                         print("glove.pkl not found, downloading from s3")
                         aws.s3_download(s3, "glove.pkl", path2glove)
+                        print("glove.pkl downloaded from s3 to ", path2glove)
 
                     embed = ml.load_embeddings(path2glove)
                     finetuned_embed = ml.train_mittens(coocc_arr, notebook_oov, embed)
@@ -207,6 +209,8 @@ def upload(request):
 
                     # upload all the files
                     print("would upload kv to s3 here")
+                    print(f"Uploading {notebook.kv} to s3 at { MODEL_PATH.format(notebook.kv.replace('/','_')) }")
+                    print(f"Uploading {notebook.kv_vectors} to s3 at {MODEL_PATH.format(notebook.kv_vectors.replace('/','_'))}")
                     aws.s3_upload(s3, MODEL_PATH.format(notebook.kv.replace("/","_")), notebook.kv)
                     aws.s3_upload(s3, MODEL_PATH.format(notebook.kv_vectors.replace("/","_")), notebook.kv_vectors)
                 else:
