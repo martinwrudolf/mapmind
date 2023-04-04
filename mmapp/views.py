@@ -226,8 +226,9 @@ def upload(request):
         except Notebook.DoesNotExist:
             print("Notebook does not exists")
             return HttpResponse("Notebook does not exists")
-        except:
+        except Exception as e:
             print("Bad request")
+            print("Unexpected error:", e)
             return HttpResponse("Bad request")
     if request.method == 'GET':
         notebooks = Notebook.objects.filter(owner=owner)
