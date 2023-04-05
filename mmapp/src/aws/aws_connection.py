@@ -2,18 +2,13 @@ import boto3
 from smart_open import open
 #from background_task import background
 
-<<<<<<< HEAD
 def s3_download(src, dest):
     s3_client = boto3.client('s3')
-    s3_client.download_file(Bucket="mapmind-ml-models", Key=src, Filename=dest)
-=======
-def s3_download(s3_client, src, dest):
     try: 
         print("Downloading file from s3: ", src, " to ", dest)
         s3_client.download_file(Bucket="mapmind-ml-models", Key=src, Filename=dest)
     except Exception as e:
         print("AWS Exception: ", e)
->>>>>>> 6a845bb65b0b6c8b0b4b7dd2d1b3064045031ab8
 
 #@background(schedule=1)
 def s3_upload(src, dest):
