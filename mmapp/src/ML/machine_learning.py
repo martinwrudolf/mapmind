@@ -22,7 +22,9 @@ from io import TextIOWrapper
 
 # PROCESS USER NOTES
 def process_user_notes(notefile, keys):
-    translator = str.maketrans(dict.fromkeys(string.punctuation.replace('-',''))) #map punctuation to space
+    tmp_dict = dict.fromkeys(string.punctuation.replace('-',''))
+    tmp_dict['/'] = ' '
+    translator = str.maketrans(tmp_dict) #map punctuation to space
     corpus = ""
     if notefile.content_type in ['application/msword','application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/rtf']:
         doc = docx.Document(notefile)
