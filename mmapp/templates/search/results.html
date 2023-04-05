@@ -57,7 +57,7 @@
       </div>
 
       <div class="row">
-        <div id="viewbox" style="height: 80%; width: 70%"></div>
+        <div id="viewbox" style="height: 400px; width: 300px"></div>
         <div class="col-md-4">
           <ul class="list-group my-5 mx-2 rounded" id="sidebar">
           </ul>
@@ -91,10 +91,13 @@
                   aria-label="Select notebook"
                   required
                 >
+                  {% for notebook in notebooks %}
                   <option value="{{ current_notebook.id }}">
                     {{ current_notebook.name }}
                   </option>
+                  {% if current_notebook.id != notebook.id %}
                   <option value="{{ notebook.id }}">{{ notebook.name }}</option>
+                  {% endif %}
                   {% endfor %}
                 </select>
               </div>
@@ -217,7 +220,7 @@
 
       var div = document.getElementById("viewbox");
       const scene = new THREE.Scene();
-      scene.background = new THREE.Color("skyblue");
+      scene.background = new THREE.Color(0xffffff);
       const camera = new THREE.PerspectiveCamera(
         75,
         div.clientWidth / div.clientHeight,
@@ -234,7 +237,7 @@
       // const cube = new THREE.Mesh( geometry, material );
       // scene.add( cube );
 
-      const axesHelper = new THREE.AxesHelper(dis);
+      const axesHelper = new THREE.AxesHelper(dis * 20);
       scene.add(axesHelper);
 
       computeNewCameraPostion();
@@ -260,9 +263,11 @@
           const geometry = new TextGeometry(list[i].string, {
             font: font,
             size: 1,
-            height: 1,
+            height: 0.1,
           });
-          const textMesh = new THREE.Mesh(geometry);
+          const material = new THREE.MeshBasicMaterial({color: 0x000000});
+          const textMesh = new THREE.Mesh(geometry, material);
+         
           textMesh.position.x = 5 * list[i].pos[0];
           textMesh.position.y = 5 * list[i].pos[2];
           textMesh.position.z = 5 * list[i].pos[1];
