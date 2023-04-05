@@ -92,12 +92,7 @@
                   required
                 >
                   {% for notebook in notebooks %}
-                  <option value="{{ current_notebook.id }}">
-                    {{ current_notebook.name }}
-                  </option>
-                  {% if current_notebook.id != notebook.id %}
                   <option value="{{ notebook.id }}">{{ notebook.name }}</option>
-                  {% endif %}
                   {% endfor %}
                 </select>
               </div>
@@ -262,19 +257,39 @@
         for (let i = 0; i < list.length; i++) {
           const geometry = new TextGeometry(list[i].string, {
             font: font,
-            size: 1,
+            size: 1.25,
             height: 0.1,
           });
+          geometry.translate(5 * list[i].pos[0],  5 * list[i].pos[2], 5 * list[i].pos[1]);
           const material = new THREE.MeshBasicMaterial({color: 0x000000});
           const textMesh = new THREE.Mesh(geometry, material);
-         
-          textMesh.position.x = 5 * list[i].pos[0];
-          textMesh.position.y = 5 * list[i].pos[2];
-          textMesh.position.z = 5 * list[i].pos[1];
-          textMesh.userData = list[i].string;
+          // textMesh.position.x = 5 * list[i].pos[0];
+          // textMesh.position.y = 5 * list[i].pos[2];
+          // textMesh.position.z = 5 * list[i].pos[1];
+
+          // https://threejs.org/docs/#api/en/math/Box3
           searched_terms.push(list[i].string);
+          const box = new THREE.Box3();
+          textMesh.geometry.computeBoundingBox();
+          console.log(textMesh.geometry.boundingBox);
+          box.copy(textMesh.geometry.boundingBox).applyMatrix4(textMesh.matrixWorld);
+          const center = new Vector3()
+          box.getCenter(center)
+          console.log(center);
+          const size = new Vector3()
+          box.getSize(size);
+          console.log(size);
+          const boxGeo = new THREE.BoxGeometry(size.x, size.y, size.z);
+          const material_col = new THREE.MeshBasicMaterial({visible: false});
+          const collMesh = new THREE.Mesh(boxGeo, material_col);
+          collMesh.position.x = center.x;
+          collMesh.position.y = center.y;
+          collMesh.position.z = center.z;
+          console.log(collMesh);
           scene.add(textMesh);
-          meshes.push(textMesh);
+          scene.add(collMesh);
+          collMesh.userData = list[i].string;
+          meshes.push(collMesh);
           textMesh.lookAt(camera.position);
         }
 
