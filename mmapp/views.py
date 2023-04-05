@@ -151,6 +151,11 @@ def upload(request):
                     # glove words not there, need to redownload
                     print("glove_keys.pkl not found, downloading from s3")
                     print(os.listdir())
+                    # listdir for mmapp/ml_models
+                    print("mmapp")
+                    print(os.listdir('mmapp'))
+                    print("ml_models")
+                    print(os.listdir('mmapp/ml_models'))
                     print("Downloading glove_keys.pkl from s3 to ", path2glovekeys)
                     aws.s3_write(s3, "test.txt", "testing to see if can connect to aws s3")
                     print("After writing test.txt to s3")
