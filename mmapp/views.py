@@ -150,6 +150,7 @@ def upload(request):
                 if len(glob.glob(path2glovekeys+"*")) == 0:
                     # glove words not there, need to redownload
                     print("glove_keys.pkl not found, downloading from s3")
+                    print(os.listdir())
                     print("Downloading glove_keys.pkl from s3 to ", path2glovekeys)
                     aws.s3_write(s3, "test.txt", "testing to see if can connect to aws s3")
                     print("After writing test.txt to s3")
