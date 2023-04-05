@@ -154,6 +154,9 @@ def upload(request):
                     # listdir for mmapp/ml_models
                     print("mmapp")
                     print(os.listdir('mmapp'))
+                    # If mmapp/ml_models doesn't exist, create it
+                    if not os.path.exists('mmapp/ml_models'):
+                        os.makedirs('mmapp/ml_models')
                     print("ml_models")
                     print(os.listdir('mmapp/ml_models'))
                     print("Downloading glove_keys.pkl from s3 to ", path2glovekeys)
