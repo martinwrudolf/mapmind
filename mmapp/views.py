@@ -24,8 +24,7 @@ import boto3
 import glob
 from smart_open import open
 import json
-#from background_task.models import Task
-#from background_task import background
+import traceback
 
 # Registration form
 # https://studygyaan.com/django/how-to-create-sign-up-registration-view-in-django
@@ -202,8 +201,9 @@ def upload(request):
                 return HttpResponse("File uploaded successfully")
         except Notebook.DoesNotExist:
             return HttpResponse("Notebook does not exists")
-        """ except:
-            return HttpResponse("Bad request") """
+        except:
+            traceback.print_exc()
+            return HttpResponse("Bad request")
     if request.method == 'GET':
         notebooks = Notebook.objects.filter(owner=owner)
         context = {
@@ -599,6 +599,7 @@ def search_results(request):
         "spell_checked": spell_checked,
         "skipwords": skipwords,
         "notebooks": notebooks,
+        "current_notebook": notebook,
     }
     return render(request, "search/results.html", context)
 
