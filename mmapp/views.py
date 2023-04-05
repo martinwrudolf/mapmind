@@ -527,7 +527,7 @@ def search_results(request):
 
     print("notesonly: ", notesonly)
     print("spellcheck: ", spellcheck)
-    
+    notesonly = True
 
     notebook = Notebook.objects.get(owner=user, id=notebook_id)
 
