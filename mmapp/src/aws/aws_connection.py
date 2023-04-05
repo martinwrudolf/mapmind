@@ -2,7 +2,11 @@ import boto3
 from smart_open import open
 
 def s3_download(s3_client, src, dest):
-    s3_client.download_file(Bucket="mapmind-ml-models", Key=src, Filename=dest)
+    try: 
+        print("Downloading file from s3: ", src, " to ", dest)
+        s3_client.download_file(Bucket="mapmind-ml-models", Key=src, Filename=dest)
+    except Exception as e:
+        print("AWS Exception: ", e)
 
 def s3_upload(s3_client, src, dest):
     s3_client.upload_file(Bucket="mapmind-ml-models", Key=dest, Filename=src)
