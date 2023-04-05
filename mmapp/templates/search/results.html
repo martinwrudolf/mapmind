@@ -42,7 +42,7 @@
   <body>
     <div class="container">
       <div class="row my-1">
-        <div class="col-10"></div>
+        <div class="col-9"></div>
         <div class="col">
           <a href="/" class="mx-2">
             <i class="bi bi-house-door" style="font-size: 2rem"></i>
@@ -53,14 +53,16 @@
           <a href="/settings" class="mx-2">
             <i class="bi bi-gear" style="font-size: 2rem"></i>
           </a>
+          <a href="/accounts/logout" class="mx-2">
+            <i class="bi bi-door-open" style="font-size: 2rem"></i>
+          </a>
         </div>
       </div>
 
       <div class="row">
-        <div id="viewbox" style="height: 400px; width: 300px"></div>
+        <div id="viewbox" style="height: 100vh; width: 100vw"></div>
         <div class="col-md-4">
-          <ul class="list-group my-5 mx-2 rounded" id="sidebar">
-          </ul>
+          <ul class="list-group my-5 mx-2 rounded" id="sidebar"></ul>
         </div>
       </div>
       <div class="row">
@@ -349,9 +351,9 @@
               }
             };
             let send_obj_json = {
-              "notebook_id": document.getElementById("notebook").value,
-              "searched_words": searched_terms,
-              "word": intersects[0].object.userData,
+              notebook_id: document.getElementById("notebook").value,
+              searched_words: searched_terms,
+              word: intersects[0].object.userData,
             };
             request.send(JSON.stringify(send_obj_json));
             console.log(intersects[0].object.userData);
