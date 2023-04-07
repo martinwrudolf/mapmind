@@ -6,6 +6,7 @@ import os
 import pickle
 import numpy as np
 from gensim.models import KeyedVectors
+import sys
 
 class test_ML(TestCase):
     def test_process_user_notes(self):
@@ -121,6 +122,10 @@ class test_ML(TestCase):
         self.assertIsInstance(kv, KeyedVectors)
         self.assertEqual(len(kv), 3)
 
+        self.assertIsNotNone(kv["name"])
+        self.assertIsNotNone(kv["claire"])
+        self.assertIsNotNone(kv["hello"])
+
         self.assertIsNotNone(kv.most_similar("name"))
         self.assertIsNotNone(kv.most_similar("claire"))
         self.assertIsNotNone(kv.most_similar("hello"))
@@ -128,10 +133,94 @@ class test_ML(TestCase):
         self.assertIsNotNone(kv.similarity("claire", "hello"))
         self.assertIsNotNone(kv.similarity("name", "hello"))
         self.assertIsNotNone(kv.similarity("claire", "name"))
-        
+    
+    def test_model_quality(self):
+        current_directory = os.path.dirname(__file__)
+        parent_directory = os.path.split(current_directory)[0]
+        file_path = os.path.join(parent_directory, 'ml_models', 'glove.pkl')
+        embed = ml.load_embeddings(file_path)
+        kv = ml.create_kv_from_embed(embed)
         # test bidirectional similarity
-        self.assertEqual(kv.similarity("claire", "hello"), kv.similarity("hello", "claire"))
+        self.assertEqual(kv.similarity("red", "hello"), kv.similarity("hello", "red"))
         self.assertEqual(kv.similarity("hello", "name"), kv.similarity("name", "hello"))
-        self.assertEqual(kv.similarity("name", "claire"), kv.similarity("claire", "name"))
+        self.assertEqual(kv.similarity("name", "red"), kv.similarity("red", "name"))
 
-        self.assertLess(kv.similarity("claire", "hello"), kv.similarity("claire", "name") + kv.similarity("name", "hello"))
+        # test triangle inequality
+        self.assertLess(kv.distance("red", "hello"), kv.distance("red", "name") + kv.distance("name", "hello"))
+        self.assertLess(kv.distance("hello", "name"), kv.distance("red", "name") + kv.distance("red", "hello"))
+        self.assertLess(kv.distance("red", "name"), kv.distance("red", "hello") + kv.distance("name", "hello"))
+    
+    def test_save_and_load_kv(self):
+        embed = {
+            "name": np.random.rand(300),
+            "claire": np.random.rand(300),
+            "hello": np.random.rand(300)
+        }
+        kv = KeyedVectors(300)
+        kv.add_vectors(list(embed.keys()), list(embed.values()))
+
+        ml.save_kv(kv, "test_kv")
+        self.assertTrue(os.path.exists("test_kv"))
+
+        loaded_kv = ml.load_kv("test_kv")
+        self.assertIsInstance(loaded_kv, KeyedVectors)
+        self.assertEqual(len(kv), 3)
+
+        self.assertIsNotNone(kv["name"])
+        self.assertIsNotNone(kv["claire"])
+        self.assertIsNotNone(kv["hello"])
+        self.assertIsNotNone(kv.most_similar("name"))
+        self.assertIsNotNone(kv.most_similar("claire"))
+        self.assertIsNotNone(kv.most_similar("hello"))
+        self.assertIsNotNone(kv.similarity("claire", "hello"))
+        self.assertIsNotNone(kv.similarity("name", "hello"))
+        self.assertIsNotNone(kv.similarity("claire", "name"))
+
+        os.remove('test_kv')
+
+    def test_search(self):
+        words = ["hello", "red", "car", "computer"]
+        current_directory = os.path.dirname(__file__)
+        parent_directory = os.path.split(current_directory)[0]
+        file_path = os.path.join(parent_directory, 'ml_models', 'glove.pkl')
+        embed = ml.load_embeddings(file_path)
+        kv = ml.create_kv_from_embed(embed)
+
+        vocab = "here is a fake vocabulary thing"
+
+        mat, result_words, skipwords = ml.search(words, kv, 2, vocab)
+
+        # entire thing should exist
+        for i in range(mat.shape[0]):
+            for j in range(mat.shape[1]):
+                self.assertIsNotNone(mat[i][j])
+
+        # want as many or more result words than words
+        self.assertGreaterEqual(len(result_words), len(words))
+
+        for w in words:
+            self.assertIn(w, result_words)
+        
+        self.assertEqual(len(skipwords), 0)
+
+        mat, result_words, skipwords = ml.search(["asdkfelsfl"], kv, 2, vocab)
+        print(result_words)
+        self.assertIn("asdkfelsfl", skipwords)
+        self.assertEqual(len(result_words), 0)
+        
+    def test_inspect_node(self):
+        words = ["hello", "red", "car", "computer"]
+        current_directory = os.path.dirname(__file__)
+        parent_directory = os.path.split(current_directory)[0]
+        file_path = os.path.join(parent_directory, 'ml_models', 'glove.pkl')
+        embed = ml.load_embeddings(file_path)
+        kv = ml.create_kv_from_embed(embed)
+
+        word = "hello"
+        searched = ["hello", "world"]
+        corpus = "hi hey hello world this is my corpus it is very long I am not sure what else to write but here we are"
+
+        results = ml.inspect_node(word, searched, corpus, kv)
+
+        self.assertEqual(len(results), 1)
+        self.assertEqual(results[0], "hi hey hello world this is my corpus it is very long")

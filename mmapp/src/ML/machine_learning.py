@@ -177,14 +177,8 @@ def inspect_node(word, searched_words, user_notes, kv, num_results=10):
     # get indices for all searched words
     user_notes = user_notes.split()
     searched_words_dict = {}
-    print(type(word))
-    print(len(user_notes))
-    print(type(user_notes))
-    print(word, searched_words)
-    print(word in user_notes)
-    print(enumerate(user_notes))
     clicked_word = [i for i,x in enumerate(user_notes) if x==word]
-    print(clicked_word)
+
     # which word is closest?
     search_sorted_by_sim = []
     for search in searched_words:
@@ -202,9 +196,10 @@ def inspect_node(word, searched_words, user_notes, kv, num_results=10):
     j=0 # the index of the current search word
     k=0 # which search word
     # IF WE WANT TO SORT RESULTS BY ONES THAT ARE CLOSE TO THE SEARCHED WORDS, KEEP THIS UNCOMMENTED
-    
+
     while (i < len(clicked_word) and k < len(search_sorted_by_sim)):
         compare_indices = searched_words_dict[search_sorted_by_sim[k][0]]
+
         if j == len(compare_indices):
             j = 0
             i=0
@@ -212,8 +207,15 @@ def inspect_node(word, searched_words, user_notes, kv, num_results=10):
             continue
         if abs(clicked_word[i] - compare_indices[j]) < thresh:
             # found some that are close
-            if user_notes[clicked_word[i]-10:clicked_word[i]+10] not in results:
-                results.append(user_notes[clicked_word[i]-10:clicked_word[i]+10])
+            st = clicked_word[i]-10
+            en = clicked_word[i]+10
+            if clicked_word[i] < 10:
+                st = 0
+            elif clicked_word[i] > (len(user_notes)-10):
+                en = len(user_notes)
+            sl = user_notes[st:en] 
+            if sl not in results:
+                results.append(sl)
                 i+=1
         if i == len(clicked_word):
             break
@@ -223,21 +225,25 @@ def inspect_node(word, searched_words, user_notes, kv, num_results=10):
             i += 1
         if len(results) >= num_results:
             break
-    print(results)
+
     # JUST USE THIS PART IF WE WANT TO JUST DO A BASIC SEARCH OF THE CLICKED WORD IN THE NOTES
     # DON'T COMMENT THIS OUT THO WE NEED IT WITH THE WHILE LOOP
     i = 0
     while len(results) < num_results and i < len(clicked_word):
-        if user_notes[clicked_word[i]-10:clicked_word[i]+10] in results:
-            i += 1
-            continue
-        results.append(user_notes[clicked_word[i]-10:clicked_word[i]+10])
+        st = clicked_word[i]-10
+        en = clicked_word[i]+10
+        if clicked_word[i] < 10:
+            st = 0
+        elif clicked_word[i] > (len(user_notes)-10):
+            en = len(user_notes)
+        sl = user_notes[st:en] 
+        if sl not in results:
+            results.append(sl)
         i += 1
     for i in range(len(results)):
-        print(i)
         temp = ' '.join(results[i])
         results[i] = temp
-    print("end of f")
+
     return results
 
 if __name__ == "__main__":

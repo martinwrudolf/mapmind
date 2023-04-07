@@ -20,7 +20,13 @@ def fruchterman_reingold(cosine_similarities, dim=3, iterations=50, temperature=
                 if i == j:
                     continue
                 attractive_force = (distances[i, j] ** 2) / (1-cosine_similarities[i][j])
-                repulsive_force = (1-cosine_similarities[i][j])** 2 / distances[i, j]
+                if distances[i,j] == 0:
+                    print(i,j)
+                    repulsive_force = (1-cosine_similarities[i][j])** 2 / 0.01
+                    print(repulsive_force)
+                    print(distances[i,j])
+                else:
+                    repulsive_force = (1-cosine_similarities[i][j])** 2 / distances[i, j]
                 attractive_forces[i] += attractive_force * (positions[j] - positions[i])
                 repulsive_forces[i] -= repulsive_force * (positions[j] - positions[i])
         forces = attractive_forces + repulsive_forces
@@ -31,9 +37,8 @@ def fruchterman_reingold(cosine_similarities, dim=3, iterations=50, temperature=
         distances = np.sqrt(np.sum((positions[:, np.newaxis, :] - positions[np.newaxis, :, :]) ** 2, axis=-1))
         # Cool down the temperature
         temperature *= cooling_factor
-    print(positions)
+
     positions -= positions.mean(axis=0)
-    print(positions)
     return positions
 
 def similarity_scores(num_words, num_scores, words):

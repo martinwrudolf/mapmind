@@ -601,7 +601,9 @@ def search_results(request):
             spell_checked[word] = correct_word
 
     # perform search
-    res_matrix, words, skipwords = ml.search(query, kv, 1, vocab)
+    res_matrix, words, skipwords = ml.search(query, kv, 5, vocab)
+    print("skipping ", skipwords)
+    print(words)
     # send results to spacing alg
     positions = sp.fruchterman_reingold(res_matrix)
 
