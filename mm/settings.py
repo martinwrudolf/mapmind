@@ -133,5 +133,4 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'mapmindreset@gmail.com'
-# mapmind493
-EMAIL_HOST_PASSWORD = 'pdwwrtlpowkonmpw'
+EMAIL_HOST_PASSWORD = '' # removed because it may have been comprimsed lmao
