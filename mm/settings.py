@@ -133,7 +133,4 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'mapmindreset@gmail.com'
-# mapmind493
-EMAIL_HOST_PASSWORD = 'pdwwrtlpowkonmpw'
-# background settings (10 mins max)
-MAX_RUN_TIME = 600
+EMAIL_HOST_PASSWORD = '' # removed because it may have been comprimsed lmao

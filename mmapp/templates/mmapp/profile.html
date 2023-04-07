@@ -75,11 +75,13 @@
                   type="text"
                   name="username"
                   value="{{user.username}}"
+                  id="username"
                   required
                 />
                 <input
                   type="submit"
                   value="Edit Username"
+                  id="submit_username"
                   class="btn btn-primary"
                 />
               </div>
@@ -94,11 +96,13 @@
                   type="email"
                   name="email"
                   required
+                  id="email"
                   value="{{user.email}}"
                 />
                 <input
                   type="submit"
                   value="Edit Email"
+                  id="submit_email"
                   class="btn btn-primary"
                 />
               </div>
@@ -109,10 +113,11 @@
               <input
                 type="submit"
                 value="Reset Password"
+                id="reset_password"
                 class="btn btn-primary"
               />
             </form>
-            <button onclick="deleteAccount()" class="btn btn-danger">
+            <button onclick="deleteAccount()" class="btn btn-danger" id="delete_account">
               Delete Account
             </button>
           </div>
@@ -129,7 +134,7 @@
             },
           }).then((response) => {
             if (response.status == 302) {
-              window.location.reload();
+              window.location.href = "/";
             }
           });
         }

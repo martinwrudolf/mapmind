@@ -502,7 +502,7 @@ def delete_account(request):
         try:
             user = User.objects.get(username=request.user.username)
             user.delete()
-            return redirect('index')
+            return redirect('search_results')
         except User.DoesNotExist:
             # should never happen....but who knows?
             return HttpResponse(status=400)
