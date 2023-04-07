@@ -62,6 +62,7 @@ db.sqlite3
 db.sqlite3-journal
 db.sqlite3.dev
 db-prod.sqlite3
+*.sqlite3
 
 # ML model files
 *.pkl

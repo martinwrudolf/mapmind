@@ -135,3 +135,5 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'mapmindreset@gmail.com'
 # mapmind493
 EMAIL_HOST_PASSWORD = 'pdwwrtlpowkonmpw'
+# background settings (10 mins max)
+MAX_RUN_TIME = 600
