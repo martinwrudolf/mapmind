@@ -62,7 +62,7 @@
         {% csrf_token %}
         <div class="mb-3">
           <select
-            class="form-select rounded rounded-pill"
+            class="form-select rounded rounded-xl"
             id="notebooks-select"
             name="notebooks"
             multiple
@@ -108,7 +108,7 @@
           </h2>
           <div
             id="collapse-{{ notebook.id }}"
-            class="accordion-collapse collapse"
+            class="accordion-collapse collapse rounded-xl"
             aria-labelledby="heading-{{ notebook.id }}"
             data-bs-parent="#notebooks-accordion"
           >
