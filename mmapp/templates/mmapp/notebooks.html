@@ -42,7 +42,7 @@
         <div class="input-group mb-3">
           <input
             type="text"
-            class="form-control"
+            class="form-control rounded-pill"
             id="notebook"
             name="notebook"
             placeholder="Create a new notebook"
@@ -50,7 +50,9 @@
             required
           />
           <div class="input-group-append">
-            <button type="submit" class="btn btn-primary">Create</button>
+            <button type="submit" class="btn btn-primary ms-3 rounded-pill">
+              Create
+            </button>
           </div>
         </div>
       </form>
@@ -60,7 +62,7 @@
         {% csrf_token %}
         <div class="mb-3">
           <select
-            class="form-select"
+            class="form-select rounded rounded-pill"
             id="notebooks-select"
             name="notebooks"
             multiple
@@ -74,7 +76,7 @@
         <div class="mb-3">
           <input
             type="text"
-            class="form-control"
+            class="form-control rounded-pill"
             id="merged-notebook-name"
             name="merged_notebook_name"
             placeholder="New Notebook name"
@@ -82,7 +84,9 @@
             required
           />
         </div>
-        <button type="submit" class="btn btn-primary">Merge</button>
+        <button type="submit" class="btn btn-primary ms-3 rounded-pill">
+          Merge
+        </button>
       </form>
       <br />
       <h2 class="mt-3 mb-3">Notebooks</h2>
@@ -119,7 +123,7 @@
                   {{ note.file_name }} ({{ note.owner }})
                   <button
                     type="button"
-                    class="btn btn-danger btn-sm delete-note"
+                    class="btn btn-danger btn-sm delete-note rounded-pill"
                     data-note-id="{{ note.id }}"
                   >
                     Delete
@@ -145,7 +149,7 @@
                   <div class="custom-file">
                     <input
                       type="file"
-                      class="form-control"
+                      class="form-control rounded-pill"
                       id="file"
                       name="file"
                       accept=".doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document, .rtf, .txt"
@@ -153,7 +157,10 @@
                     />
                   </div>
                   <div class="input-group-append">
-                    <button type="submit" class="btn btn-primary">
+                    <button
+                      type="submit"
+                      class="btn btn-primary ms-3 rounded-pill"
+                    >
                       Upload
                     </button>
                   </div>
@@ -164,7 +171,7 @@
               {% csrf_token %}
               <button
                 type="button"
-                class="btn btn-danger btn-sm delete-notebook mx-4 my-4"
+                class="btn btn-danger btn-sm delete-notebook mx-4 my-4 rounded-pill"
                 data-notebook-id="{{ notebook.id }}"
               >
                 Delete Notebook
