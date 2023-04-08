@@ -55,22 +55,39 @@
       <p>Enter your username, password, and email:</p>
       <form method="POST" action="{% url 'register' %}">
         {% csrf_token %}
-        <label for="username">Username: </label
-        ><input id="username" type="text" name="username" required />
+        <input
+          id="username"
+          type="text"
+          name="username"
+          class="my-2 rounded-pill"
+          placeholder="Username"
+          required
+        />
         <br />
-        <label for="password">Password: </label
-        ><input
+        <input
           id="password"
           type="password"
           name="password"
+          class="my-2 rounded-pill"
+          placeholder="Password"
           minlength="8"
           required
         />
         <br />
-        <label for="email">Email: </label>
-        <input id="email" type="email" name="email" required />
+        <input
+          id="email"
+          type="email"
+          name="email"
+          class="my-2 rounded-pill"
+          placeholder="Email"
+          required
+        />
         <br />
-        <input type="submit" id="submit" />
+        <input
+          type="submit"
+          id="submit"
+          class="btn btn-primary my-2 rounded-pill"
+        />
       </form>
       <p><a href="{% url 'login' %}">Already have an account? Login here</a></p>
     </div>

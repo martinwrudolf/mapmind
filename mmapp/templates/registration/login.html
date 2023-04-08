@@ -45,7 +45,7 @@
 
           <form method="post" action="{% url 'login' %}">
             {% csrf_token %}
-            <div class="mb-3">
+            <div class="my-2 rounded-pill">
               <label
                 for="{{ form.username.id_for_label }}"
                 class="form-label rounded-pill"
@@ -53,21 +53,27 @@
               >
               {{ form.username }}
             </div>
-            <div class="mb-3">
+            <div class="my-2">
               <label for="{{ form.password.id_for_label }}" class="form-label"
                 >{{ form.password.label }}</label
               >
               {{ form.password}}
             </div>
-            <input type="submit" value="login" class="btn btn-primary" />
+            <input type="submit" value="login" class="btn btn-primary my-2" />
             <input type="hidden" name="next" value="{{ next }}" />
           </form>
           <p>
-            <a href="{% url 'password_reset' %}" class="text-decoration-none"
+            <a
+              href="{% url 'password_reset' %}"
+              class="text-decoration-none my-2"
               >Lost password?</a
             >
           </p>
-          <p><a href="{% url 'register' %}">Don't have an account?</a></p>
+          <p>
+            <a class="my-2" href="{% url 'register' %}"
+              >Don't have an account?</a
+            >
+          </p>
         </div>
       </div>
     </div>

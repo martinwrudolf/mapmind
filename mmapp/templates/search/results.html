@@ -36,7 +36,7 @@
 
       body {
         margin-bottom: 60px; /* make room for the fixed search bar */
-        overflow:hidden;
+        overflow: hidden;
       }
     </style>
   </head>
@@ -62,7 +62,7 @@
 
       <div class="row">
         <div id="viewbox" style="height: 100vh; width: 100vw"></div>
-        <div class="col-md-4" style="position:absolute">
+        <div class="col-md-4" style="position: absolute">
           <ul class="list-group my-5 mx-2 rounded" id="sidebar"></ul>
         </div>
       </div>
@@ -82,6 +82,7 @@
                   name="search_words"
                   class="form-control w-10 rounded-pill"
                   placeholder="Search..."
+                  maxlength="200"
                   required
                 />
               </div>
@@ -263,8 +264,12 @@
             size: 1.25,
             height: 0.1,
           });
-          geometry.translate(15 * list[i].pos[0],  15 * list[i].pos[2], 15 * list[i].pos[1]);
-          const material = new THREE.MeshBasicMaterial({color: 0x000000});
+          geometry.translate(
+            15 * list[i].pos[0],
+            15 * list[i].pos[2],
+            15 * list[i].pos[1]
+          );
+          const material = new THREE.MeshBasicMaterial({ color: 0x000000 });
           const textMesh = new THREE.Mesh(geometry, material);
           // textMesh.position.x = 5 * list[i].pos[0];
           // textMesh.position.y = 5 * list[i].pos[2];
@@ -275,15 +280,17 @@
           const box = new THREE.Box3();
           textMesh.geometry.computeBoundingBox();
           console.log(textMesh.geometry.boundingBox);
-          box.copy(textMesh.geometry.boundingBox).applyMatrix4(textMesh.matrixWorld);
-          const center = new Vector3()
-          box.getCenter(center)
+          box
+            .copy(textMesh.geometry.boundingBox)
+            .applyMatrix4(textMesh.matrixWorld);
+          const center = new Vector3();
+          box.getCenter(center);
           console.log(center);
-          const size = new Vector3()
+          const size = new Vector3();
           box.getSize(size);
           console.log(size);
           const boxGeo = new THREE.BoxGeometry(size.x, size.y, size.z);
-          const material_col = new THREE.MeshBasicMaterial({visible: false});
+          const material_col = new THREE.MeshBasicMaterial({ visible: false });
           const collMesh = new THREE.Mesh(boxGeo, material_col);
           collMesh.position.x = center.x;
           collMesh.position.y = center.y;
