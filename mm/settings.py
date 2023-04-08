@@ -74,16 +74,8 @@ MAX_CONN_AGE = 600
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'prod-db.sqlite3',
-    }
+    'default': dj_database_url.config(default=os.environ.get('HEROKU_POSTGRESQL_ORANGE_URL'))
 }
-
-if "DATABASE_URL" in os.environ:
-    # Configure Django for DATABASE_URL environment variable.
-    DATABASES["default"] = dj_database_url.config(
-        conn_max_age=MAX_CONN_AGE, ssl_require=True)
 
 
 # Password validation
