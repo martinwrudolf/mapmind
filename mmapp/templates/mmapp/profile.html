@@ -67,39 +67,37 @@
             <h1>Settings</h1>
             <form method="POST" action="{% url 'edit_username' %}">
               {% csrf_token %}
-              <div class="mb-3">
-                <label for="username" class="form-label rounded-pill"
-                  >Username:</label
-                >
+              <div class="my-2">
                 <input
                   type="text"
                   name="username"
                   value="{{user.username}}"
+                  class="rounded-pill"
+                  placeholder="Username"
                   required
                 />
                 <input
                   type="submit"
-                  value="Edit Username"
-                  class="btn btn-primary"
+                  value="Update Username"
+                  class="btn btn-primary rounded-pill"
                 />
               </div>
             </form>
             <form method="POST" action="{% url 'edit_email' %}">
               {% csrf_token %}
-              <div class="mb-3">
-                <label for="email" class="form-label rounded-pill"
-                  >Email:</label
-                >
+              <div class="my-2">
                 <input
                   type="email"
                   name="email"
+                  class="rounded-pill"
+                  placeholder="Email"
                   required
                   value="{{user.email}}"
                 />
                 <input
                   type="submit"
-                  value="Edit Email"
-                  class="btn btn-primary"
+                  value="Update Email"
+                  class="btn btn-primary rounded-pill"
                 />
               </div>
             </form>
@@ -109,10 +107,13 @@
               <input
                 type="submit"
                 value="Reset Password"
-                class="btn btn-primary"
+                class="btn btn-primary rounded-pill my-2"
               />
             </form>
-            <button onclick="deleteAccount()" class="btn btn-danger">
+            <button
+              onclick="deleteAccount()"
+              class="btn btn-danger rounded-pill my-2"
+            >
               Delete Account
             </button>
           </div>
