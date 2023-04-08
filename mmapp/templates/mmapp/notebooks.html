@@ -93,7 +93,7 @@
       <!-- Notebooks accordion -->
       <div class="accordion mt-4" id="notebooks-accordion">
         {% for notebook in notebooks %}
-        <div class="accordion-item rounded-pill">
+        <div class="accordion-item">
           <h2 class="accordion-header" id="heading-{{ notebook.id }}">
             <button
               class="accordion-button collapsed"
@@ -118,7 +118,7 @@
                 <br />
                 {% if note.notebooks.id == notebook.id %}
                 <li
-                  class="list-group-item d-flex justify-content-between align-items-center"
+                  class="list-group-item d-flex justify-content-between align-items-center rounded-pill"
                 >
                   {{ note.file_name }} ({{ note.owner }})
                   <button
