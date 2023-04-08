@@ -23,7 +23,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
 DEBUG = False
 
-ALLOWED_HOSTS = ['aqueous-scrubland-59263.herokuapp.com', 'mapmind.herokuapp.com']
+ALLOWED_HOSTS = ['mapmind.herokuapp.com']
 
 
 # Application definition
@@ -131,4 +131,4 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'mapmindreset@gmail.com'
 # mapmind493
-EMAIL_HOST_PASSWORD = 'pdwwrtlpowkonmpw'
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
