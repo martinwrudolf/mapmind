@@ -7,6 +7,7 @@ from django.conf import settings
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
+from django.utils import timezone
 from .models import Note, Notebook, User
 from .src.ML import machine_learning as ml
 from .src.spacing import spacing_alg as sp
@@ -121,8 +122,8 @@ def upload(request):
         THRESHOLD = 20000
         try:
             # Get the file from the request
-            print("request.FILES['file']", request.FILES['file'])
-            print("request.POST['notebook']", request.POST['notebook'])
+            #print("request.FILES['file']", request.FILES['file'])
+            #print("request.POST['notebook']", request.POST['notebook'])
             file = request.FILES['file']
             if file.content_type not in accepted_content_types:
                 print(f"File {file.name} is not of correct format")
@@ -142,9 +143,6 @@ def upload(request):
             else:
                 # note doesn't exist i notebook so must process notes
                 MODEL_PATH = 'mmapp/ml_models/{0}'
-                print("MODEL_PATH: ", MODEL_PATH)
-                s3 = boto3.client("s3")
-                print("s3 client: ", s3)
                 path2glovekeys = MODEL_PATH.format('glove_keys.pkl')
                 path2glove = MODEL_PATH.format('glove.pkl')
                 # get original embeddings
@@ -161,9 +159,9 @@ def upload(request):
                     print("ml_models")
                     print(os.listdir('mmapp/ml_models'))
                     print("Downloading glove_keys.pkl from s3 to ", path2glovekeys)
-                    aws.s3_write(s3, "test.txt", "testing to see if can connect to aws s3")
+                    aws.s3_write("test.txt", "testing to see if can connect to aws s3")
                     print("After writing test.txt to s3")
-                    aws.s3_download(s3, "glove_keys.pkl", path2glovekeys)
+                    aws.s3_download("glove_keys.pkl", path2glovekeys)
                     print("Downloaded glove.pkl from s3 to ", path2glovekeys)
 
                 glove_keys = ml.load_embeddings(path2glovekeys)
@@ -174,12 +172,12 @@ def upload(request):
                 
                 # save new note files
                 print(f"Saving {vocab_filename} and {corpus_filename} to s3")
-                aws.s3_write(s3, vocab_filename, vocab)
-                aws.s3_write(s3, corpus_filename, corpus)
+                aws.s3_write(vocab_filename, vocab)
+                aws.s3_write(corpus_filename, corpus)
 
                 try:
                     # load notebook vocab
-                    notebook_vocab = aws.s3_read(s3, notebook.vocab)
+                    notebook_vocab = aws.s3_read(notebook.vocab)
                     # append new vocab to total notebook vocab
                     notebook_vocab += " "+vocab
                 except:
@@ -187,7 +185,7 @@ def upload(request):
                     print(f"Notebook {notebook} did not have an associated vocab")
                     return HttpResponse("Database error: Notebook does not have a vocab file")
                 try:
-                    notebook_corpus = aws.s3_read(s3, notebook.corpus)
+                    notebook_corpus = aws.s3_read(notebook.corpus)
                     notebook_corpus += " "+corpus
                 except:
                     print(f"Notebook {notebook} did not have an associated corpus")
@@ -198,34 +196,15 @@ def upload(request):
                 notebook_oov = list(set(notebook_oov))
 
                 # save new notebook files
-                print(f"Saving {notebook.vocab} and {notebook.corpus} to s3")
-                aws.s3_write(s3, notebook.vocab, notebook_vocab.strip())
-                aws.s3_write(s3, notebook.corpus, notebook_corpus.strip())
-
+                aws.s3_write(notebook.vocab, notebook_vocab.strip())
+                aws.s3_write(notebook.corpus, notebook_corpus.strip())
+                #print(Task.objects.all())
                 # train model on notes
                 # are there any new words?
                 if len(oov) != 0:
-                    coocc_arr = ml.create_cooccurrence(notebook_vocab, notebook_oov)
+                    # train the model in the background
+                    train_model(notebook_vocab, notebook_oov, notebook.kv, notebook.kv_vectors)
 
-                    if len(glob.glob(path2glove)) == 0:
-                        # glove not there, need to redownload
-                        print("glove.pkl not found, downloading from s3")
-                        aws.s3_download(s3, "glove.pkl", path2glove)
-                        print("glove.pkl downloaded from s3 to ", path2glove)
-
-                    embed = ml.load_embeddings(path2glove)
-                    finetuned_embed = ml.train_mittens(coocc_arr, notebook_oov, embed)
-
-                    # create kv object and save
-                    kv = ml.create_kv_from_embed(finetuned_embed)
-                    ml.save_kv(kv, MODEL_PATH.format(notebook.kv.replace("/","_")))
-
-                    # upload all the files
-                    print("would upload kv to s3 here")
-                    print(f"Uploading {notebook.kv} to s3 at { MODEL_PATH.format(notebook.kv.replace('/','_')) }")
-                    print(f"Uploading {notebook.kv_vectors} to s3 at {MODEL_PATH.format(notebook.kv_vectors.replace('/','_'))}")
-                    aws.s3_upload(s3, MODEL_PATH.format(notebook.kv.replace("/","_")), notebook.kv)
-                    aws.s3_upload(s3, MODEL_PATH.format(notebook.kv_vectors.replace("/","_")), notebook.kv_vectors)
                 else:
                     print("no oov, no need for training")
 
@@ -288,9 +267,8 @@ def create_notebook(request):
         notebook.save()
 
         # write empty files to s3 for this notebook
-        s3 = boto3.client('s3')
-        aws.s3_write(s3, vocab_filename, "")
-        aws.s3_write(s3, corpus_filename, "")
+        aws.s3_write(vocab_filename, "")
+        aws.s3_write(corpus_filename, "")
         # Return a response
         return HttpResponse("Notebook created successfully")
     else:
@@ -306,10 +284,12 @@ def delete_notebook(request):
         # Get the owner from the request
         owner = request.user
         # Delete the Notebook
-        s3 = boto3.resource('s3')
         notebook = Notebook.objects.get(id=notebook)
 
-        aws.s3_delete_folder(s3, str(owner.id)+'/'+notebook.name+'/')
+        # delete in background
+        aws.s3_delete_folder(str(owner.id)+'/'+notebook.name+'/')
+
+        # delete from database
         notebook.delete()
 
         # Return a response
@@ -325,37 +305,34 @@ def delete_notes(request):
         notes = request.POST.getlist('note')
         # Get the owner from the request
         owner = request.user
-        s3 = boto3.resource('s3')
         notebooks_to_update = set()
         # Delete the Note
         for n in notes:
             n = Note.objects.get(id=n)
-            aws.s3_delete_folder(s3, str(owner.id)+'/'+n.notebooks.name+'/'+n.file_name+'/')
+            aws.s3_delete_folder(str(owner.id)+'/'+n.notebooks.name+'/'+n.file_name+'/')
             notebook = n.notebooks
             notebooks_to_update.add(notebook)
             n.delete()
-        
-        s3 = boto3.client('s3')
+
         for notebook in notebooks_to_update:
             # update notebooks files
             notes_list = Note.objects.filter(notebooks=notebook)
-            aws.notebook_update_files(s3, notebook, notes_list)
+            aws.notebook_update_files(notebook, notes_list)
 
             # need to retrain model
             MODEL_PATH = 'mmapp/ml_models/{0}'
-            s3 = boto3.client("s3")
             path2glovekeys = MODEL_PATH.format('glove_keys.pkl')
             path2glove = MODEL_PATH.format('glove.pkl')
             # get original embeddings
             if len(glob.glob(path2glovekeys+"*")) == 0:
                 # glove words not there, need to redownload
-                aws.s3_download(s3, "glove_keys.pkl", path2glovekeys)
+                aws.s3_download("glove_keys.pkl", path2glovekeys)
 
             glove_keys = ml.load_embeddings(path2glovekeys)
             
             try:
                 # load notebook vocab
-                notebook_vocab = aws.s3_read(s3, notebook.vocab)
+                notebook_vocab = aws.s3_read(notebook.vocab)
             except:
                 # notebook did not have an associated vocab
                 return HttpResponse("Database error: Notebook does not have a vocab file")
@@ -366,22 +343,9 @@ def delete_notes(request):
             # train model on notes
             # are there any new words?
             if len(notebook_oov) != 0:
-                coocc_arr = ml.create_cooccurrence(notebook_vocab, notebook_oov)
-
-                if len(glob.glob(path2glove)) == 0:
-                    aws.s3_download(s3, "glove.pkl", path2glove)
-
-                embed = ml.load_embeddings(path2glove)
-                finetuned_embed = ml.train_mittens(coocc_arr, notebook_oov, embed)
-
-                # create kv object and save
-                kv = ml.create_kv_from_embed(finetuned_embed)
-                ml.save_kv(kv, MODEL_PATH.format(notebook.kv.replace("/","_")))
-
-                # upload all the files
-                print("would upload kv to s3 here")
-                aws.s3_upload(s3, MODEL_PATH.format(notebook.kv.replace("/","_")), notebook.kv)
-                aws.s3_upload(s3, MODEL_PATH.format(notebook.kv_vectors.replace("/","_")), notebook.kv_vectors)
+                # train in background
+                train_model(notebook_vocab, notebook_oov, notebook.kv, notebook.kv_vectors)
+                
             else:
                 print("no oov, no need for training")
         # Return a response
@@ -394,6 +358,7 @@ def edit_notebook(request):
     if not request.user.is_authenticated:
         return redirect('login')
     return HttpResponse(status=200, content="This is the URL where we edit notebooks!")
+
 
 def merge_notebooks(request):
     """Merges notebooks into one notebook."""
@@ -426,8 +391,6 @@ def merge_notebooks(request):
         # Save the Notebook
         new_notebook.save()
         # Return a response
-        s3_res = boto3.resource('s3')
-        s3_client = boto3.client('s3')
         for n in notebooks_to_merge:
             n = Notebook.objects.get(id=n)
             notes = Note.objects.filter(notebooks=n)
@@ -443,15 +406,16 @@ def merge_notebooks(request):
                         corpus=corpus_filename)
                 new_note.save()
                 # move old note files into new notebook folder
-                aws.move_file(s3_res, note.vocab, new_note.vocab)
-                aws.move_file(s3_res, note.corpus, new_note.corpus)
+                aws.move_file(note.vocab, new_note.vocab)
+                aws.move_file(note.corpus, new_note.corpus)
             # need to delete old notebook data
-            aws.s3_delete_folder(s3_res, str(owner.id)+'/'+n.name+'/')
+            # happens in background
+            aws.s3_delete_folder(str(owner.id)+'/'+n.name+'/')
             print("deleting notebook: ", n.name)
             n.delete()
         # update notebook files
         notes_list = Note.objects.filter(notebooks=new_notebook)
-        aws.notebook_update_files(s3_client, new_notebook, notes_list)
+        aws.notebook_update_files(new_notebook, notes_list)
         new_notebook.save()
         # need to train model for new notebook
         MODEL_PATH = 'mmapp/ml_models/{0}'
@@ -460,15 +424,15 @@ def merge_notebooks(request):
         # get original embeddings
         if len(glob.glob(path2glovekeys+"*")) == 0:
             # glove words not there, need to redownload
-            aws.s3_download(s3_client, "glove_keys.pkl", path2glovekeys)
+            aws.s3_download("glove_keys.pkl", path2glovekeys)
 
         glove_keys = ml.load_embeddings(path2glovekeys)
         
         try:
             # load notebook vocab
-            notebook_vocab = aws.s3_read(s3_client, new_notebook.vocab)
+            notebook_vocab = aws.s3_read(new_notebook.vocab)
         except:
-            # notebook did not have an associated vocab
+            # notebook did not have an associated vocab, so it must still be uploading
             return HttpResponse("Database error: Notebook does not have a vocab file")
 
         notebook_oov = [word for word in notebook_vocab.split() if word not in glove_keys]
@@ -477,64 +441,11 @@ def merge_notebooks(request):
         # train model on notes
         # are there any new words?
         if len(notebook_oov) != 0:
-            coocc_arr = ml.create_cooccurrence(notebook_vocab, notebook_oov)
-
-            if len(glob.glob(path2glove)) == 0:
-                aws.s3_download(s3_client, "glove.pkl", path2glove)
-
-            embed = ml.load_embeddings(path2glove)
-            finetuned_embed = ml.train_mittens(coocc_arr, notebook_oov, embed)
-
-            # create kv object and save
-            kv = ml.create_kv_from_embed(finetuned_embed)
-            ml.save_kv(kv, MODEL_PATH.format(new_notebook.kv.replace("/","_")))
-
-            # upload all the files
-            print("would upload kv to s3 here")
-            aws.s3_upload(s3_client, MODEL_PATH.format(new_notebook.kv.replace("/","_")), new_notebook.kv)
-            aws.s3_upload(s3_client, MODEL_PATH.format(new_notebook.kv_vectors.replace("/","_")), new_notebook.kv_vectors)
+            # train model in background
+            train_model(notebook_vocab, notebook_oov, new_notebook.kv, new_notebook.kv_vectors)
         else:
             print("no oov, no need for training")
         return HttpResponse("Notebooks merged successfully")
-
-def notebooks(request):
-    if not request.user.is_authenticated:
-        return redirect('login')
-    owner = request.user
-    notebooks = Notebook.objects.filter(owner=owner)
-    notes = Note.objects.filter(owner=owner)
-    context = {
-        "notebooks": notebooks,
-        "notes": notes,
-    }
-    return render(request, "mmapp/notebooks.html", context)
-
-def delete_notes(request):
-    """Deletes a note."""
-    if not request.user.is_authenticated:
-        return redirect('login')
-    if request.method == 'POST':
-        # Get the notebook name from the request
-        print("Request: ", request.POST)
-        notes = request.POST.getlist('note')
-        # Get the owner from the request
-        owner = request.user
-        # Delete the Notebook
-        for n in notes:
-            n = Note.objects.get(id=n)
-            n.delete()
-        # Return a response
-        print("Notes deleted successfully")
-    return HttpResponse("Notes deleted successfully")
-
-
-# Placeholder response for now
-def edit_notebook(request):
-    if not request.user.is_authenticated:
-        return redirect('login')
-        # return redirect('login')
-    return HttpResponse(status=200, content="This is the URL where we edit notebooks!")
-
 
 def notebooks(request):
     if not request.user.is_authenticated:
@@ -639,11 +550,9 @@ def search_results(request):
 
     print("notesonly: ", notesonly)
     print("spellcheck: ", spellcheck)
-    
 
     notebook = Notebook.objects.get(owner=user, id=notebook_id)
 
-    s3 = boto3.client('s3')
     MODEL_PATH = 'mmapp/ml_models/{0}'
     path2glove = MODEL_PATH.format('glove.pkl')
     
@@ -651,7 +560,7 @@ def search_results(request):
         # load scrubbed vocab for this notebook
         try:
             # if this fails, then the user hasn't uploaded any notes into this notebook yet
-            vocab = aws.s3_read(s3, notebook.vocab)
+            vocab = aws.s3_read(notebook.vocab)
         except:
             vocab = None
     else:
@@ -664,15 +573,15 @@ def search_results(request):
         # doesn't already exist so load it
         # download the files
         try:
-            aws.s3_download(s3, notebook.kv, MODEL_PATH.format(notebook.kv.replace("/","_")))
-            aws.s3_download(s3, notebook.kv_vectors, MODEL_PATH.format(notebook.kv_vectors.replace("/","_")))
+            aws.s3_download(notebook.kv, MODEL_PATH.format(notebook.kv.replace("/","_")))
+            aws.s3_download(notebook.kv_vectors, MODEL_PATH.format(notebook.kv_vectors.replace("/","_")))
 
             kv = ml.load_kv(MODEL_PATH.format(notebook.kv.replace('/','_')))
         except:
             # if we get here, the notebook hasn't been trained yet so just use GloVe
             if len(glob.glob(path2glove)) == 0:
                 # need to load glove embeddings
-                aws.s3_download(s3, "glove.pkl", path2glove)
+                aws.s3_download("glove.pkl", path2glove)
             embed = ml.load_embeddings(path2glove)
             kv = ml.create_kv_from_embed(embed)
     else:
@@ -691,7 +600,9 @@ def search_results(request):
             spell_checked[word] = correct_word
 
     # perform search
-    res_matrix, words, skipwords = ml.search(query, kv, 1, vocab)
+    res_matrix, words, skipwords = ml.search(query, kv, 5, vocab)
+    print("skipping ", skipwords)
+    print(words)
     # send results to spacing alg
     positions = sp.fruchterman_reingold(res_matrix)
 
@@ -724,8 +635,7 @@ def inspect_node(request):
     clicked_word = body['word']
     print(notebook_id, searched_words, clicked_word)
     notebook = Notebook.objects.get(id=notebook_id)
-    s3 = boto3.client('s3')
-    user_notes = aws.s3_read(s3, notebook.corpus)
+    user_notes = aws.s3_read(notebook.corpus)
     print(user_notes)
 
     MODEL_PATH = 'mmapp/ml_models/{0}'
@@ -735,15 +645,15 @@ def inspect_node(request):
         # doesn't already exist so load it
         # download the files
         try:
-            aws.s3_download(s3, notebook.kv, MODEL_PATH.format(notebook.kv.replace("/","_")))
-            aws.s3_download(s3, notebook.kv_vectors, MODEL_PATH.format(notebook.kv_vectors.replace("/","_")))
+            aws.s3_download(notebook.kv, MODEL_PATH.format(notebook.kv.replace("/","_")))
+            aws.s3_download(notebook.kv_vectors, MODEL_PATH.format(notebook.kv_vectors.replace("/","_")))
 
             kv = ml.load_kv(MODEL_PATH.format(notebook.kv.replace('/','_')))
         except:
             # if we get here, the notebook hasn't been trained yet so just use GloVe
             if len(glob.glob(path2glove)) == 0:
                 # need to load glove embeddings
-                aws.s3_download(s3, "glove.pkl", path2glove)
+                aws.s3_download("glove.pkl", path2glove)
             embed = ml.load_embeddings(path2glove)
             kv = ml.create_kv_from_embed(embed)
     else:
@@ -770,3 +680,29 @@ def results(request):
         'notes': notes
     }
     return render(request, "search/results.html", context)
+
+#@background(schedule=10)
+def train_model(vocab, oov, kv_path, kv_vectors_path):
+    MODEL_PATH = 'mmapp/ml_models/{0}'
+    path2glove = MODEL_PATH.format('glove.pkl')
+    coocc_arr = ml.create_cooccurrence(vocab, oov)
+    if len(glob.glob(path2glove)) == 0:
+        aws.s3_download("glove.pkl", path2glove)
+
+    print('loading embed')
+    embed = ml.load_embeddings(path2glove)
+    print('loaded embed')
+    finetuned_embed = ml.train_mittens(coocc_arr, oov, embed)
+    print('trained')
+    print('creating kv')
+    # create kv object and save
+    kv = ml.create_kv_from_embed(finetuned_embed)
+    print('made kv')
+    print('saving kv')
+    ml.save_kv(kv, MODEL_PATH.format(kv_path.replace("/","_")))
+    print('saved kv')
+    # upload all the files
+    print("upload kv to s3 here")
+    # this will happen in background
+    aws.s3_upload(MODEL_PATH.format(kv_path.replace("/","_")), kv_path)
+    aws.s3_upload(MODEL_PATH.format(kv_vectors_path.replace("/","_")), kv_vectors_path)
