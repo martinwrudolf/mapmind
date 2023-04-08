@@ -82,11 +82,11 @@ def register(request):
         print("username", username, "password", password, "email", email)
         try:
             user = User.objects.get(username=username)
-            return HttpResponse("Username is not unique!")
+            return HttpResponse(status=400, content="Username is not unique!")
         except User.DoesNotExist:
             try: 
                 user = User.objects.get(email=email)
-                return HttpResponse("Email is not unique!")
+                return HttpResponse(status=400, content="Email is not unique!")
             except User.DoesNotExist:
                 newUser = User.objects.create_user(
                     username,
@@ -97,10 +97,10 @@ def register(request):
                     validate_password(password, newUser, None)
                     newUser.save()
                     print("Creating new user, ", newUser)
-                    return redirect('login')
+                    return HttpResponse(status=201)
                 except ValidationError as error:
                     newUser.delete()
-                    return HttpResponse(str(error.args[0]))
+                    return HttpResponse(status=400, content=str(error.args[0]))
           
    
 def upload(request):
@@ -239,7 +239,7 @@ Create a new notebook for the user.
 """
 def create_notebook(request):
     if not request.user.is_authenticated:
-        return redirect('login')
+        return HttpResponse(status=401)
     if request.method == 'POST':
         # Get the notebook name from the request
         print("Request: ", request.POST)
@@ -249,7 +249,7 @@ def create_notebook(request):
         if Notebook.objects.filter(name=notebook,
                                    owner=owner).exists():
             # notebook already exists
-            return HttpResponse("Notebook already exists")
+            return HttpResponse(status=400, content="Notebook already exists")
 
         # Create paths to files for upload/download
         vocab_filename = str(owner.id)+"/"+notebook+"/vocab.txt"
@@ -270,14 +270,14 @@ def create_notebook(request):
         aws.s3_write(vocab_filename, "")
         aws.s3_write(corpus_filename, "")
         # Return a response
-        return HttpResponse("Notebook created successfully")
+        return HttpResponse(content=201, status="Notebook created successfully")
     else:
-        return HttpResponse("Notebook creation failed")
+        return HttpResponse(status=405)
     
 def delete_notebook(request):
     """Deletes a notebook and all notes associated with it."""
     if not request.user.is_authenticated:
-        return redirect('login')
+        return HttpResponse(status=401)
     if request.method == 'POST':
         # Get the notebook name from the request
         notebook = request.POST['notebook']
@@ -293,12 +293,14 @@ def delete_notebook(request):
         notebook.delete()
 
         # Return a response
-        return HttpResponse("Notebook deleted successfully")
+        return HttpResponse(status=201, content="Notebook deleted successfully")
+    else:
+        return HttpResponse(status=405)
 
 def delete_notes(request):
     """Deletes a note."""
     if not request.user.is_authenticated:
-        return redirect('login')
+        return HttpResponse(status=401)
     if request.method == 'POST':
         # Get the note name from the request
         print("Request: ", request.POST)
@@ -350,7 +352,9 @@ def delete_notes(request):
                 print("no oov, no need for training")
         # Return a response
         print("Notes deleted successfully")
-    return HttpResponse("Notes deleted successfully")
+        return HttpResponse(status=200, content="Notes deleted successfully")
+    else:
+        return HttpResponse(status=405)
 
 
 # Placeholder response for now
@@ -363,7 +367,7 @@ def edit_notebook(request):
 def merge_notebooks(request):
     """Merges notebooks into one notebook."""
     if not request.user.is_authenticated:
-        return redirect('login')
+        return HttpResponse(status=401)
     if request.method == 'POST':
         # Get the notebook name from the request
         notebooks_to_merge = request.POST.getlist('notebooks[]')
@@ -445,7 +449,9 @@ def merge_notebooks(request):
             train_model(notebook_vocab, notebook_oov, new_notebook.kv, new_notebook.kv_vectors)
         else:
             print("no oov, no need for training")
-        return HttpResponse("Notebooks merged successfully")
+        return HttpResponse(status=201, content="Notebooks merged successfully")
+    else:
+        return HttpResponse(status=405)
 
 def notebooks(request):
     if not request.user.is_authenticated:
@@ -472,11 +478,11 @@ def edit_username(request):
         username = request.POST["username"]
         try:
             user = User.objects.get(username=username)
-            return HttpResponse("Username is not unique!")
+            return HttpResponse(status=400, content="Username is not unique!")
         except User.DoesNotExist:
             request.user.username = username
             request.user.save()
-            return redirect('settings')
+            return HttpResponse(status=201, content="Username edited successfully!")
     else:
         return HttpResponse(status=405)
     
@@ -487,11 +493,11 @@ def edit_email(request):
         email = request.POST["email"]
         try: 
             user = User.objects.get(email=email)
-            return HttpResponse("Email is not unique!")
+            return HttpResponse(status=400, content="Email is not unique!")
         except User.DoesNotExist:
             request.user.email = email
             request.user.save()
-            return redirect('settings')
+            return HttpResponse(status=201, content="Email edited succesfully")
     else:
         return HttpResponse(status=405)
     
@@ -502,7 +508,7 @@ def delete_account(request):
         try:
             user = User.objects.get(username=request.user.username)
             user.delete()
-            return redirect('search_results')
+            return HttpResponse(status=200)
         except User.DoesNotExist:
             # should never happen....but who knows?
             return HttpResponse(status=400)

@@ -37,6 +37,9 @@
       </div>
 
       <!-- Notebook creation form -->
+      <div class="alert alert-danger" role="alert" id="creation_error" hidden>
+        Notebook creation failed!
+      </div>
       <form id="create-notebook-form">
         {% csrf_token %}
         <div class="input-group mb-3">
@@ -55,6 +58,9 @@
       </form>
       <br />
       <!-- Merge notebooks form -->
+      <div class="alert alert-danger" role="alert" id="merge_error" hidden>
+        Notebook merging failed!
+      </div>
       <form id="merge-notebooks-form" method="post" class="mt-4">
         {% csrf_token %}
         <div class="mb-3">
@@ -85,6 +91,9 @@
       <br />
       <h2 class="mt-3 mb-3">Notebooks</h2>
       <!-- Notebooks accordion -->
+      <div class="alert alert-danger" role="alert" id="notebook_error" hidden>
+        Notebook failed!
+      </div>
       <div class="accordion mt-4" id="notebooks-accordion">
         {% for notebook in notebooks %}
         <div class="accordion-item">
@@ -201,6 +210,12 @@
         return /^(GET|HEAD|OPTIONS|TRACE)$/.test(method);
       }
 
+      function clearErrorMesages() {
+        document.getElementById("creation_error").hidden = true;
+        document.getElementById("merge_error").hidden = true;
+        document.getElementById("notebook_error").hidden = true;
+      }
+
       // Set the CSRF header for AJAX requests
       $.ajaxSetup({
         beforeSend: function (xhr, settings) {
@@ -224,6 +239,18 @@
           success: function () {
             location.reload();
           },
+          error: function(jqXhr, textStatus, errorMessage){
+                if (jqXhr.status == 400) {
+                    clearErrorMesages();
+                    document.getElementById("creation_error").hidden = false;
+                    document.getElementById("creation_error").innerText = jqXhr.responseText;
+                }
+                else {
+                    clearErrorMesages();
+                    document.getElementById("creation_error").hidden = false;
+                    document.getElementById("creation_error").innerText = "Error when creating notebooks!";
+                }
+          }
         });
       });
 
@@ -245,6 +272,18 @@
             console.log("Success with merging notebooks: ", notebooks);
             location.reload();
           },
+          error: function(jqXhr, textStatus, errorMessage){
+                if (jqXhr.status == 400) {
+                    clearErrorMesages();
+                    document.getElementById("merge_error").hidden = false;
+                    document.getElementById("merge_error").innerText = jqXhr.responseText;
+                }
+                else {
+                    clearErrorMesages();
+                    document.getElementById("merge_error").hidden = false;
+                    document.getElementById("merge_error").innerText = "Error when merging notebooks!";
+                }
+          }
         });
       });
 
@@ -261,6 +300,18 @@
           success: function () {
             location.reload();
           },
+          error: function(jqXhr, textStatus, errorMessage){
+                if (jqXhr.status == 400) {
+                    clearErrorMesages();
+                    document.getElementById("notebook_error").hidden = false;
+                    document.getElementById("notebook_error").innerText = jqXhr.responseText;
+                }
+                else {
+                    clearErrorMesages();
+                    document.getElementById("notebook_error").hidden = false;
+                    document.getElementById("notebook_error").innerText = "Error when deleting notes!";
+                }
+          }
         });
       });
 
@@ -277,6 +328,18 @@
           success: function () {
             location.reload();
           },
+          error: function(jqXhr, textStatus, errorMessage){
+                if (jqXhr.status == 400) {
+                    clearErrorMesages();
+                    document.getElementById("notebook_error").hidden = false;
+                    document.getElementById("notebook_error").innerText = jqXhr.responseText;
+                }
+                else {
+                    clearErrorMesages();
+                    document.getElementById("notebook_error").hidden = false;
+                    document.getElementById("notebook_error").innerText = "Error when deleting notebooks!";
+                }
+          }
         });
       });
     </script>
