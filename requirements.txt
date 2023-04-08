@@ -18,7 +18,6 @@ joblib==1.2.0
 kiwisolver==1.4.4
 lxml==4.9.2
 MarkupSafe==2.1.2
-matplotlib==3.7.1
 mittens==0.2
 mpld3==0.5.9
 nltk==3.8.1
@@ -37,7 +36,6 @@ scipy==1.10.1
 six==1.16.0
 smart-open==6.3.0
 sqlparse==0.4.3
-selenium==4.8.2
 threadpoolctl==3.1.0
 tqdm==4.65.0
 typing_extensions==4.5.0
