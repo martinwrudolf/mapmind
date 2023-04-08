@@ -148,11 +148,9 @@ def upload(request):
                 # get original embeddings
                 if len(glob.glob(path2glovekeys+"*")) == 0:
                     # glove words not there, need to redownload
-                    print("glove_keys.pkl not found, downloading from s3")
-                    print(os.listdir())
                     # listdir for mmapp/ml_models
-                    print("mmapp")
-                    print(os.listdir('mmapp'))
+                    print("ml_models")
+                    print(os.listdir('mmapp/ml_models'))
                     # If mmapp/ml_models doesn't exist, create it
                     if not os.path.exists('mmapp/ml_models'):
                         os.makedirs('mmapp/ml_models')
