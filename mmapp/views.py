@@ -344,6 +344,9 @@ def delete_notes(request):
             # are there any new words?
             if len(notebook_oov) != 0:
                 # train in background
+                print("training model")
+                print("notebook.kv: ", notebook.kv)
+                print("notebook.kv_vectors: ", notebook.kv_vectors)
                 train_model(notebook_vocab, notebook_oov, notebook.kv, notebook.kv_vectors)
                 
             else:
@@ -573,6 +576,11 @@ def search_results(request):
         # doesn't already exist so load it
         # download the files
         try:
+            print("downloading kv files")
+            print("notebook.kv: ", notebook.kv)
+            print("notebook.kv_vectors: ", notebook.kv_vectors)
+            print("MODEL_PATH.format(notebook.kv.replace('/','_')): ", MODEL_PATH.format(notebook.kv.replace("/","_")))
+            print("MODEL_PATH.format(notebook.kv_vectors.replace('/','_')): ", MODEL_PATH.format(notebook.kv_vectors.replace("/","_")))
             aws.s3_download(notebook.kv, MODEL_PATH.format(notebook.kv.replace("/","_")))
             aws.s3_download(notebook.kv_vectors, MODEL_PATH.format(notebook.kv_vectors.replace("/","_")))
 
@@ -704,5 +712,11 @@ def train_model(vocab, oov, kv_path, kv_vectors_path):
     # upload all the files
     print("upload kv to s3 here")
     # this will happen in background
+    print("upload kv_vectors to s3 here")
+    print("kv_path: ", kv_path)
+    print("kv_vectors_path: ", kv_vectors_path)
+    print('MODEL_PATH.format(kv_path.replace("/","_")): ', MODEL_PATH.format(kv_path.replace("/","_")))
+    print('MODEL_PATH.format(kv_vectors_path.replace("/","_")): ', MODEL_PATH.format(kv_vectors_path.replace("/","_")))
     aws.s3_upload(MODEL_PATH.format(kv_path.replace("/","_")), kv_path)
     aws.s3_upload(MODEL_PATH.format(kv_vectors_path.replace("/","_")), kv_vectors_path)
+    print("uploaded kv to s3")
