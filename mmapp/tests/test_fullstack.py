@@ -282,7 +282,13 @@ class NotebooksTests(LiveServerTestCase):
         self.driver.current_url == self.live_server_url + "/notebooks"
 
     def testNotebookCreation(self):
-        pass
+        notebook = self.driver.find_element(By.ID, "notebook")
+        notebook.send_keys("testnotebook")
+        submit = self.driver.find_element(By.ID, "submit")
+        submit.click()
+        assert self.driver.current_url == self.live_server_url + "/notebooks"
+        notebook_list = self.driver.find_element(By.ID, "notebooks-select")
+        # trying to figure out how to find if the notebook shows up in the list
 
     def testUpload(self):
         pass
