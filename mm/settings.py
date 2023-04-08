@@ -74,7 +74,7 @@ MAX_CONN_AGE = 600
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
 DATABASES = {
-    'default': dj_database_url.config(default=os.environ.get('HEROKU_POSTGRESQL_ORANGE_URL'))
+    'default': dj_database_url.config()
 }
 
 
