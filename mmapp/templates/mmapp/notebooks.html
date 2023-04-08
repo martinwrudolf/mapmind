@@ -137,9 +137,6 @@
               <!-- Add note form -->
               <form
                 class="my-3"
-                method="post"
-                action="{% url 'upload' %}"
-                enctype="multipart/form-data"
                 id="upload-note-form"
               >
                 {% csrf_token %}
@@ -237,7 +234,7 @@
             notebook: notebookName,
           },
           success: function () {
-            location.reload();
+            window.location.href = "/notebooks";
           },
           error: function(jqXhr, textStatus, errorMessage){
                 if (jqXhr.status == 400) {
@@ -270,7 +267,7 @@
           },
           success: function () {
             console.log("Success with merging notebooks: ", notebooks);
-            location.reload();
+            window.location.href = "/notebooks";
           },
           error: function(jqXhr, textStatus, errorMessage){
                 if (jqXhr.status == 400) {
@@ -286,8 +283,7 @@
           }
         });
       });
-
-      // Delete note button event listener
+      
       $(".delete-note").click(function () {
         const noteId = $(this).data("note-id");
         console.log(noteId, 01);
@@ -298,7 +294,7 @@
             note: noteId,
           },
           success: function () {
-            location.reload();
+            window.location.href = "/notebooks";
           },
           error: function(jqXhr, textStatus, errorMessage){
                 if (jqXhr.status == 400) {
@@ -315,6 +311,34 @@
         });
       });
 
+      // Delete note button event listener
+      $("#upload-note-form").submit(function (e) {
+        console.log("clicked?");
+        e.preventDefault();
+        $.ajax({
+          url: `{% url 'upload' %}`,
+          type: "POST",
+          processData: false,
+          contentType: false,
+          data: new FormData(document.querySelector("#upload-note-form")),
+          success: function () {
+            window.location.href = "/notebooks";
+          },
+          error: function(jqXhr, textStatus, errorMessage){
+                if (jqXhr.status == 400) {
+                    clearErrorMesages();
+                    document.getElementById("notebook_error").hidden = false;
+                    document.getElementById("notebook_error").innerText = jqXhr.responseText;
+                }
+                else {
+                    clearErrorMesages();
+                    document.getElementById("notebook_error").hidden = false;
+                    document.getElementById("notebook_error").innerText = "Error when uploading notes!";
+                }
+          }
+        });
+      });
+
       // Delete notebook button event listener
       $(".delete-notebook").click(function () {
         const notebookId = $(this).data("notebook-id");
@@ -326,7 +350,7 @@
             notebook: notebookId,
           },
           success: function () {
-            location.reload();
+            window.location.href = "/notebooks";
           },
           error: function(jqXhr, textStatus, errorMessage){
                 if (jqXhr.status == 400) {

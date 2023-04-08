@@ -352,6 +352,10 @@
                   console.log(obj);
                   generateSidebar(obj);
                 }
+                else if (request.status) {
+                  document.getElementById("search-error").hidden = false;
+                  document.getElementById("search-error").innerText = request.responseText;
+                }
               }
             };
             let send_obj_json = {

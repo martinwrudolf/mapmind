@@ -127,10 +127,10 @@ def upload(request):
             file = request.FILES['file']
             if file.content_type not in accepted_content_types:
                 print(f"File {file.name} is not of correct format")
-                return HttpResponse("File is not of correct format")
+                return HttpResponse(status=400, content="File is not of correct format")
             if file.size > THRESHOLD:
                 print(f"File {file.name} is too large")
-                return HttpResponse("File is too large")
+                return HttpResponse(status=400, content="File is too large")
             
             notebook = request.POST['notebook']
             notebook = Notebook.objects.get(id=notebook, owner=owner)
@@ -139,7 +139,7 @@ def upload(request):
                                    owner=owner,
                                    notebooks=notebook).exists():
                 print(f"Note file {file.name} already exists in this notebook")
-                return HttpResponse("Note file already exists in this notebook")
+                return HttpResponse(status=400, content="Note file already exists in this notebook")
             else:
                 # note doesn't exist i notebook so must process notes
                 MODEL_PATH = 'mmapp/ml_models/{0}'
@@ -183,13 +183,15 @@ def upload(request):
                 except:
                     # notebook did not have an associated vocab
                     print(f"Notebook {notebook} did not have an associated vocab")
-                    return HttpResponse("Database error: Notebook does not have a vocab file")
+                    return HttpResponse(status=400,
+                                        content="Database error: Notebook does not have a vocab file")
                 try:
                     notebook_corpus = aws.s3_read(notebook.corpus)
                     notebook_corpus += " "+corpus
                 except:
                     print(f"Notebook {notebook} did not have an associated corpus")
-                    return HttpResponse("Database error: Notebook does not have a corpus file")
+                    return HttpResponse(status=400,
+                                        content="Database error: Notebook does not have a corpus file")
 
                 notebook_oov = [word for word in notebook_vocab.split() if word not in glove_keys]
                 notebook_oov += oov
@@ -218,14 +220,14 @@ def upload(request):
                             corpus=corpus_filename)
                 note.save()
                 print(f"Note {note} saved to database")
-                return HttpResponse("File uploaded successfully")
+                return HttpResponse(status=200, content="File uploaded successfully")
         except Notebook.DoesNotExist:
             print("Notebook does not exists")
-            return HttpResponse("Notebook does not exists")
+            return HttpResponse(status=400, content="Notebook does not exists")
         except Exception as e:
             print("Bad request")
             print("Unexpected error:", e)
-            return HttpResponse("Bad request")
+            return HttpResponse(stauts=400, content="Bad request")
     if request.method == 'GET':
         notebooks = Notebook.objects.filter(owner=owner)
         context = {

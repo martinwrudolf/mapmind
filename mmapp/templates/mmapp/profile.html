@@ -207,7 +207,7 @@
             username: username
           },
           success: function (data, status, xhr) {
-            window.location.reload();
+            window.location.href = "/settings";
           },
           error: function(jqXhr, textStatus, errorMessage){
                 if (jqXhr.status == 400) {
@@ -232,7 +232,7 @@
             email: email
           },
           success: function (data, status, xhr) {
-            window.location.reload();
+            window.location.href = "/settings";
           },
           error: function(jqXhr, textStatus, errorMessage){
                 if (jqXhr.status == 400) {
