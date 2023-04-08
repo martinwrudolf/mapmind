@@ -24,11 +24,26 @@
     />
     <link rel="stylesheet" href="../styles.css" />
     <title>MapMind</title>
+    <style>
+      .search-bar-container {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 999;
+        padding: 10px;
+      }
+
+      body {
+        margin-bottom: 60px; /* make room for the fixed search bar */
+        overflow:hidden;
+      }
+    </style>
   </head>
   <body>
     <div class="container">
       <div class="row my-1">
-        <div class="col-10"></div>
+        <div class="col-9"></div>
         <div class="col">
           <a href="/" class="mx-2">
             <i class="bi bi-house-door" style="font-size: 2rem"></i>
@@ -39,62 +54,57 @@
           <a href="/settings" class="mx-2">
             <i class="bi bi-gear" style="font-size: 2rem"></i>
           </a>
+          <a href="/accounts/logout" class="mx-2">
+            <i class="bi bi-door-open" style="font-size: 2rem"></i>
+          </a>
         </div>
       </div>
 
       <div class="row">
-        <div class="col-md-8">
-          <div id="viewbox" style="height: 400px; width: 300px"></div>
-        </div>
-        <div class="col-md-4">
-          <ul class="list-group my-5 mx-2 rounded" id="sidebar">
-            <!-- <li class="list-group-item rounded">Item 1</li>
-            <li class="list-group-item rounded">Item 2</li>
-            <li class="list-group-item rounded">Item 3</li>
-            <li class="list-group-item rounded">Item 4</li> -->
-          </ul>
+        <div id="viewbox" style="height: 100vh; width: 100vw"></div>
+        <div class="col-md-4" style="position:absolute">
+          <ul class="list-group my-5 mx-2 rounded" id="sidebar"></ul>
         </div>
       </div>
       <div class="row">
         <div class="col"></div>
         <div class="search-bar mx-10">
-          <form
-            id="search-form"
-            class="d-flex justify-content-center mb-5"
-            method="get"
-          >
-            <div class="col-8">
-              <input
-                type="text"
-                id="search_words"
-                name="search_words"
-                class="form-control w-10 rounded"
-                placeholder="Search..."
-                required
-              />
-            </div>
+          <div class="col search-bar-container py-3">
+            <form
+              id="search-form"
+              class="d-flex justify-content-center mb-5"
+              method="get"
+            >
+              <div class="col-8">
+                <input
+                  type="text"
+                  id="search_words"
+                  name="search_words"
+                  class="form-control w-10 rounded-pill"
+                  placeholder="Search..."
+                  required
+                />
+              </div>
 
-            <div class="col-2">
-              <select
-                id="notebook"
-                name="notebook"
-                class="form-select ms-2 rounded"
-                aria-label="Select notebook"
-                required
-              >
-                <option value="{{ current_notebook.id }}">
-                  {{ current_notebook.name }}
-                </option>
-                {% for notebook in notebooks %}
-                <option value="{{ notebook.id }}">{{ notebook.name }}</option>
-                {% endfor %}
-              </select>
-            </div>
+              <div class="col-2">
+                <select
+                  id="notebook"
+                  name="notebook"
+                  class="form-select ms-2 rounded rounded-pill"
+                  aria-label="Select notebook"
+                  required
+                >
+                  {% for notebook in notebooks %}
+                  <option value="{{ notebook.id }}">{{ notebook.name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
 
-            <button type="submit" class="btn btn-primary ms-2 rounded">
-              Search
-            </button>
-          </form>
+              <button type="submit" class="btn btn-primary ms-3 rounded-pill">
+                Search
+              </button>
+            </form>
+          </div>
         </div>
         <div class="col"></div>
       </div>
@@ -208,7 +218,7 @@
 
       var div = document.getElementById("viewbox");
       const scene = new THREE.Scene();
-      scene.background = new THREE.Color("skyblue");
+      scene.background = new THREE.Color(0xffffff);
       const camera = new THREE.PerspectiveCamera(
         75,
         div.clientWidth / div.clientHeight,
@@ -225,7 +235,7 @@
       // const cube = new THREE.Mesh( geometry, material );
       // scene.add( cube );
 
-      const axesHelper = new THREE.AxesHelper(dis);
+      const axesHelper = new THREE.AxesHelper(dis * 20);
       scene.add(axesHelper);
 
       computeNewCameraPostion();
@@ -241,7 +251,7 @@
       var searched_terms = [];
 
       // setup for when select menu implmented
-      // let notebookId = document.getElementById("notebowndropdown").value
+      var notebookId = document.getElementById("notebook").value;
 
       function generateText(font) {
         //https://stackoverflow.com/questions/43305020/how-to-use-the-context-variables-passed-from-django-in-javascript
@@ -250,17 +260,39 @@
         for (let i = 0; i < list.length; i++) {
           const geometry = new TextGeometry(list[i].string, {
             font: font,
-            size: 1,
-            height: 1,
+            size: 1.25,
+            height: 0.1,
           });
-          const textMesh = new THREE.Mesh(geometry);
-          textMesh.position.x = 5 * list[i].pos[0];
-          textMesh.position.y = 5 * list[i].pos[2];
-          textMesh.position.z = 5 * list[i].pos[1];
-          textMesh.userData = list[i].string;
+          geometry.translate(15 * list[i].pos[0],  15 * list[i].pos[2], 15 * list[i].pos[1]);
+          const material = new THREE.MeshBasicMaterial({color: 0x000000});
+          const textMesh = new THREE.Mesh(geometry, material);
+          // textMesh.position.x = 5 * list[i].pos[0];
+          // textMesh.position.y = 5 * list[i].pos[2];
+          // textMesh.position.z = 5 * list[i].pos[1];
+
+          // https://threejs.org/docs/#api/en/math/Box3
           searched_terms.push(list[i].string);
+          const box = new THREE.Box3();
+          textMesh.geometry.computeBoundingBox();
+          console.log(textMesh.geometry.boundingBox);
+          box.copy(textMesh.geometry.boundingBox).applyMatrix4(textMesh.matrixWorld);
+          const center = new Vector3()
+          box.getCenter(center)
+          console.log(center);
+          const size = new Vector3()
+          box.getSize(size);
+          console.log(size);
+          const boxGeo = new THREE.BoxGeometry(size.x, size.y, size.z);
+          const material_col = new THREE.MeshBasicMaterial({visible: false});
+          const collMesh = new THREE.Mesh(boxGeo, material_col);
+          collMesh.position.x = center.x;
+          collMesh.position.y = center.y;
+          collMesh.position.z = center.z;
+          console.log(collMesh);
           scene.add(textMesh);
-          meshes.push(textMesh);
+          scene.add(collMesh);
+          collMesh.userData = list[i].string;
+          meshes.push(collMesh);
           textMesh.lookAt(camera.position);
         }
 
@@ -304,25 +336,25 @@
           const intersects = raycaster.intersectObjects(meshes, false);
           if (intersects.length > 0) {
             // just to verify the sidebar function works
-            generateSidebar(["hello", "world", "item", "yes"]);
+            // generateSidebar(["hello", "world", "item", "yes"]);
 
             // send request to backend
             var request = new XMLHttpRequest();
-            request.open("GET", "/inspect_node");
+            request.open("POST", "/inspect_node");
+            request.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
             request.onreadystatechange = function () {
               if (request.readyState == 4) {
                 if (request.status == 200) {
                   let obj = JSON.parse(request.responseText);
+                  console.log(obj);
                   generateSidebar(obj);
                 }
               }
             };
             let send_obj_json = {
-              // need the dropdown menu for notebook id
-              // "notebook": notebookId
-              notebook: "dummynotebookid",
-              searchedTerms: searched_terms,
-              searchedWord: intersects[0].object.userData,
+              notebook_id: document.getElementById("notebook").value,
+              searched_words: searched_terms,
+              word: intersects[0].object.userData,
             };
             request.send(JSON.stringify(send_obj_json));
             console.log(intersects[0].object.userData);

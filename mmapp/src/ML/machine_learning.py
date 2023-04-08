@@ -22,7 +22,9 @@ from io import TextIOWrapper
 
 # PROCESS USER NOTES
 def process_user_notes(notefile, keys):
-    translator = str.maketrans(dict.fromkeys(string.punctuation.replace('-',''))) #map punctuation to space
+    tmp_dict = dict.fromkeys(string.punctuation.replace('-',''))
+    tmp_dict['/'] = ' '
+    translator = str.maketrans(tmp_dict) #map punctuation to space
     corpus = ""
     if notefile.content_type in ['application/msword','application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/rtf']:
         doc = docx.Document(notefile)
@@ -173,8 +175,10 @@ def search(searched_words, kv, num_results, vocab):
 
 def inspect_node(word, searched_words, user_notes, kv, num_results=10):
     # get indices for all searched words
+    user_notes = user_notes.split()
     searched_words_dict = {}
     clicked_word = [i for i,x in enumerate(user_notes) if x==word]
+
     # which word is closest?
     search_sorted_by_sim = []
     for search in searched_words:
@@ -192,8 +196,10 @@ def inspect_node(word, searched_words, user_notes, kv, num_results=10):
     j=0 # the index of the current search word
     k=0 # which search word
     # IF WE WANT TO SORT RESULTS BY ONES THAT ARE CLOSE TO THE SEARCHED WORDS, KEEP THIS UNCOMMENTED
+
     while (i < len(clicked_word) and k < len(search_sorted_by_sim)):
         compare_indices = searched_words_dict[search_sorted_by_sim[k][0]]
+
         if j == len(compare_indices):
             j = 0
             i=0
@@ -201,9 +207,18 @@ def inspect_node(word, searched_words, user_notes, kv, num_results=10):
             continue
         if abs(clicked_word[i] - compare_indices[j]) < thresh:
             # found some that are close
-            if user_notes[clicked_word[i]-10:clicked_word[i]+10] not in results:
-                results.append(user_notes[clicked_word[i]-10:clicked_word[i]+10])
+            st = clicked_word[i]-10
+            en = clicked_word[i]+10
+            if clicked_word[i] < 10:
+                st = 0
+            elif clicked_word[i] > (len(user_notes)-10):
+                en = len(user_notes)
+            sl = user_notes[st:en] 
+            if sl not in results:
+                results.append(sl)
                 i+=1
+        if i == len(clicked_word):
+            break
         if clicked_word[i] > compare_indices[j] + 100:
             j+=1
         elif compare_indices[j] > clicked_word[i] + 100:
@@ -215,8 +230,20 @@ def inspect_node(word, searched_words, user_notes, kv, num_results=10):
     # DON'T COMMENT THIS OUT THO WE NEED IT WITH THE WHILE LOOP
     i = 0
     while len(results) < num_results and i < len(clicked_word):
-        results.append(user_notes[i-10:i+10])
+        st = clicked_word[i]-10
+        en = clicked_word[i]+10
+        if clicked_word[i] < 10:
+            st = 0
+        elif clicked_word[i] > (len(user_notes)-10):
+            en = len(user_notes)
+        sl = user_notes[st:en] 
+        if sl not in results:
+            results.append(sl)
         i += 1
+    for i in range(len(results)):
+        temp = ' '.join(results[i])
+        results[i] = temp
+
     return results
 
 if __name__ == "__main__":
