@@ -159,9 +159,9 @@ def upload(request):
                     print("ml_models")
                     print(os.listdir('mmapp/ml_models'))
                     print("Downloading glove_keys.pkl from s3 to ", path2glovekeys)
-                    aws.s3_write(s3, "test.txt", "testing to see if can connect to aws s3")
+                    aws.s3_write("test.txt", "testing to see if can connect to aws s3")
                     print("After writing test.txt to s3")
-                    aws.s3_download(s3, "glove_keys.pkl", path2glovekeys)
+                    aws.s3_download("glove_keys.pkl", path2glovekeys)
                     print("Downloaded glove.pkl from s3 to ", path2glovekeys)
 
                 glove_keys = ml.load_embeddings(path2glovekeys)
