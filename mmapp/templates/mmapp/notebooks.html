@@ -181,6 +181,10 @@
     </div>
 
     <script>
+      // Error messages from:
+      // https://getbootstrap.com/docs/4.3/components/alerts/
+      // https://www.tutorialsteacher.com/jquery/jquery-ajax-method
+      // http://api.jquery.com/jQuery.ajax/#jqXHR
       // Get the CSRF token from the cookie
       function getCookie(name) {
         let cookieValue = null;
@@ -311,7 +315,10 @@
         });
       });
 
-      // Delete note button event listener
+      // Upload note listener
+      // https://stackoverflow.com/questions/2320069/jquery-ajax-file-upload
+      // https://developer.mozilla.org/en-US/docs/Web/API/FormData/Using_FormData_Objects
+      // https://stackoverflow.com/questions/10324594/jquery-illegal-invocation
       $("#upload-note-form").submit(function (e) {
         console.log("clicked?");
         e.preventDefault();

@@ -117,7 +117,11 @@
       integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
       crossorigin="anonymous"
     >
-
+     // Error messages from:
+      // https://getbootstrap.com/docs/4.3/components/alerts/
+      // https://www.tutorialsteacher.com/jquery/jquery-ajax-method
+      // http://api.jquery.com/jQuery.ajax/#jqXHR
+    
       $("#search-form").submit(function (e) {
         e.preventDefault();
         var search_words = $("#search_words").val();
@@ -132,6 +136,16 @@
           success: function (data) {
             console.log(data);
           },
+          error: function(jqXhr, textStatus, errorMessage) {
+            if (jqXhr.status == 400) {
+              document.getElementById("search_error").hidden = false;
+              document.getElementById("search_error").innerText = jqXhr.responseText;
+            }
+            else {
+              document.getElementById("search_error").hidden = false;
+              document.getElementById("search_error").innerText = "Error when registering";
+            }
+          }
         });
       });
     </script>
