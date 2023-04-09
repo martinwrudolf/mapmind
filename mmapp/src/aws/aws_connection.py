@@ -58,7 +58,7 @@ def move_file(src, dest):
 def train_on_ec2(vocab_path, kv_path, kv_vectors_path):
     print("python3 train_model.py {} {} {}".format(vocab_path, kv_path, kv_vectors_path))
     ec2_id = "i-063cef059dc0f3ca7"
-    ec2 = boto3.client("ssm")
+    ec2 = boto3.client("ssm", region_name='us-east-2')
 
     resp = ec2.send_command(
         InstanceIds=[ec2_id],
