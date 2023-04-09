@@ -17,6 +17,7 @@ from spellchecker import SpellChecker
 from nltk.stem import WordNetLemmatizer
 import boto3
 from io import TextIOWrapper
+from smart_open import open
 
 # This is the real machine learning code! woo
 
