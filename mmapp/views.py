@@ -149,16 +149,10 @@ def upload(request):
                 if len(glob.glob(path2glovekeys+"*")) == 0:
                     # glove words not there, need to redownload
                     # listdir for mmapp/ml_models
-                    print("ml_models")
-                    print(os.listdir('mmapp/ml_models'))
                     # If mmapp/ml_models doesn't exist, create it
                     if not os.path.exists('mmapp/ml_models'):
                         os.makedirs('mmapp/ml_models')
-                    print("ml_models")
-                    print(os.listdir('mmapp/ml_models'))
-                    print("Downloading glove_keys.pkl from s3 to ", path2glovekeys)
-                    aws.s3_write("test.txt", "testing to see if can connect to aws s3")
-                    print("After writing test.txt to s3")
+
                     aws.s3_download("glove_keys.pkl", path2glovekeys)
                     print("Downloaded glove.pkl from s3 to ", path2glovekeys)
 
