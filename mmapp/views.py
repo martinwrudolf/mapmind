@@ -203,8 +203,8 @@ def upload(request):
                 # are there any new words?
                 if len(oov) != 0:
                     # train the model in the background
-                    train_model(notebook_vocab, notebook_oov, notebook.kv, notebook.kv_vectors)
-
+                    #train_model(notebook_vocab, notebook_oov, notebook.kv, notebook.kv_vectors)
+                    aws.train_on_ec2(notebook.vocab, notebook.kv, notebook.kv_vectors)
                 else:
                     print("no oov, no need for training")
 
@@ -344,8 +344,8 @@ def delete_notes(request):
             # are there any new words?
             if len(notebook_oov) != 0:
                 # train in background
-                train_model(notebook_vocab, notebook_oov, notebook.kv, notebook.kv_vectors)
-                
+                #train_model(notebook_vocab, notebook_oov, notebook.kv, notebook.kv_vectors)
+                aws.train_on_ec2(notebook.vocab, notebook.kv, notebook.kv_vectors)
             else:
                 print("no oov, no need for training")
         # Return a response
@@ -442,7 +442,8 @@ def merge_notebooks(request):
         # are there any new words?
         if len(notebook_oov) != 0:
             # train model in background
-            train_model(notebook_vocab, notebook_oov, new_notebook.kv, new_notebook.kv_vectors)
+            #train_model(notebook_vocab, notebook_oov, new_notebook.kv, new_notebook.kv_vectors)
+            aws.train_on_ec2(new_notebook.vocab, new_notebook.kv, new_notebook.kv_vectors)
         else:
             print("no oov, no need for training")
         return HttpResponse("Notebooks merged successfully")
@@ -501,6 +502,8 @@ def delete_account(request):
             return HttpResponse(status=401)
         try:
             user = User.objects.get(username=request.user.username)
+            user_id = user.id
+            aws.s3_delete_folder(str(user_id) + '/')
             user.delete()
             return redirect('search_results')
         except User.DoesNotExist:
@@ -550,60 +553,21 @@ def search_results(request):
 
     print("notesonly: ", notesonly)
     print("spellcheck: ", spellcheck)
-
+    notesonly = True
     notebook = Notebook.objects.get(owner=user, id=notebook_id)
 
-    MODEL_PATH = 'mmapp/ml_models/{0}'
-    path2glove = MODEL_PATH.format('glove.pkl')
-    
-    if notesonly:
-        # load scrubbed vocab for this notebook
-        try:
-            # if this fails, then the user hasn't uploaded any notes into this notebook yet
-            vocab = aws.s3_read(notebook.vocab)
-        except:
-            vocab = None
-    else:
-        vocab = None
-    if not os.path.exists('mmapp/ml_models'):
-        print('making path')
-        os.makedirs('mmapp/ml_models')
-    # Check if kv object is stored locally
-    if len(glob.glob(MODEL_PATH.format(notebook.kv.replace("/","_")))) == 0:
-        # doesn't already exist so load it
-        # download the files
-        try:
-            aws.s3_download(notebook.kv, MODEL_PATH.format(notebook.kv.replace("/","_")))
-            aws.s3_download(notebook.kv_vectors, MODEL_PATH.format(notebook.kv_vectors.replace("/","_")))
-
-            kv = ml.load_kv(MODEL_PATH.format(notebook.kv.replace('/','_')))
-        except:
-            # if we get here, the notebook hasn't been trained yet so just use GloVe
-            if len(glob.glob(path2glove)) == 0:
-                # need to load glove embeddings
-                aws.s3_download("glove.pkl", path2glove)
-            embed = ml.load_embeddings(path2glove)
-            kv = ml.create_kv_from_embed(embed)
-    else:
-        kv = ml.load_kv(MODEL_PATH.format(notebook.kv.replace('/','_')))
-    
-    # spell check
-    spell_checked = {}
-    if spellcheck:
-        spell = SpellChecker()
-        misspelled = spell.unknown(query)
-        
-        for word in misspelled:
-            correct_word = spell.correction(word)
-            query.remove(word)
-            query.append(correct_word)
-            spell_checked[word] = correct_word
-
-    # perform search
-    res_matrix, words, skipwords = ml.search(query, kv, 5, vocab)
-    print("skipping ", skipwords)
-    print(words)
+    unique_filename = aws.search_on_ec2(query, notebook.kv, notebook.kv_vectors, notebook.vocab, spellcheck, notesonly)
+    print(unique_filename)
+    if unique_filename == 'error\n':
+        # there was a problem
+        return HttpResponse("error! something wrong with ec2 search")
+    search_results = ml.load_embeddings(unique_filename)
+    print(search_results)
     # send results to spacing alg
+    res_matrix = search_results['res_matrix']
+    words = search_results['words']
+    skipwords = search_results['skipwords']
+    spell_checked = search_results['spell_checked']
     positions = sp.fruchterman_reingold(res_matrix)
 
     # create object of words and positions
@@ -638,10 +602,7 @@ def inspect_node(request):
     user_notes = aws.s3_read(notebook.corpus)
     print(user_notes)
 
-    MODEL_PATH = 'mmapp/ml_models/{0}'
-    path2glove = MODEL_PATH.format('glove.pkl')
-    print(path2glove)
-    if len(glob.glob(MODEL_PATH.format(notebook.kv.replace("/","_")))) == 0:
+    """ if len(glob.glob(MODEL_PATH.format(notebook.kv.replace("/","_")))) == 0:
         # doesn't already exist so load it
         # download the files
         try:
@@ -661,7 +622,8 @@ def inspect_node(request):
 
     # do the inspection
     print(kv)
-    results = ml.inspect_node(clicked_word, searched_words, user_notes, kv)
+    results = ml.inspect_node(clicked_word, searched_words, user_notes, kv) """
+    results = aws.inspect_on_ec2(clicked_word, searched_words, notebook.corpus, notebook.kv, notebook.kv_vectors)
     print(results)
     return HttpResponse(status=200, content=json.dumps(results))
 
@@ -685,6 +647,7 @@ def results(request):
 def train_model(vocab, oov, kv_path, kv_vectors_path):
     MODEL_PATH = 'mmapp/ml_models/{0}'
     path2glove = MODEL_PATH.format('glove.pkl')
+    resp = ec2.send_command(InstanceIds=["i-063cef059dc0f3ca7"], DocumentName="AWS-RunShellScript", Parameters={'commands':["su ec2-user", "cd /home/ec2-user", "source /home/ec2-user/mapmind/env/bin/activate", "python3 train_model.py 3/demonotebook/vocab.txt 3/demonotebook/kv.kv 3/demonotebook/kv.kv.vectors.npy"]})
     coocc_arr = ml.create_cooccurrence(vocab, oov)
     if len(glob.glob(path2glove)) == 0:
         aws.s3_download("glove.pkl", path2glove)
