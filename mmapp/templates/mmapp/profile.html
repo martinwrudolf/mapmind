@@ -216,12 +216,12 @@
           },
           error: function(jqXhr, textStatus, errorMessage){
                 if (jqXhr.status == 400) {
-                    document.getElementById("register_error").hidden = false;
-                    document.getElementById("register_error").innerText = jqXhr.responseText;
+                    document.getElementById("username_error").hidden = false;
+                    document.getElementById("username_error").innerText = jqXhr.responseText;
                 }
                 else {
-                    document.getElementById("register_error").hidden = false;
-                    document.getElementById("register_error").innerText = "Error when editing username!";
+                    document.getElementById("username_error").hidden = false;
+                    document.getElementById("username_error").innerText = "Error when editing username!";
                 }
           }
         });
@@ -231,7 +231,7 @@
         e.preventDefault();
         const email = $("#email").val();
         $.ajax({
-          url: "{% url 'edit_username' %}",
+          url: "{% url 'edit_email' %}",
           type: "POST",
           data: {
             email: email
@@ -241,12 +241,12 @@
           },
           error: function(jqXhr, textStatus, errorMessage){
                 if (jqXhr.status == 400) {
-                    document.getElementById("register_error").hidden = false;
-                    document.getElementById("register_error").innerText = jqXhr.responseText;
+                    document.getElementById("email_error").hidden = false;
+                    document.getElementById("email_error").innerText = jqXhr.responseText;
                 }
                 else {
-                    document.getElementById("register_error").hidden = false;
-                    document.getElementById("register_error").innerText = "Error when editing email!";
+                    document.getElementById("email_error").hidden = false;
+                    document.getElementById("email_error").innerText = "Error when editing email!";
                 }
           }
         });

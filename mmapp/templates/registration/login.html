@@ -29,7 +29,7 @@
       <div class="row justify-content-center">
         <div class="col-md-12">
           {% if form.errors %}
-          <div class="alert alert-danger" role="alert">
+          <div class="alert alert-danger" role="alert" id="login_error">
             Your username and password didn't match. Please try again.
           </div>
           {% endif %} {% if next %} {% if user.is_authenticated %}

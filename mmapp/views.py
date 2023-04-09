@@ -100,7 +100,7 @@ def register(request):
                     return HttpResponse(status=201)
                 except ValidationError as error:
                     newUser.delete()
-                    return HttpResponse(status=400, content=str(error.args[0]))
+                    return HttpResponse(status=400, content="Password is not valid!")
           
    
 def upload(request):
