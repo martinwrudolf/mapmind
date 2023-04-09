@@ -49,66 +49,59 @@
       </div>
       <div class="content-container">
         <div class="row justify-content-center">
-          <div class="col-md-12">
-            <h1>Settings</h1>
-            <form method="POST" action="{% url 'edit_username' %}">
-              {% csrf_token %}
-              <div class="my-2">
-                <input
-                  type="text"
-                  name="username"
-                  value="{{user.username}}"
-                  class="form-control rounded-pill"
-                  placeholder="Username"
-                  required
-                />
-                <div class="input-group-append">
-                  <button
-                    type="submit"
-                    class="btn btn-primary ms-3 rounded-pill"
-                  >
-                    Update Username
-                  </button>
-                </div>
-              </div>
-            </form>
-            <form method="POST" action="{% url 'edit_email' %}">
-              {% csrf_token %}
-              <div class="my-2">
-                <input
-                  type="email"
-                  name="email"
-                  class="form-control rounded-pill"
-                  placeholder="Email"
-                  required
-                  value="{{user.email}}"
-                />
-                <div class="input-group-append">
-                  <button
-                    type="submit"
-                    class="btn btn-primary ms-3 rounded-pill"
-                  >
-                    Update Email
-                  </button>
-                </div>
-              </div>
-            </form>
-            <form method="POST" action="{% url 'password_reset' %}">
-              {% csrf_token %}
-              <input type="hidden" name="email" value="{{user.email}}" />
+          <h1>Settings</h1>
+          <br />
+          <form method="POST" action="{% url 'edit_username' %}">
+            {% csrf_token %}
+            <div class="my-2">
               <input
-                type="submit"
-                value="Reset Password"
-                class="btn btn-primary rounded-pill my-2"
+                type="text"
+                name="username"
+                value="{{user.username}}"
+                class="form-control rounded-pill"
+                placeholder="Username"
+                required
               />
-            </form>
-            <button
-              onclick="deleteAccount()"
-              class="btn btn-danger rounded-pill my-2"
-            >
-              Delete Account
-            </button>
-          </div>
+              <div class="input-group-append">
+                <button type="submit" class="btn btn-primary ms-3 rounded-pill">
+                  Update Username
+                </button>
+              </div>
+            </div>
+          </form>
+          <form method="POST" action="{% url 'edit_email' %}">
+            {% csrf_token %}
+            <div class="my-2">
+              <input
+                type="email"
+                name="email"
+                class="form-control rounded-pill"
+                placeholder="Email"
+                required
+                value="{{user.email}}"
+              />
+              <div class="input-group-append">
+                <button type="submit" class="btn btn-primary ms-3 rounded-pill">
+                  Update Email
+                </button>
+              </div>
+            </div>
+          </form>
+          <form method="POST" action="{% url 'password_reset' %}">
+            {% csrf_token %}
+            <input type="hidden" name="email" value="{{user.email}}" />
+            <input
+              type="submit"
+              value="Reset Password"
+              class="btn btn-primary rounded-pill my-2"
+            />
+          </form>
+          <button
+            onclick="deleteAccount()"
+            class="btn btn-danger rounded-pill my-2"
+          >
+            Delete Account
+          </button>
         </div>
       </div>
     </div>
