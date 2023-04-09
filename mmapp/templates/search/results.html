@@ -36,7 +36,6 @@
 
       body {
         margin-bottom: 60px; /* make room for the fixed search bar */
-        overflow:hidden;
       }
     </style>
   </head>
@@ -62,47 +61,78 @@
 
       <div class="row">
         <div id="viewbox" style="height: 100vh; width: 100vw"></div>
-        <div class="col-md-4" style="position:absolute">
+        <div class="col-md-4">
           <ul class="list-group my-5 mx-2 rounded" id="sidebar"></ul>
         </div>
       </div>
       <div class="row">
         <div class="col"></div>
-        <div class="search-bar mx-10">
+        <div class="search-bar mx-12">
           <div class="col search-bar-container py-3">
-            <form
-              id="search-form"
-              class="d-flex justify-content-center mb-5"
-              method="get"
-            >
-              <div class="col-8">
-                <input
-                  type="text"
-                  id="search_words"
-                  name="search_words"
-                  class="form-control w-10 rounded-pill"
-                  placeholder="Search..."
-                  required
-                />
-              </div>
+            <form id="search-form" class="mb-5" method="get">
+              <div class="row justify-content-center my-2">
+                <div class="col-6">
+                  <input
+                    type="text"
+                    id="search_words"
+                    name="search_words"
+                    class="form-control w-10 rounded-pill"
+                    placeholder="Search..."
+                    maxlength="200"
+                    required
+                  />
+                </div>
 
-              <div class="col-2">
-                <select
-                  id="notebook"
-                  name="notebook"
-                  class="form-select ms-2 rounded rounded-pill"
-                  aria-label="Select notebook"
-                  required
-                >
-                  {% for notebook in notebooks %}
-                  <option value="{{ notebook.id }}">{{ notebook.name }}</option>
-                  {% endfor %}
-                </select>
+                <div class="col-2">
+                  <select
+                    id="notebook"
+                    name="notebook"
+                    class="form-select ms-2 rounded rounded-pill"
+                    aria-label="Select notebook"
+                    required
+                  >
+                    {% for notebook in notebooks %}
+                    <option value="{{ notebook.id }}">
+                      {{ notebook.name }}
+                    </option>
+                    {% endfor %}
+                  </select>
+                </div>
+                <div class="col-2">
+                  <button
+                    type="submit"
+                    class="btn btn-primary ms-3 rounded-pill"
+                  >
+                    Search
+                  </button>
+                </div>
               </div>
-
-              <button type="submit" class="btn btn-primary ms-3 rounded-pill">
-                Search
-              </button>
+              <div class="row my-2">
+                <div class="col d-flex justify-content-center">
+                  <div class="form-check me-4">
+                    <input
+                      class="form-check-input"
+                      type="checkbox"
+                      id="spellcheck"
+                      name="spellcheck"
+                    />
+                    <label class="form-check-label" for="spellcheck">
+                      Spellcheck
+                    </label>
+                  </div>
+                  <div class="form-check">
+                    <input
+                      class="form-check-input"
+                      type="checkbox"
+                      id="notesonly"
+                      name="notesonly"
+                    />
+                    <label class="form-check-label" for="notesonly">
+                      Search notes only
+                    </label>
+                  </div>
+                </div>
+              </div>
             </form>
           </div>
         </div>
@@ -260,39 +290,19 @@
         for (let i = 0; i < list.length; i++) {
           const geometry = new TextGeometry(list[i].string, {
             font: font,
-            size: 1.25,
+            size: 1,
             height: 0.1,
           });
-          geometry.translate(15 * list[i].pos[0],  15 * list[i].pos[2], 15 * list[i].pos[1]);
-          const material = new THREE.MeshBasicMaterial({color: 0x000000});
+          const material = new THREE.MeshBasicMaterial({ color: 0x000000 });
           const textMesh = new THREE.Mesh(geometry, material);
-          // textMesh.position.x = 5 * list[i].pos[0];
-          // textMesh.position.y = 5 * list[i].pos[2];
-          // textMesh.position.z = 5 * list[i].pos[1];
 
-          // https://threejs.org/docs/#api/en/math/Box3
+          textMesh.position.x = 5 * list[i].pos[0];
+          textMesh.position.y = 5 * list[i].pos[2];
+          textMesh.position.z = 5 * list[i].pos[1];
+          textMesh.userData = list[i].string;
           searched_terms.push(list[i].string);
-          const box = new THREE.Box3();
-          textMesh.geometry.computeBoundingBox();
-          console.log(textMesh.geometry.boundingBox);
-          box.copy(textMesh.geometry.boundingBox).applyMatrix4(textMesh.matrixWorld);
-          const center = new Vector3()
-          box.getCenter(center)
-          console.log(center);
-          const size = new Vector3()
-          box.getSize(size);
-          console.log(size);
-          const boxGeo = new THREE.BoxGeometry(size.x, size.y, size.z);
-          const material_col = new THREE.MeshBasicMaterial({visible: false});
-          const collMesh = new THREE.Mesh(boxGeo, material_col);
-          collMesh.position.x = center.x;
-          collMesh.position.y = center.y;
-          collMesh.position.z = center.z;
-          console.log(collMesh);
           scene.add(textMesh);
-          scene.add(collMesh);
-          collMesh.userData = list[i].string;
-          meshes.push(collMesh);
+          meshes.push(textMesh);
           textMesh.lookAt(camera.position);
         }
 

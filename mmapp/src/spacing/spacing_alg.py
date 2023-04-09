@@ -1,5 +1,4 @@
 import numpy as np
-import matplotlib.pyplot as plt
 import time
 import random
 
@@ -81,23 +80,3 @@ if __name__ == "__main__":
     # Apply the Fruchterman-Reingold algorithm to the graph
     pos = fruchterman_reingold(fr_matrix) """
 
-    # Extract the 3-dimensional coordinates of each node
-    x = pos[:, 0]
-    y = pos[:, 1]
-    z = pos[:, 2]
-
-    fig = plt.figure()
-    ax = fig.add_subplot(111, projection='3d')
-    ax.scatter(x, y, z)
-    #ax.set_axis_off()
-
-    # Extract the labels of each node
-    #labels = cos_sim[:, 0].astype(int)
-    labels = scores[:,0].astype(int)
-
-    # Label each node with its corresponding cosine similarity score
-    for i in range(matrix.shape[0]):
-        ax.text(x[i], y[i], z[i], s=words[i], fontsize=10)
-
-    print("Showing plot...")
-    plt.show()

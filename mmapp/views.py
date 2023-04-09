@@ -148,11 +148,9 @@ def upload(request):
                 # get original embeddings
                 if len(glob.glob(path2glovekeys+"*")) == 0:
                     # glove words not there, need to redownload
-                    print("glove_keys.pkl not found, downloading from s3")
-                    print(os.listdir())
                     # listdir for mmapp/ml_models
-                    print("mmapp")
-                    print(os.listdir('mmapp'))
+                    print("ml_models")
+                    print(os.listdir('mmapp/ml_models'))
                     # If mmapp/ml_models doesn't exist, create it
                     if not os.path.exists('mmapp/ml_models'):
                         os.makedirs('mmapp/ml_models')
@@ -344,6 +342,10 @@ def delete_notes(request):
             # are there any new words?
             if len(notebook_oov) != 0:
                 # train in background
+                
+                print("training model")
+                print("notebook.kv: ", notebook.kv)
+                print("notebook.kv_vectors: ", notebook.kv_vectors)
                 #train_model(notebook_vocab, notebook_oov, notebook.kv, notebook.kv_vectors)
                 aws.train_on_ec2(notebook.vocab, notebook.kv, notebook.kv_vectors)
             else:
@@ -647,7 +649,7 @@ def results(request):
 def train_model(vocab, oov, kv_path, kv_vectors_path):
     MODEL_PATH = 'mmapp/ml_models/{0}'
     path2glove = MODEL_PATH.format('glove.pkl')
-    resp = ec2.send_command(InstanceIds=["i-063cef059dc0f3ca7"], DocumentName="AWS-RunShellScript", Parameters={'commands':["su ec2-user", "cd /home/ec2-user", "source /home/ec2-user/mapmind/env/bin/activate", "python3 train_model.py 3/demonotebook/vocab.txt 3/demonotebook/kv.kv 3/demonotebook/kv.kv.vectors.npy"]})
+    #resp = ec2.send_command(InstanceIds=["i-063cef059dc0f3ca7"], DocumentName="AWS-RunShellScript", Parameters={'commands':["su ec2-user", "cd /home/ec2-user", "source /home/ec2-user/mapmind/env/bin/activate", "python3 train_model.py 3/demonotebook/vocab.txt 3/demonotebook/kv.kv 3/demonotebook/kv.kv.vectors.npy"]})
     coocc_arr = ml.create_cooccurrence(vocab, oov)
     if len(glob.glob(path2glove)) == 0:
         aws.s3_download("glove.pkl", path2glove)
@@ -667,5 +669,11 @@ def train_model(vocab, oov, kv_path, kv_vectors_path):
     # upload all the files
     print("upload kv to s3 here")
     # this will happen in background
+    print("upload kv_vectors to s3 here")
+    print("kv_path: ", kv_path)
+    print("kv_vectors_path: ", kv_vectors_path)
+    print('MODEL_PATH.format(kv_path.replace("/","_")): ', MODEL_PATH.format(kv_path.replace("/","_")))
+    print('MODEL_PATH.format(kv_vectors_path.replace("/","_")): ', MODEL_PATH.format(kv_vectors_path.replace("/","_")))
     aws.s3_upload(MODEL_PATH.format(kv_path.replace("/","_")), kv_path)
     aws.s3_upload(MODEL_PATH.format(kv_vectors_path.replace("/","_")), kv_vectors_path)
+    print("uploaded kv to s3")
