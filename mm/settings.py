@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 
 from pathlib import Path
 import os
+import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,13 +21,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure--i^6-zl536xpmjtr@3%+z^y_64woxt%@cv+3+a5+7m#8%n3h_q'
-
-# SECURITY WARNING: don't run with debug turned on in production!
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
 DEBUG = True
 
-ALLOWED_HOSTS = ['aqueous-scrubland-59263.herokuapp.com', 'mapmind.herokuapp.com', '127.0.0.1']
+ALLOWED_HOSTS = ['mapmind.herokuapp.com']
 
 
 # Application definition
@@ -71,15 +69,12 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'mm.wsgi.application'
 
-
+MAX_CONN_AGE = 600
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'prod-db.sqlite3',
-    }
+    'default': dj_database_url.config()
 }
 
 
@@ -133,4 +128,5 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'mapmindreset@gmail.com'
-EMAIL_HOST_PASSWORD = 'iivvctxnlhqukosc' # removed because it may have been comprimsed lmao
+# mapmind493
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
