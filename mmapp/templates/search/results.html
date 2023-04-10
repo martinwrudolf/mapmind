@@ -89,29 +89,6 @@
               {{errorMsg}}
             </div>
             {% endif %}
-            <div id="loading-spinner" class="text-center" hidden>
-              <div class="spinner-grow text-primary" role="status">
-                <span class="visually-hidden">Loading...</span>
-              </div>
-              <div class="spinner-grow text-secondary" role="status">
-                <span class="visually-hidden">Loading...</span>
-              </div>
-              <div class="spinner-grow text-success" role="status">
-                <span class="visually-hidden">Loading...</span>
-              </div>
-              <div class="spinner-grow text-danger" role="status">
-                <span class="visually-hidden">Loading...</span>
-              </div>
-              <div class="spinner-grow text-warning" role="status">
-                <span class="visually-hidden">Loading...</span>
-              </div>
-              <div class="spinner-grow text-info" role="status">
-                <span class="visually-hidden">Loading...</span>
-              </div>
-              <div class="spinner-grow text-dark" role="status">
-                <span class="visually-hidden">Loading...</span>
-              </div>
-            </div>
             <form id="search-form" class="mb-5">
               <div class="row justify-content-center my-2">
                 <div class="col-6">
@@ -204,7 +181,6 @@
 
       $("#search-form").submit(function (e) {
         e.preventDefault();
-        showSpinner();
         var search_words = $("#search_words").val();
         var notebook = $("#notebook").val();
         $.ajax({
@@ -215,11 +191,9 @@
             notebook: notebook,
           },
           success: function (data) {
-            hideSpinner();
             console.log(data);
           },
           error: function(jqXhr, textStatus, errorMessage) {
-            hideSpinner();
             if (jqXhr.status == 400) {
               document.getElementById("search_error").hidden = false;
               document.getElementById("search_error").innerText = jqXhr.responseText;
@@ -455,7 +429,6 @@
             // send request to backend
             var request = new XMLHttpRequest();
             request.open("POST", "/inspect_node");
-            showSpinner();
             request.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
             request.onreadystatechange = function () {
               if (request.readyState == 4) {
@@ -474,7 +447,6 @@
                 }
               }
             };
-            hideSpinner();
             let send_obj_json = {
               notebook_id: document.getElementById("notebook").value,
               searched_words: searched_terms,
