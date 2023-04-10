@@ -82,11 +82,11 @@ def register(request):
         print("username", username, "password", password, "email", email)
         try:
             user = User.objects.get(username=username)
-            return HttpResponse("Username is not unique!")
+            return HttpResponse(status=400, content="Username is not unique!")
         except User.DoesNotExist:
             try: 
                 user = User.objects.get(email=email)
-                return HttpResponse("Email is not unique!")
+                return HttpResponse(status=400, content="Email is not unique!")
             except User.DoesNotExist:
                 newUser = User.objects.create_user(
                     username,
@@ -97,10 +97,10 @@ def register(request):
                     validate_password(password, newUser, None)
                     newUser.save()
                     print("Creating new user, ", newUser)
-                    return redirect('login')
+                    return HttpResponse(status=201)
                 except ValidationError as error:
                     newUser.delete()
-                    return HttpResponse(str(error.args[0]))
+                    return HttpResponse(status=400, content="Password is not valid!")
           
    
 def upload(request):
@@ -127,10 +127,10 @@ def upload(request):
             file = request.FILES['file']
             if file.content_type not in accepted_content_types:
                 print(f"File {file.name} is not of correct format")
-                return HttpResponse("File is not of correct format")
+                return HttpResponse(status=400, content="File is not of correct format")
             if file.size > THRESHOLD:
                 print(f"File {file.name} is too large")
-                return HttpResponse("File is too large")
+                return HttpResponse(status=400, content="File is too large")
             
             notebook = request.POST['notebook']
             notebook = Notebook.objects.get(id=notebook, owner=owner)
@@ -139,7 +139,7 @@ def upload(request):
                                    owner=owner,
                                    notebooks=notebook).exists():
                 print(f"Note file {file.name} already exists in this notebook")
-                return HttpResponse("Note file already exists in this notebook")
+                return HttpResponse(status=400, content="Note file already exists in this notebook")
             else:
                 # note doesn't exist i notebook so must process notes
                 MODEL_PATH = 'mmapp/ml_models/{0}'
@@ -175,13 +175,15 @@ def upload(request):
                 except:
                     # notebook did not have an associated vocab
                     print(f"Notebook {notebook} did not have an associated vocab")
-                    return HttpResponse("Database error: Notebook does not have a vocab file")
+                    return HttpResponse(status=400,
+                                        content="Database error: Notebook does not have a vocab file")
                 try:
                     notebook_corpus = aws.s3_read(notebook.corpus)
                     notebook_corpus += " "+corpus
                 except:
                     print(f"Notebook {notebook} did not have an associated corpus")
-                    return HttpResponse("Database error: Notebook does not have a corpus file")
+                    return HttpResponse(status=400,
+                                        content="Database error: Notebook does not have a corpus file")
 
                 notebook_oov = [word for word in notebook_vocab.split() if word not in glove_keys]
                 notebook_oov += oov
@@ -210,14 +212,14 @@ def upload(request):
                             corpus=corpus_filename)
                 note.save()
                 print(f"Note {note} saved to database")
-                return HttpResponse("File uploaded successfully")
+                return HttpResponse(status=200, content="File uploaded successfully")
         except Notebook.DoesNotExist:
             print("Notebook does not exists")
-            return HttpResponse("Notebook does not exists")
+            return HttpResponse(status=400, content="Notebook does not exists")
         except Exception as e:
             print("Bad request")
             print("Unexpected error:", e)
-            return HttpResponse("Bad request")
+            return HttpResponse(stauts=400, content="Bad request")
     if request.method == 'GET':
         notebooks = Notebook.objects.filter(owner=owner)
         context = {
@@ -231,7 +233,7 @@ Create a new notebook for the user.
 """
 def create_notebook(request):
     if not request.user.is_authenticated:
-        return redirect('login')
+        return HttpResponse(status=401)
     if request.method == 'POST':
         # Get the notebook name from the request
         print("Request: ", request.POST)
@@ -241,7 +243,7 @@ def create_notebook(request):
         if Notebook.objects.filter(name=notebook,
                                    owner=owner).exists():
             # notebook already exists
-            return HttpResponse("Notebook already exists")
+            return HttpResponse(status=400, content="Notebook already exists")
 
         # Create paths to files for upload/download
         vocab_filename = str(owner.id)+"/"+notebook+"/vocab.txt"
@@ -262,14 +264,14 @@ def create_notebook(request):
         aws.s3_write(vocab_filename, "")
         aws.s3_write(corpus_filename, "")
         # Return a response
-        return HttpResponse("Notebook created successfully")
+        return HttpResponse(content=201, status="Notebook created successfully")
     else:
-        return HttpResponse("Notebook creation failed")
+        return HttpResponse(status=405)
     
 def delete_notebook(request):
     """Deletes a notebook and all notes associated with it."""
     if not request.user.is_authenticated:
-        return redirect('login')
+        return HttpResponse(status=401)
     if request.method == 'POST':
         # Get the notebook name from the request
         notebook = request.POST['notebook']
@@ -285,12 +287,14 @@ def delete_notebook(request):
         notebook.delete()
 
         # Return a response
-        return HttpResponse("Notebook deleted successfully")
+        return HttpResponse(status=201, content="Notebook deleted successfully")
+    else:
+        return HttpResponse(status=405)
 
 def delete_notes(request):
     """Deletes a note."""
     if not request.user.is_authenticated:
-        return redirect('login')
+        return HttpResponse(status=401)
     if request.method == 'POST':
         # Get the note name from the request
         print("Request: ", request.POST)
@@ -346,7 +350,9 @@ def delete_notes(request):
                 print("no oov, no need for training")
         # Return a response
         print("Notes deleted successfully")
-    return HttpResponse("Notes deleted successfully")
+        return HttpResponse(status=200, content="Notes deleted successfully")
+    else:
+        return HttpResponse(status=405)
 
 
 # Placeholder response for now
@@ -359,7 +365,7 @@ def edit_notebook(request):
 def merge_notebooks(request):
     """Merges notebooks into one notebook."""
     if not request.user.is_authenticated:
-        return redirect('login')
+        return HttpResponse(status=401)
     if request.method == 'POST':
         # Get the notebook name from the request
         notebooks_to_merge = request.POST.getlist('notebooks[]')
@@ -442,7 +448,9 @@ def merge_notebooks(request):
             aws.train_on_ec2(new_notebook.vocab, new_notebook.kv, new_notebook.kv_vectors)
         else:
             print("no oov, no need for training")
-        return HttpResponse("Notebooks merged successfully")
+        return HttpResponse(status=201, content="Notebooks merged successfully")
+    else:
+        return HttpResponse(status=405)
 
 def notebooks(request):
     if not request.user.is_authenticated:
@@ -469,11 +477,11 @@ def edit_username(request):
         username = request.POST["username"]
         try:
             user = User.objects.get(username=username)
-            return HttpResponse("Username is not unique!")
+            return HttpResponse(status=400, content="Username is not unique!")
         except User.DoesNotExist:
             request.user.username = username
             request.user.save()
-            return redirect('settings')
+            return HttpResponse(status=201, content="Username edited successfully!")
     else:
         return HttpResponse(status=405)
     
@@ -484,11 +492,11 @@ def edit_email(request):
         email = request.POST["email"]
         try: 
             user = User.objects.get(email=email)
-            return HttpResponse("Email is not unique!")
+            return HttpResponse(status=400, content="Email is not unique!")
         except User.DoesNotExist:
             request.user.email = email
             request.user.save()
-            return redirect('settings')
+            return HttpResponse(status=201, content="Email edited succesfully")
     else:
         return HttpResponse(status=405)
     
@@ -499,9 +507,12 @@ def delete_account(request):
         try:
             user = User.objects.get(username=request.user.username)
             user_id = user.id
-            aws.s3_delete_folder(str(user_id) + '/')
-            user.delete()
-            return redirect('search_results')
+            try:
+                aws.s3_delete_folder(str(user_id) + '/')
+                user.delete()
+            except:
+                user.delete()
+            return HttpResponse(status=200)
         except User.DoesNotExist:
             # should never happen....but who knows?
             return HttpResponse(status=400)
