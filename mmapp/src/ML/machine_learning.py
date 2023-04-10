@@ -217,7 +217,7 @@ def inspect_node(word, searched_words, user_notes, kv, num_results=10):
             sl = user_notes[st:en] 
             if sl not in results:
                 results.append(sl)
-                i+=1
+            i+=1
         if i == len(clicked_word):
             break
         if clicked_word[i] > compare_indices[j] + 100:
