@@ -66,7 +66,7 @@
                   required
                 />
                 <div class="input-group-append">
-                  <button type="submit" class="btn btn-primary ms-3 rounded-pill">
+                  <button type="submit" class="btn btn-primary ms-3 rounded-pill" id="submit_username">
                     Update Username
                   </button>
                 </div>
@@ -87,7 +87,7 @@
                   value="{{user.email}}"
                 />
                 <div class="input-group-append">
-                  <button type="submit" class="btn btn-primary ms-3 rounded-pill">
+                  <button type="submit" class="btn btn-primary ms-3 rounded-pill" id="submit_email">
                     Update Email
                   </button>
                 </div>
@@ -100,6 +100,7 @@
               type="submit"
               value="Reset Password"
               class="btn btn-primary rounded-pill my-2 mx-auto"
+              id="reset_password"
             />
           </form>          
             <div class="alert alert-danger" role="alert" id="delete_error" hidden>

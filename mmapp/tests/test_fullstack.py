@@ -349,7 +349,13 @@ class UserAccountTests(LiveServerTestCase):
         self.driver.find_element(By.ID, "delete_account").click()
         Alert(self.driver).accept()
         time.sleep(5)
+        print(self.driver.current_url)
         assert self.driver.current_url == self.live_server_url + "/accounts/login/"
+
+    def testLogout(self):
+        self.testValidLogin()
+        self.driver.find_element(By.ID, "logout_button").click()
+        assert self.driver.current_url == self.live_server_url + "/accounts/logout/"
         
 # class NotebooksTests(LiveServerTestCase):
 #     def setUp(self):

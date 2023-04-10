@@ -507,8 +507,11 @@ def delete_account(request):
         try:
             user = User.objects.get(username=request.user.username)
             user_id = user.id
-            aws.s3_delete_folder(str(user_id) + '/')
-            user.delete()
+            try:
+                aws.s3_delete_folder(str(user_id) + '/')
+                user.delete()
+            except:
+                user.delete()
             return HttpResponse(status=200)
         except User.DoesNotExist:
             # should never happen....but who knows?
