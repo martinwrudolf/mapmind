@@ -173,7 +173,7 @@
       const searchForm = document.getElementById("search-form");
       let scrollTimeout;
 
-      window.addEventListener("scroll", () => {
+      window.addEventListener("wheel", () => {
         clearTimeout(scrollTimeout); // Clear any existing timeout
         searchForm.style.display = "none"; // Hide the search form when scrolling
 
