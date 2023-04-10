@@ -18,7 +18,6 @@ import os
 from spellchecker import SpellChecker
 from mm.settings import BASE_DIR
 import mm.settings
-import compress_pickle
 import pickle
 import boto3
 import glob
@@ -264,7 +263,7 @@ def create_notebook(request):
         aws.s3_write(vocab_filename, "")
         aws.s3_write(corpus_filename, "")
         # Return a response
-        return HttpResponse(content=201, status="Notebook created successfully")
+        return HttpResponse(status=201, content="Notebook created successfully")
     else:
         return HttpResponse(status=405)
     
@@ -543,7 +542,9 @@ def search_results(request):
         notes = Note.objects.filter(owner=user)
         context = {
             'notebooks': notebooks,
-            'notes': notes
+            'notes': notes,
+            'error': False,
+            'errorMsg': ""
         }
         return render(request, "search/results.html", context)
     if request.method == 'GET' and request.GET.get("search_words"):
@@ -567,7 +568,13 @@ def search_results(request):
     print(unique_filename)
     if unique_filename == 'error\n':
         # there was a problem
-        return HttpResponse("error! something wrong with ec2 search")
+        context = {
+            "notebooks": notebooks,
+            "current_notebook": notebook,
+            "error": False,
+            "errorMsg": "Error! Something wrong with ec2 search"
+        }
+        return render(request, "search/results.html", context)
     search_results = ml.load_embeddings(unique_filename)
     print(search_results)
     # send results to spacing alg
@@ -595,6 +602,8 @@ def search_results(request):
         "skipwords": skipwords,
         "notebooks": notebooks,
         "current_notebook": notebook,
+        "error": False,
+        "errorMsg": ""
     }
     return render(request, "search/results.html", context)
 

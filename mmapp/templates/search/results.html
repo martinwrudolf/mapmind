@@ -77,9 +77,15 @@
         <div class="col"></div>
         <div class="search-bar mx-12">
           <div class="col search-bar-container py-3">
+            {% if not error %}
             <div class="alert alert-danger" role="alert" id="search_error" hidden>
             </div>
-            <form id="search-form" class="mb-5" method="get">
+            {% else %}
+            <div class="alert alert-danger" role="alert" id="search_error">
+              {{errorMsg}}
+            </div>
+            {% endif %}
+            <form id="search-form" class="mb-5">
               <div class="row justify-content-center my-2">
                 <div class="col-6">
                   <input
@@ -180,7 +186,7 @@
             }
             else {
               document.getElementById("search_error").hidden = false;
-              document.getElementById("search_error").innerText = "Error when registering";
+              document.getElementById("search_error").innerText = "Error when searching!";
             }
           }
         });
@@ -203,6 +209,21 @@
       import { FontLoader } from "three/addons/loaders/FontLoader.js";
       import { TextGeometry } from "three/addons/geometries/TextGeometry.js";
       import { Vector3 } from "three";
+
+      // https://threejs.org/docs/#api/en/helpers/AxesHelper
+      // https://stackoverflow.com/questions/13039589/rotate-the-camera-around-an-object-using-the-arrow-keys-in-three-js
+      // http://jsfiddle.net/HXms8/4/
+      // https://stackoverflow.com/questions/24690731/three-js-3d-models-as-hyperlink
+      // http://soledadpenades.com/articles/three-js-tutorials/object-picking/
+      // https://blog.hubspot.com/website/html-dropdown
+      // https://javascript.plainenglish.io/intro-to-raycasting-in-three-js-211ac4aae768
+      // https://sbcode.net/threejs/raycaster/
+      // https://discourse.threejs.org/t/click-event-on-object/1320/2
+      // https://stackoverflow.com/questions/1085801/get-selected-value-in-dropdown-list-using-javascript
+      // use this? https://github.com/yomotsu/camera-controls
+      // https://www.freecodecamp.org/news/here-is-the-most-popular-ways-to-make-an-http-request-in-javascript-954ce8c95aaa/
+      // https://stackoverflow.com/questions/45353282/how-to-zoom-a-three-js-scene-with-the-mouse-wheel
+
       // Spherical coordinates of camera
       var theta = 0;
       var phi = 90;
@@ -310,6 +331,16 @@
       function generateText(font) {
         //https://stackoverflow.com/questions/43305020/how-to-use-the-context-variables-passed-from-django-in-javascript
         var list = JSON.parse("{{words_pos|escapejs}}");
+        var skipped_list = JSON.parse("{{skipped_words|escapejs}}")
+        var skipped_string = "";
+        console.log(skipped_list);
+        for (let i = 0; i < skipped_list.length; i++) {
+          skipped_string += skipped_list[i] + ", "
+        }
+        if (skipped_list.length > 0) {
+            document.getElementById("search_error").hidden = false;
+            document.getElementById("search_error").innerText = skipped_string.substring(0, skipped_string.length-2);
+        }
         console.log(list);
         for (let i = 0; i < list.length; i++) {
           const geometry = new TextGeometry(list[i].string, {
@@ -383,9 +414,13 @@
                   console.log(obj);
                   generateSidebar(obj);
                 }
-                else if (request.status) {
+                else if (request.status == 400) {
                   document.getElementById("search-error").hidden = false;
                   document.getElementById("search-error").innerText = request.responseText;
+                }
+                else {
+                  document.getElementById("search-error").hidden = false;
+                  document.getElementById("search-error").innerText = "Error when inspecting node!"
                 }
               }
             };
