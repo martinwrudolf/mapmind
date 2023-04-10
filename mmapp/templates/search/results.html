@@ -365,12 +365,17 @@
 
         function generateSidebar(results) {
           var sidebar = document.getElementById("sidebar");
-          sidebar.innerHTML = "";
-          for (let result of results) {
-            let newRow = document.createElement("li");
-            newRow.className = "list-group-item rounded";
-            newRow.textContent = escapeHtml(result);
-            sidebar.appendChild(newRow);
+          if (!Array.isArray(results) || !results.length) {     // array does not exist or is empty
+            document.getElementById("search_error").hidden = false;
+            document.getElementById("search_error").innerText = "This word is not in your notes!";
+          } else {
+            sidebar.innerHTML = "";
+            for (let result of results) {
+              let newRow = document.createElement("li");
+              newRow.className = "list-group-item rounded";
+              newRow.textContent = escapeHtml(result);
+              sidebar.appendChild(newRow);
+            }
           }
         }
 

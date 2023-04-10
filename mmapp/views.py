@@ -640,6 +640,8 @@ def inspect_node(request):
     print(kv)
     results = ml.inspect_node(clicked_word, searched_words, user_notes, kv) """
     results = aws.inspect_on_ec2(clicked_word, searched_words, notebook.corpus, notebook.kv, notebook.kv_vectors)
+    if len(results) == 1 and results[0] == "":
+        results = []
     print(results)
     return HttpResponse(status=200, content=json.dumps(results))
 
