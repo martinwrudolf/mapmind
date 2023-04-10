@@ -27,12 +27,17 @@ def process_user_notes(notefile, keys):
     tmp_dict['/'] = ' '
     translator = str.maketrans(tmp_dict) #map punctuation to space
     corpus = ""
+    pics_or_tables = False
     if notefile.content_type in ['application/msword','application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/rtf']:
         doc = docx.Document(notefile)
 
         docText = []
         for para in doc.paragraphs:
-            docText.append(para.text)
+            if len(para.text) > 0:
+                print("not text so skipping")
+                pics_or_tables = True
+            else:
+                docText.append(para.text)
         
         for sentence in docText:
             sentence = sentence.translate(translator)
@@ -54,7 +59,7 @@ def process_user_notes(notefile, keys):
     vocab_scrubbed = remove_stop_words(corpus)
     oov = [token for token in vocab_scrubbed.split() if token not in keys]
     oov = list(set(oov))
-    return oov, vocab_scrubbed, corpus.strip()
+    return oov, vocab_scrubbed, corpus.strip(), pics_or_tables
     
     
 def remove_stop_words(corpus):
