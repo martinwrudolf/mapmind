@@ -331,7 +331,7 @@
       function generateText(font) {
         //https://stackoverflow.com/questions/43305020/how-to-use-the-context-variables-passed-from-django-in-javascript
         var list = JSON.parse("{{words_pos|escapejs}}");
-        var skipped_list = JSON.parse("{{skipped_words|escapejs}}")
+        var skipped_list = JSON.parse("{{skipwords|escapejs}}")
         var skipped_string = "";
         console.log(skipped_list);
         for (let i = 0; i < skipped_list.length; i++) {
@@ -339,7 +339,7 @@
         }
         if (skipped_list.length > 0) {
             document.getElementById("search_error").hidden = false;
-            document.getElementById("search_error").innerText = skipped_string.substring(0, skipped_string.length-2);
+            document.getElementById("search_error").innerText = "The following words were not in your notes and skipped: " + skipped_string.substring(0, skipped_string.length-2);
         }
         console.log(list);
         for (let i = 0; i < list.length; i++) {
