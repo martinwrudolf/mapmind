@@ -66,7 +66,7 @@ def train_on_ec2(vocab_path, kv_path, kv_vectors_path):
     print("waiting for ec2 to start")
     try:
         waiter.wait(
-            InstanceId=ec2_id
+            InstanceIds=[ec2_id]
         )
     except WaiterError as ex:
         print(ex)
@@ -122,7 +122,7 @@ def search_on_ec2(query, kv_path, kv_vectors_path, vocab_path, spellcheck, notes
     print("waiting for ec2 to start")
     try:
         waiter.wait(
-            InstanceId=ec2_id
+            InstanceIds=[ec2_id]
         )
     except WaiterError as ex:
         print(ex)
@@ -175,7 +175,7 @@ def inspect_on_ec2(clicked_word, searched_words, corpus_path, kv_path, kv_vector
     print("waiting for ec2 to start")
     try:
         waiter.wait(
-            InstanceId=ec2_id
+            InstanceIds=[ec2_id]
         )
     except WaiterError as ex:
         print(ex)
