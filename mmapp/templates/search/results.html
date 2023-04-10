@@ -170,19 +170,17 @@
       </div>
     </div>
     <script>
-      var scrollingDiv = document.getElementById("search-form");
-      var lastScrollPosition = window.pageYOffset;
+      const searchForm = document.getElementById("search-form");
+      let scrollTimeout;
 
-      window.addEventListener("scroll", function () {
-        var currentScrollPosition = window.pageYOffset;
+      window.addEventListener("scroll", () => {
+        clearTimeout(scrollTimeout); // Clear any existing timeout
+        searchForm.style.display = "none"; // Hide the search form when scrolling
 
-        if (currentScrollPosition !== lastScrollPosition) {
-          scrollingDiv.hidden = true; // hide the div
-        } else {
-          scrollingDiv.hidden = false; // show the div
-        }
-
-        lastScrollPosition = currentScrollPosition;
+        // Set a timeout to show the search form after 100 milliseconds (or any desired time) of inactivity
+        scrollTimeout = setTimeout(() => {
+          searchForm.style.display = "block";
+        }, 100);
       });
     </script>
     <script
