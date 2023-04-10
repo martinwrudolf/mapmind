@@ -263,7 +263,7 @@ def create_notebook(request):
         aws.s3_write(vocab_filename, "")
         aws.s3_write(corpus_filename, "")
         # Return a response
-        return HttpResponse(content=201, status="Notebook created successfully")
+        return HttpResponse(status=201, content="Notebook created successfully")
     else:
         return HttpResponse(status=405)
     
@@ -561,7 +561,6 @@ def search_results(request):
 
     print("notesonly: ", notesonly)
     print("spellcheck: ", spellcheck)
-    notesonly = True
     notebook = Notebook.objects.get(owner=user, id=notebook_id)
 
     unique_filename = aws.search_on_ec2(query, notebook.kv, notebook.kv_vectors, notebook.vocab, spellcheck, notesonly)
@@ -607,8 +606,6 @@ def inspect_node(request):
     clicked_word = body['word']
     print(notebook_id, searched_words, clicked_word)
     notebook = Notebook.objects.get(id=notebook_id)
-    user_notes = aws.s3_read(notebook.corpus)
-    print(user_notes)
 
     """ if len(glob.glob(MODEL_PATH.format(notebook.kv.replace("/","_")))) == 0:
         # doesn't already exist so load it
