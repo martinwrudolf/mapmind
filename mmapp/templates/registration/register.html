@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Notebooks</title>
+    <title>Settings - MapMind</title>
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css"
       rel="stylesheet"
@@ -12,31 +12,70 @@
       href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css"
       rel="stylesheet"
     />
+    <link rel="stylesheet" href="../styles.css" />    
+    <style>
+      html,
+      body {
+        height: 100%;
+      }
+      .content-container {
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        margin-top: 25%;
+        height: 100%;
+      }
+    </style>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
   </head>
 <body>
+<div
+  style="
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  "
+>
 <p>Enter your username, password, and email: </p>
 <div class="alert alert-danger" role="alert" id="register_error" hidden>
 </div>
 <form id="register_form">
     {% csrf_token %}
-    <label for="username">Username: </label><input id="username" type="text" name="username" required></input>
+    <label for="username">Username: </label>
+    <input id="username" 
+           type="text" 
+           name="username" 
+           class="my-2 rounded-pill"
+           placeholder="Username"
+           required>
+    </input>
     <br>
-    <label for="password">Password: </label><input id="password"
-                                                   type="password" 
-                                                   name="password" 
-                                                   minlength="8"
-                                                   required></input>
+    <label for="password">Password: </label>
+    <input id="password"
+           type="password" 
+           name="password" 
+           class="my-2 rounded-pill"
+           placeholder="Password"
+           minlength="8"
+           required>
+    </input>
     <br>
-    <label for="email">Email: </label> <input id="email" 
-                                              type="email" 
-                                              name="email" 
-                                              required></input>
+    <label for="email">Email: </label> 
+    <input id="email" 
+           type="email" 
+           name="email" 
+           class="my-2 rounded-pill"
+           placeholder="Email"
+           class="btn btn-primary my-2 rounded-pill"
+           required></input>
     <br>
     <input type="submit" id="submit">
 </form>
 <p><a href="{% url 'login' %}">Already have an account? Login here</a></p>
+</div>
 <script>
    // Error messages from:
       // https://getbootstrap.com/docs/4.3/components/alerts/

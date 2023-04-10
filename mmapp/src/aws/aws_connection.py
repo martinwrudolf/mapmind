@@ -1,5 +1,8 @@
 import boto3
+from botocore.exceptions import WaiterError
 from smart_open import open
+import time
+from datetime import datetime
 #from background_task import background
 
 def s3_download(src, dest):
@@ -51,3 +54,117 @@ def move_file(src, dest):
     s3_resource = boto3.resource('s3')
     s3_resource.Object('mapmind-ml-models', dest).copy_from(CopySource='mapmind-ml-models/' + src)
     s3_resource.Object('mapmind-ml-models', src).delete()
+
+def train_on_ec2(vocab_path, kv_path, kv_vectors_path):
+    print("python3 train_model.py {} {} {}".format(vocab_path, kv_path, kv_vectors_path))
+    ec2_id = "i-063cef059dc0f3ca7"
+    ec2 = boto3.client("ssm", region_name='us-east-2')
+
+    resp = ec2.send_command(
+        InstanceIds=[ec2_id],
+        DocumentName="AWS-RunShellScript",
+        Parameters={'commands':["su ec2-user", 
+                                "cd /home/ec2-user", 
+                                "source /home/ec2-user/mapmind/env/bin/activate", 
+                                "python3 train_model.py {} {} {}".format(vocab_path, kv_path, kv_vectors_path)]
+                    })
+    command_id = resp['Command']['CommandId']
+    print(command_id)
+
+    waiter = ec2.get_waiter("command_executed")
+    try:
+        waiter.wait(
+            CommandId=command_id,
+            InstanceId=ec2_id,
+        )
+    except WaiterError as ex:
+        print(ex)
+        return
+    print("training on ec2 successful!")
+
+def search_on_ec2(query, kv_path, kv_vectors_path, vocab_path, spellcheck, notesonly):
+    if spellcheck:
+        spellcheck = 1
+    else:
+        spellcheck = 0
+    if notesonly:
+        notesonly = 1
+    else:
+        notesonly = 0
+    query = str.join(" ", query)
+    print(query)
+    query_path = "internal-files/search_queries/{}.txt".format(str(datetime.now())).replace(" ","")
+    s3_write(query_path, query)
+    command_str = "python3 search.py {} {} {} {} {} {}".format(query_path, kv_path, kv_vectors_path, vocab_path, spellcheck, notesonly)
+    print(command_str)
+    ec2_id = "i-063cef059dc0f3ca7"
+    ec2 = boto3.client("ssm", region_name='us-east-2')
+
+    resp = ec2.send_command(
+        InstanceIds=[ec2_id],
+        DocumentName="AWS-RunShellScript",
+        Parameters={'commands':["su ec2-user", 
+                                "cd /home/ec2-user", 
+                                "source /home/ec2-user/mapmind/env/bin/activate", 
+                                command_str]
+                    },
+        OutputS3BucketName='mapmind-ml-models',
+        OutputS3KeyPrefix='internal-files/search_results',
+        )
+    command_id = resp['Command']['CommandId']
+    print(command_id)
+
+    waiter = ec2.get_waiter("command_executed")
+    try:
+        waiter.wait(
+            CommandId=command_id,
+            InstanceId=ec2_id,
+        )
+    except WaiterError as ex:
+        print(ex)
+        return False
+    print("searching on ec2 successful!")
+    cmd_result = ec2.get_command_invocation(CommandId=command_id, InstanceId=ec2_id)
+    print(cmd_result['StandardOutputContent'])
+    unique_filename = cmd_result['StandardOutputContent'].strip()
+    return unique_filename
+
+def inspect_on_ec2(clicked_word, searched_words, corpus_path, kv_path, kv_vector_path):
+    searched_words = str.join(" ", searched_words)
+    print(searched_words)
+    searched_words_path = "internal-files/search_queries/{}.txt".format(str(datetime.now())).replace(" ","")
+    s3_write(searched_words_path, searched_words)
+    command_str = "python3 inspect_node.py {} {} {} {} {}".format(clicked_word, searched_words_path, corpus_path, kv_path, kv_vector_path)
+    print(command_str)
+    ec2_id = "i-063cef059dc0f3ca7"
+    ec2 = boto3.client("ssm", region_name='us-east-2')
+
+    resp = ec2.send_command(
+        InstanceIds=[ec2_id],
+        DocumentName="AWS-RunShellScript",
+        Parameters={'commands':["su ec2-user", 
+                                "cd /home/ec2-user", 
+                                "source /home/ec2-user/mapmind/env/bin/activate", 
+                                command_str]
+                    },
+        OutputS3BucketName='mapmind-ml-models',
+        OutputS3KeyPrefix='internal-files/search_results',
+        )
+    command_id = resp['Command']['CommandId']
+    print(command_id)
+
+    waiter = ec2.get_waiter("command_executed")
+    try:
+        waiter.wait(
+            CommandId=command_id,
+            InstanceId=ec2_id,
+        )
+    except WaiterError as ex:
+        print(ex)
+        return False
+    print("inspect on ec2 successful!")
+    cmd_result = ec2.get_command_invocation(CommandId=command_id, InstanceId=ec2_id)
+    print(cmd_result['StandardOutputContent'])
+    results = cmd_result['StandardOutputContent'].strip().split("\n")
+    print(results)
+    return results
