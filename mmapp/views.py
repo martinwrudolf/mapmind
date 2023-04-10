@@ -118,7 +118,7 @@ def upload(request):
                               'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
                               ]
         # TBD
-        THRESHOLD = 20000
+        THRESHOLD = 450000
         try:
             # Get the file from the request
             #print("request.FILES['file']", request.FILES['file'])
@@ -155,10 +155,10 @@ def upload(request):
                     print("Downloaded glove.pkl from s3 to ", path2glovekeys)
 
                 glove_keys = ml.load_embeddings(path2glovekeys)
-                oov, vocab, corpus = ml.process_user_notes(file, glove_keys)
+                oov, vocab, corpus, pics_or_tables = ml.process_user_notes(file, glove_keys)
 
-                vocab_filename = str(owner.id)+"/"+notebook.name+"/"+file.name+"/vocab.txt"
-                corpus_filename = str(owner.id)+"/"+notebook.name+"/"+file.name+"/corpus.txt"
+                vocab_filename = (str(owner.id)+"/"+notebook.name+"/"+file.name+"/vocab.txt").replace(" ", "_")
+                corpus_filename = (str(owner.id)+"/"+notebook.name+"/"+file.name+"/corpus.txt").replace(" ", "_")
                 
                 # save new note files
                 print(f"Saving {vocab_filename} and {corpus_filename} to s3")
@@ -210,6 +210,8 @@ def upload(request):
                             corpus=corpus_filename)
                 note.save()
                 print(f"Note {note} saved to database")
+                if pics_or_tables:
+                    return HttpResponse(status=200, content="There were pictures and/or tables that were disregarded. File uploaded successfully!")
                 return HttpResponse(status=200, content="File uploaded successfully")
         except Notebook.DoesNotExist:
             print("Notebook does not exists")
@@ -217,7 +219,7 @@ def upload(request):
         except Exception as e:
             print("Bad request")
             print("Unexpected error:", e)
-            return HttpResponse(stauts=400, content="Bad request")
+            return HttpResponse(status=400, content="Bad request")
     if request.method == 'GET':
         notebooks = Notebook.objects.filter(owner=owner)
         context = {
@@ -244,10 +246,10 @@ def create_notebook(request):
             return HttpResponse(status=400, content="Notebook already exists")
 
         # Create paths to files for upload/download
-        vocab_filename = str(owner.id)+"/"+notebook+"/vocab.txt"
-        corpus_filename = str(owner.id)+"/"+notebook+"/corpus.txt"
-        kv_filename = str(owner.id)+"/"+notebook+"/kv.kv"
-        kv_vectors_filename = str(owner.id)+"/"+notebook+"/kv.kv.vectors.npy"
+        vocab_filename = (str(owner.id)+"/"+notebook+"/vocab.txt").replace(" ", "_")
+        corpus_filename = (str(owner.id)+"/"+notebook+"/corpus.txt").replace(" ", "_")
+        kv_filename = (str(owner.id)+"/"+notebook+"/kv.kv").replace(" ", "_")
+        kv_vectors_filename = (str(owner.id)+"/"+notebook+"/kv.kv.vectors.npy").replace(" ", "_")
         # Create a new Notebook
         notebook = Notebook(name=notebook, 
                             owner=owner,
@@ -279,7 +281,7 @@ def delete_notebook(request):
         notebook = Notebook.objects.get(id=notebook)
 
         # delete in background
-        aws.s3_delete_folder(str(owner.id)+'/'+notebook.name+'/')
+        aws.s3_delete_folder((str(owner.id)+'/'+notebook.name+'/').replace(" ", "_"))
 
         # delete from database
         notebook.delete()
@@ -303,7 +305,7 @@ def delete_notes(request):
         # Delete the Note
         for n in notes:
             n = Note.objects.get(id=n)
-            aws.s3_delete_folder(str(owner.id)+'/'+n.notebooks.name+'/'+n.file_name+'/')
+            aws.s3_delete_folder((str(owner.id)+'/'+n.notebooks.name+'/'+n.file_name+'/').replace(" ", "_"))
             notebook = n.notebooks
             notebooks_to_update.add(notebook)
             n.delete()
@@ -374,10 +376,10 @@ def merge_notebooks(request):
         # Get the owner from the request
         owner = request.user
         # Create paths to files for upload/download
-        vocab_filename = str(owner.id)+"/"+merged_notebook_name+"/vocab.txt"
-        corpus_filename = str(owner.id)+"/"+merged_notebook_name+"/corpus.txt"
-        kv_filename = str(owner.id)+"/"+merged_notebook_name+"/kv.kv"
-        kv_vectors_filename = str(owner.id)+"/"+merged_notebook_name+"/kv.kv.vectors.npy"
+        vocab_filename = (str(owner.id)+"/"+merged_notebook_name+"/vocab.txt").replace(" ", "_")
+        corpus_filename = (str(owner.id)+"/"+merged_notebook_name+"/corpus.txt").replace(" ", "_")
+        kv_filename = (str(owner.id)+"/"+merged_notebook_name+"/kv.kv").replace(" ", "_")
+        kv_vectors_filename = (str(owner.id)+"/"+merged_notebook_name+"/kv.kv.vectors.npy").replace(" ", "_")
         # Create a new Notebook
         if Notebook.objects.filter(name=merged_notebook_name,
                                    owner=owner).exists():
@@ -396,8 +398,8 @@ def merge_notebooks(request):
             n = Notebook.objects.get(id=n)
             notes = Note.objects.filter(notebooks=n)
             for note in notes:
-                vocab_filename = str(owner.id)+"/"+new_notebook.name+"/"+note.file_name+"/vocab.txt"
-                corpus_filename = str(owner.id)+"/"+new_notebook.name+"/"+note.file_name+"/corpus.txt"
+                vocab_filename = (str(owner.id)+"/"+new_notebook.name+"/"+note.file_name+"/vocab.txt").replace(" ", "_")
+                corpus_filename = (str(owner.id)+"/"+new_notebook.name+"/"+note.file_name+"/corpus.txt").replace(" ", "_")
                 # create new note object under new notebook
                 new_note = Note(file_name=note.file_name,
                         file_type=note.file_type, 
@@ -407,11 +409,14 @@ def merge_notebooks(request):
                         corpus=corpus_filename)
                 new_note.save()
                 # move old note files into new notebook folder
+                print("moving vocab files: ", note.vocab, " to ", new_note.vocab)
+                print("moving corpus files: ", note.corpus, " to ", new_note.corpus)
                 aws.move_file(note.vocab, new_note.vocab)
                 aws.move_file(note.corpus, new_note.corpus)
             # need to delete old notebook data
             # happens in background
-            aws.s3_delete_folder(str(owner.id)+'/'+n.name+'/')
+            print("deleting notebook folder: ", str(owner.id)+'/'+n.name+'/'.replace(" ", "_"))
+            aws.s3_delete_folder((str(owner.id)+'/'+n.name+'/').replace(" ", "_"))
             print("deleting notebook: ", n.name)
             n.delete()
         # update notebook files
@@ -640,6 +645,8 @@ def inspect_node(request):
     print(kv)
     results = ml.inspect_node(clicked_word, searched_words, user_notes, kv) """
     results = aws.inspect_on_ec2(clicked_word, searched_words, notebook.corpus, notebook.kv, notebook.kv_vectors)
+    if len(results) == 1 and results[0] == "":
+        results = []
     print(results)
     return HttpResponse(status=200, content=json.dumps(results))
 
