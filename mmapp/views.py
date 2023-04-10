@@ -201,7 +201,7 @@ def upload(request):
                     print("no oov, no need for training")
 
                 # Create a new Note assoicated with that notebook
-                note = Note(file_name=(file.name).replace(" ", "_"),
+                note = Note(file_name=file.name,
                             #file_content=file.read(),
                             file_type=file.content_type,
                             owner=owner,

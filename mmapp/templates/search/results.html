@@ -369,6 +369,7 @@
             document.getElementById("search_error").hidden = false;
             document.getElementById("search_error").innerText = "This word is not in your notes!";
           } else {
+            document.getElementById("search_error").hidden = true;
             sidebar.innerHTML = "";
             for (let result of results) {
               let newRow = document.createElement("li");
