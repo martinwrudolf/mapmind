@@ -42,7 +42,8 @@
   </head>
   <body>
     <div class="container" style="overflow: hidden">
-      <div class="row my-1 justify-content-end">
+      <div class="row my-1">
+        <div class="col-9"></div>
         <div class="col">
           <a href="/" class="mx-2">
             <i class="bi bi-house-door" style="font-size: 2rem"></i>
@@ -78,8 +79,12 @@
         <div class="search-bar mx-12">
           <div class="col search-bar-container py-3">
             {% if not error %}
-            <div class="alert alert-danger" role="alert" id="search_error" hidden>
-            </div>
+            <div
+              class="alert alert-danger"
+              role="alert"
+              id="search_error"
+              hidden
+            ></div>
             {% else %}
             <div class="alert alert-danger" role="alert" id="search_error">
               {{errorMsg}}
@@ -160,11 +165,21 @@
       integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
       crossorigin="anonymous"
     >
-     // Error messages from:
-      // https://getbootstrap.com/docs/4.3/components/alerts/
-      // https://www.tutorialsteacher.com/jquery/jquery-ajax-method
-      // http://api.jquery.com/jQuery.ajax/#jqXHR
-    
+
+      function showSpinner() {
+        document.getElementById("loading-spinner").hidden = false;
+      }
+
+      function hideSpinner() {
+        document.getElementById("loading-spinner").hidden = true;
+      }
+
+      // Error messages from:
+        // https://getbootstrap.com/docs/4.3/components/alerts/
+        // https://www.tutorialsteacher.com/jquery/jquery-ajax-method
+        // http://api.jquery.com/jQuery.ajax/#jqXHR
+
+
       $("#search-form").submit(function (e) {
         e.preventDefault();
         var search_words = $("#search_words").val();
@@ -331,15 +346,17 @@
       function generateText(font) {
         //https://stackoverflow.com/questions/43305020/how-to-use-the-context-variables-passed-from-django-in-javascript
         var list = JSON.parse("{{words_pos|escapejs}}");
-        var skipped_list = JSON.parse("{{skipwords|escapejs}}")
+        var skipped_list = JSON.parse("{{skipwords|escapejs}}");
         var skipped_string = "";
         console.log(skipped_list);
         for (let i = 0; i < skipped_list.length; i++) {
-          skipped_string += skipped_list[i] + ", "
+          skipped_string += skipped_list[i] + ", ";
         }
         if (skipped_list.length > 0) {
-            document.getElementById("search_error").hidden = false;
-            document.getElementById("search_error").innerText = "The following words were not in your notes and skipped: " + skipped_string.substring(0, skipped_string.length-2);
+          document.getElementById("search_error").hidden = false;
+          document.getElementById("search_error").innerText =
+            "The following words were not in your notes and skipped: " +
+            skipped_string.substring(0, skipped_string.length - 2);
         }
         console.log(list);
         for (let i = 0; i < list.length; i++) {
@@ -365,9 +382,11 @@
 
         function generateSidebar(results) {
           var sidebar = document.getElementById("sidebar");
-          if (!Array.isArray(results) || !results.length) {     // array does not exist or is empty
+          if (!Array.isArray(results) || !results.length) {
+            // array does not exist or is empty
             document.getElementById("search_error").hidden = false;
-            document.getElementById("search_error").innerText = "This word is not in your notes!";
+            document.getElementById("search_error").innerText =
+              "This word is not in your notes!";
           } else {
             document.getElementById("search_error").hidden = true;
             sidebar.innerHTML = "";
@@ -419,14 +438,14 @@
                   let obj = JSON.parse(request.responseText);
                   console.log(obj);
                   generateSidebar(obj);
-                }
-                else if (request.status == 400) {
+                } else if (request.status == 400) {
                   document.getElementById("search-error").hidden = false;
-                  document.getElementById("search-error").innerText = request.responseText;
-                }
-                else {
+                  document.getElementById("search-error").innerText =
+                    request.responseText;
+                } else {
                   document.getElementById("search-error").hidden = false;
-                  document.getElementById("search-error").innerText = "Error when inspecting node!"
+                  document.getElementById("search-error").innerText =
+                    "Error when inspecting node!";
                 }
               }
             };
@@ -439,6 +458,7 @@
             console.log(intersects[0].object.userData);
           }
         }
+
         function animate() {
           requestAnimationFrame(animate);
           renderer.render(scene, camera);

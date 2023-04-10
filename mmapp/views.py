@@ -407,10 +407,13 @@ def merge_notebooks(request):
                         corpus=corpus_filename)
                 new_note.save()
                 # move old note files into new notebook folder
+                print("moving vocab files: ", note.vocab, " to ", new_note.vocab)
+                print("moving corpus files: ", note.corpus, " to ", new_note.corpus)
                 aws.move_file(note.vocab, new_note.vocab)
                 aws.move_file(note.corpus, new_note.corpus)
             # need to delete old notebook data
             # happens in background
+            print("deleting notebook folder: ", str(owner.id)+'/'+n.name+'/'.replace(" ", "_"))
             aws.s3_delete_folder((str(owner.id)+'/'+n.name+'/').replace(" ", "_"))
             print("deleting notebook: ", n.name)
             n.delete()
