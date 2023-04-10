@@ -185,6 +185,16 @@
           navButtons.style.display = "block";
         }, 100);
       });
+
+      document.addEventListener("keydown", (event) => {
+        searchForm.style.display = "none";
+        navButtons.style.display = "none";
+      });
+
+      document.addEventListener("keyup", (event) => {
+        searchForm.style.display = "block";
+        navButtons.style.display = "block";
+      });
     </script>
     <script
       src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
