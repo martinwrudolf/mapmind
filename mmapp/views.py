@@ -155,7 +155,7 @@ def upload(request):
                     print("Downloaded glove.pkl from s3 to ", path2glovekeys)
 
                 glove_keys = ml.load_embeddings(path2glovekeys)
-                oov, vocab, corpus = ml.process_user_notes(file, glove_keys)
+                oov, vocab, corpus, pics_or_tables = ml.process_user_notes(file, glove_keys)
 
                 vocab_filename = (str(owner.id)+"/"+notebook.name+"/"+file.name+"/vocab.txt").replace(" ", "_")
                 corpus_filename = (str(owner.id)+"/"+notebook.name+"/"+file.name+"/corpus.txt").replace(" ", "_")
@@ -201,7 +201,7 @@ def upload(request):
                     print("no oov, no need for training")
 
                 # Create a new Note assoicated with that notebook
-                note = Note(file_name=(file.name).replace(" ", "_"),
+                note = Note(file_name=file.name,
                             #file_content=file.read(),
                             file_type=file.content_type,
                             owner=owner,
@@ -210,6 +210,8 @@ def upload(request):
                             corpus=corpus_filename)
                 note.save()
                 print(f"Note {note} saved to database")
+                if pics_or_tables:
+                    return HttpResponse(status=200, content="There were pictures and/or tables that were disregarded. File uploaded successfully!")
                 return HttpResponse(status=200, content="File uploaded successfully")
         except Notebook.DoesNotExist:
             print("Notebook does not exists")
@@ -217,7 +219,7 @@ def upload(request):
         except Exception as e:
             print("Bad request")
             print("Unexpected error:", e)
-            return HttpResponse(stauts=400, content="Bad request")
+            return HttpResponse(status=400, content="Bad request")
     if request.method == 'GET':
         notebooks = Notebook.objects.filter(owner=owner)
         context = {
