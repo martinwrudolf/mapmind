@@ -123,12 +123,6 @@
         id="notebook_error"
         hidden
       ></div>
-      <div
-        class="alert alert-primary"
-        role="alert"
-        id="upload_success"
-        hidden
-      ></div>
       <div class="accordion mt-4" id="notebooks-accordion">
         {% for notebook in notebooks %}
         <div class="accordion-item">
@@ -409,13 +403,9 @@
           processData: false,
           contentType: false,
           data: new FormData(e.target),
-          success: function (jqXhr) {
+          success: function () {
             hideSpinner();
-            //window.location.href = "/notebooks";
-            clearErrorMesages();
-            document.getElementById("upload_success").hidden = false;
-            document.getElementById("upload_success").innerText =
-              jqXhr.responseText;
+            window.location.href = "/notebooks";
           },
           error: function (jqXhr, textStatus, errorMessage) {
             hideSpinner();
