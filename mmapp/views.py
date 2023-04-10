@@ -594,12 +594,14 @@ def search_results(request):
     
     user = request.user
     notebooks = Notebook.objects.filter(owner=user)
-    
+    if (len(skipwords) > 0 and skipwords[0]== None):
+        skipwords = []
+
     context = {
         "res": res_matrix,
         "words_pos": json.dumps(word_list),
         "spell_checked": spell_checked,
-        "skipwords": skipwords,
+        "skipwords": json.dumps(skipwords),
         "notebooks": notebooks,
         "current_notebook": notebook,
         "error": False,
