@@ -22,9 +22,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
+
 DEBUG = True
 
-ALLOWED_HOSTS = ['mapmind.herokuapp.com']
+ALLOWED_HOSTS = ['mapmind.herokuapp.com', '127.0.0.1']
 
 
 # Application definition
