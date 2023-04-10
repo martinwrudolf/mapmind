@@ -187,13 +187,27 @@
       });
 
       document.addEventListener("keydown", (event) => {
-        searchForm.style.display = "none";
-        navButtons.style.display = "none";
+        if (
+          event.key == "ArrowLeft" ||
+          event.key == "ArrowRight" ||
+          event.key == "ArrowUp" ||
+          event.key == "ArrowDown"
+        ) {
+          searchForm.style.display = "none";
+          navButtons.style.display = "none";
+        }
       });
 
       document.addEventListener("keyup", (event) => {
-        searchForm.style.display = "block";
-        navButtons.style.display = "block";
+        if (
+          event.key == "ArrowLeft" ||
+          event.key == "ArrowRight" ||
+          event.key == "ArrowUp" ||
+          event.key == "ArrowDown"
+        ) {
+          searchForm.style.display = "block";
+          navButtons.style.display = "block";
+        }
       });
     </script>
     <script
