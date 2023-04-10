@@ -304,9 +304,9 @@
           const material = new THREE.MeshBasicMaterial({ color: 0x000000 });
           const textMesh = new THREE.Mesh(geometry, material);
 
-          textMesh.position.x = 5 * list[i].pos[0];
-          textMesh.position.y = 5 * list[i].pos[2];
-          textMesh.position.z = 5 * list[i].pos[1];
+          textMesh.position.x = 20 * list[i].pos[0];
+          textMesh.position.y = 20 * list[i].pos[2];
+          textMesh.position.z = 20 * list[i].pos[1];
           textMesh.userData = list[i].string;
           searched_terms.push(list[i].string);
           scene.add(textMesh);
