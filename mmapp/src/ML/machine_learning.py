@@ -9,7 +9,7 @@ from sklearn.feature_extraction.text import ENGLISH_STOP_WORDS
 from sklearn.metrics.pairwise import cosine_similarity
 from gensim.models import KeyedVectors
 import string
-import compress_pickle as pickle
+import pickle
 import json
 import time
 import os, sys, glob
