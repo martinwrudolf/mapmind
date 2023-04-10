@@ -571,7 +571,7 @@ def search_results(request):
         context = {
             "notebooks": notebooks,
             "current_notebook": notebook,
-            "error": False,
+            "error": True,
             "errorMsg": "Error! Something wrong with ec2 search"
         }
         return render(request, "search/results.html", context)
