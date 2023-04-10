@@ -49,43 +49,49 @@
       </div>
       <div class="content-container">
         <div class="row justify-content-center">
-          <h1>Settings</h1>
-          <br />
-          <form method="POST" action="{% url 'edit_username' %}">
-            {% csrf_token %}
-            <div class="input-group my-2">
-              <input
-                type="text"
-                name="username"
-                value="{{user.username}}"
-                class="form-control rounded-pill"
-                placeholder="Username"
-                required
-              />
-              <div class="input-group-append">
-                <button type="submit" class="btn btn-primary ms-3 rounded-pill">
-                  Update Username
-                </button>
-              </div>
+            <h1>Settings</h1>
+            <br />
+            <div class="alert alert-danger" role="alert" id="username_error" hidden>
             </div>
-          </form>
-          <form method="POST" action="{% url 'edit_email' %}">
-            {% csrf_token %}
-            <div class="input-group my-2">
-              <input
-                type="email"
-                name="email"
-                class="form-control rounded-pill"
-                placeholder="Email"
-                required
-                value="{{user.email}}"
-              />
-              <div class="input-group-append">
-                <button type="submit" class="btn btn-primary ms-3 rounded-pill">
-                  Update Email
-                </button>
+            <form id="edit_username">
+              {% csrf_token %}
+              <div class="input-group my-2">
+                <input
+                  type="text"
+                  name="username"
+                  value="{{user.username}}"
+                  class="form-control rounded-pill"
+                  placeholder="Username"
+                  id="username"
+                  required
+                />
+                <div class="input-group-append">
+                  <button type="submit" class="btn btn-primary ms-3 rounded-pill" id="submit_username">
+                    Update Username
+                  </button>
+                </div>
               </div>
+            </form>
+            <div class="alert alert-danger" role="alert" id="email_error" hidden>
             </div>
+            <form id="edit_email">
+              {% csrf_token %}
+              <div class="input-group my-2">
+                <input
+                  type="email"
+                  name="email"
+                  required
+                  id="email"
+                  class="form-control rounded-pill"
+                  placeholder="Email"
+                  value="{{user.email}}"
+                />
+                <div class="input-group-append">
+                  <button type="submit" class="btn btn-primary ms-3 rounded-pill" id="submit_email">
+                    Update Email
+                  </button>
+                </div>
+              </div>
           </form>
           <form method="POST" action="{% url 'password_reset' %}">
             {% csrf_token %}
@@ -94,18 +100,65 @@
               type="submit"
               value="Reset Password"
               class="btn btn-primary rounded-pill my-2 mx-auto"
+              id="reset_password"
             />
-          </form>
-          <button
-            onclick="deleteAccount()"
+          </form>          
+            <div class="alert alert-danger" role="alert" id="delete_error" hidden>
+            </div>
+            <button onclick="deleteAccount()" 
             class="btn btn-danger rounded-pill my-2 mx-auto"
-          >
-            Delete Account
-          </button>
+             id="delete_account">
+              Delete Account
+            </button>
         </div>
       </div>
     </div>
     <script>
+       // Error messages from:
+      // https://getbootstrap.com/docs/4.3/components/alerts/
+      // https://www.tutorialsteacher.com/jquery/jquery-ajax-method
+      // http://api.jquery.com/jQuery.ajax/#jqXHR
+      
+          // Get the CSRF token from the cookie
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== "") {
+            const cookies = document.cookie.split(";");
+            for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === name + "=") {
+                cookieValue = decodeURIComponent(
+                cookie.substring(name.length + 1)
+                );
+                break;
+            }
+            }
+        }
+        return cookieValue;
+    }
+    // Set the CSRF token for AJAX requests
+    const csrftoken = getCookie("csrftoken");
+
+    // Check if the request method requires CSRF protection
+    function csrfSafeMethod(method) {
+    return /^(GET|HEAD|OPTIONS|TRACE)$/.test(method);
+    }
+
+    // Set the CSRF header for AJAX requests
+    $.ajaxSetup({
+        beforeSend: function (xhr, settings) {
+            if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+            xhr.setRequestHeader("X-CSRFToken", csrftoken);
+            }
+        },
+    });
+
+    function clearErrorMesages() {
+      document.getElementById("delete_error").hidden = true;
+      document.getElementById("username_error").hidden = true;
+      document.getElementById("email_error").hidden = true;
+    }
+    
       function deleteAccount() {
         if (confirm("Are you sure you want to delete your account?")) {
           fetch("/delete_account", {
@@ -114,12 +167,73 @@
               "X-CSRFToken": "{{ csrf_token }}",
             },
           }).then((response) => {
-            if (response.status == 302) {
+            if (response.status == 200) {
               window.location.href = "/";
+            }
+            else if (response.status == 400) {
+              clearErrorMesages();
+              document.getElementById("delete_error").hidden = false;
+              document.getElementById("delete_error").innerText = response.body;
+            }
+            else {
+              clearErrorMesages();
+              document.getElementById("delete_error").hidden = false;
+              document.getElementById("delete_error").innerText = "Error when deleting account";
             }
           });
         }
       }
+
+          // Create notebook form event listener
+    $("#edit_username").submit(function (e) {
+        e.preventDefault();
+        const username = $("#username").val();
+        $.ajax({
+          url: "{% url 'edit_username' %}",
+          type: "POST",
+          data: {
+            username: username
+          },
+          success: function (data, status, xhr) {
+            window.location.href = "/settings";
+          },
+          error: function(jqXhr, textStatus, errorMessage){
+                if (jqXhr.status == 400) {
+                    document.getElementById("username_error").hidden = false;
+                    document.getElementById("username_error").innerText = jqXhr.responseText;
+                }
+                else {
+                    document.getElementById("username_error").hidden = false;
+                    document.getElementById("username_error").innerText = "Error when editing username!";
+                }
+          }
+        });
+      });
+
+      $("#edit_email").submit(function (e) {
+        e.preventDefault();
+        const email = $("#email").val();
+        $.ajax({
+          url: "{% url 'edit_email' %}",
+          type: "POST",
+          data: {
+            email: email
+          },
+          success: function (data, status, xhr) {
+            window.location.href = "/settings";
+          },
+          error: function(jqXhr, textStatus, errorMessage){
+                if (jqXhr.status == 400) {
+                    document.getElementById("email_error").hidden = false;
+                    document.getElementById("email_error").innerText = jqXhr.responseText;
+                }
+                else {
+                    document.getElementById("email_error").hidden = false;
+                    document.getElementById("email_error").innerText = "Error when editing email!";
+                }
+          }
+        });
+      });
     </script>
   </body>
 </html>
