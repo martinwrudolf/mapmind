@@ -58,7 +58,7 @@ def move_file(src, dest):
 def train_on_ec2(vocab_path, kv_path, kv_vectors_path):
     print("python3 train_model.py {} {} {}".format(vocab_path, kv_path, kv_vectors_path))
     ec2_id = "i-063cef059dc0f3ca7"
-    ec2 = boto3.client("ssm", region_name='us-east-2')
+    ec2 = boto3.client("ec2", region_name='us-east-2')
     resp = ec2.start_instances(
         InstanceIds=[ec2_id]
     )
@@ -71,6 +71,9 @@ def train_on_ec2(vocab_path, kv_path, kv_vectors_path):
     except WaiterError as ex:
         print(ex)
         return
+    
+    print("instance running")
+    ec2 = boto3.client("ssm", region_name='us-east-2')
     resp = ec2.send_command(
         InstanceIds=[ec2_id],
         DocumentName="AWS-RunShellScript",
@@ -109,7 +112,9 @@ def search_on_ec2(query, kv_path, kv_vectors_path, vocab_path, spellcheck, notes
     command_str = "python3 search.py {} {} {} {} {} {}".format(query_path, kv_path, kv_vectors_path, vocab_path, spellcheck, notesonly)
     print(command_str)
     ec2_id = "i-063cef059dc0f3ca7"
-    ec2 = boto3.client("ssm", region_name='us-east-2')
+
+    ec2 = boto3.client("ec2", region_name='us-east-2')
+    
     resp = ec2.start_instances(
         InstanceIds=[ec2_id]
     )
@@ -122,6 +127,9 @@ def search_on_ec2(query, kv_path, kv_vectors_path, vocab_path, spellcheck, notes
     except WaiterError as ex:
         print(ex)
         return
+    
+    print("instance running")
+    ec2 = boto3.client("ssm", region_name='us-east-2')
     resp = ec2.send_command(
         InstanceIds=[ec2_id],
         DocumentName="AWS-RunShellScript",
@@ -159,7 +167,7 @@ def inspect_on_ec2(clicked_word, searched_words, corpus_path, kv_path, kv_vector
     command_str = "python3 inspect_node.py {} {} {} {} {}".format(clicked_word, searched_words_path, corpus_path, kv_path, kv_vector_path)
     print(command_str)
     ec2_id = "i-063cef059dc0f3ca7"
-    ec2 = boto3.client("ssm", region_name='us-east-2')
+    ec2 = boto3.client("ec2", region_name='us-east-2')
     resp = ec2.start_instances(
         InstanceIds=[ec2_id]
     )
@@ -172,6 +180,9 @@ def inspect_on_ec2(clicked_word, searched_words, corpus_path, kv_path, kv_vector
     except WaiterError as ex:
         print(ex)
         return
+    
+    print("instance running")
+    ec2 = boto3.client("ssm", region_name='us-east-2')
     resp = ec2.send_command(
         InstanceIds=[ec2_id],
         DocumentName="AWS-RunShellScript",
