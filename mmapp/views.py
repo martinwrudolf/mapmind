@@ -144,7 +144,6 @@ def upload(request):
                 # note doesn't exist i notebook so must process notes
                 MODEL_PATH = 'mmapp/ml_models/{0}'
                 path2glovekeys = MODEL_PATH.format('glove_keys.pkl')
-                path2glove = MODEL_PATH.format('glove.pkl')
                 # get original embeddings
                 if len(glob.glob(path2glovekeys+"*")) == 0:
                     # glove words not there, need to redownload
@@ -318,9 +317,10 @@ def delete_notes(request):
             # need to retrain model
             MODEL_PATH = 'mmapp/ml_models/{0}'
             path2glovekeys = MODEL_PATH.format('glove_keys.pkl')
-            path2glove = MODEL_PATH.format('glove.pkl')
             # get original embeddings
             if len(glob.glob(path2glovekeys+"*")) == 0:
+                if not os.path.exists('mmapp/ml_models'):
+                        os.makedirs('mmapp/ml_models')
                 # glove words not there, need to redownload
                 aws.s3_download("glove_keys.pkl", path2glovekeys)
 
@@ -422,9 +422,10 @@ def merge_notebooks(request):
         # need to train model for new notebook
         MODEL_PATH = 'mmapp/ml_models/{0}'
         path2glovekeys = MODEL_PATH.format('glove_keys.pkl')
-        path2glove = MODEL_PATH.format('glove.pkl')
         # get original embeddings
         if len(glob.glob(path2glovekeys+"*")) == 0:
+            if not os.path.exists('mmapp/ml_models'):
+                        os.makedirs('mmapp/ml_models')
             # glove words not there, need to redownload
             aws.s3_download("glove_keys.pkl", path2glovekeys)
 
