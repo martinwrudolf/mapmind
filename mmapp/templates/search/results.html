@@ -58,7 +58,7 @@
   </head>
   <body>
     <div class="container" style="overflow: hidden">
-      <div class="row my-1">
+      <div class="row my-1" id="navbarrow">
         <div class="col-9"></div>
         <div class="col" id="navbuttons">
           <a href="/" class="mx-2">
@@ -171,7 +171,7 @@
     </div>
     <script>
       const searchForm = document.getElementById("search-form");
-      const navButtons = document.getElementById("navbuttons");
+      const navButtons = document.getElementById("navbarrow");
       let scrollTimeout;
 
       window.addEventListener("wheel", () => {
