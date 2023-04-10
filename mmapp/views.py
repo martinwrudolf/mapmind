@@ -118,7 +118,7 @@ def upload(request):
                               'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
                               ]
         # TBD
-        THRESHOLD = 20000
+        THRESHOLD = 450000
         try:
             # Get the file from the request
             #print("request.FILES['file']", request.FILES['file'])
