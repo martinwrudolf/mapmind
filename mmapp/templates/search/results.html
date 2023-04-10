@@ -72,29 +72,6 @@
         <div class="col-md-4">
           <ul class="list-group my-5 mx-2 rounded" id="sidebar"></ul>
         </div>
-        <div id="loading-spinner" class="text-center" hidden>
-          <div class="spinner-grow text-primary" role="status">
-            <span class="visually-hidden">Loading...</span>
-          </div>
-          <div class="spinner-grow text-secondary" role="status">
-            <span class="visually-hidden">Loading...</span>
-          </div>
-          <div class="spinner-grow text-success" role="status">
-            <span class="visually-hidden">Loading...</span>
-          </div>
-          <div class="spinner-grow text-danger" role="status">
-            <span class="visually-hidden">Loading...</span>
-          </div>
-          <div class="spinner-grow text-warning" role="status">
-            <span class="visually-hidden">Loading...</span>
-          </div>
-          <div class="spinner-grow text-info" role="status">
-            <span class="visually-hidden">Loading...</span>
-          </div>
-          <div class="spinner-grow text-dark" role="status">
-            <span class="visually-hidden">Loading...</span>
-          </div>
-        </div>
       </div>
       <div class="row">
         <div class="col"></div>
@@ -112,6 +89,29 @@
               {{errorMsg}}
             </div>
             {% endif %}
+            <div id="loading-spinner" class="text-center" hidden>
+              <div class="spinner-grow text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+              </div>
+              <div class="spinner-grow text-secondary" role="status">
+                <span class="visually-hidden">Loading...</span>
+              </div>
+              <div class="spinner-grow text-success" role="status">
+                <span class="visually-hidden">Loading...</span>
+              </div>
+              <div class="spinner-grow text-danger" role="status">
+                <span class="visually-hidden">Loading...</span>
+              </div>
+              <div class="spinner-grow text-warning" role="status">
+                <span class="visually-hidden">Loading...</span>
+              </div>
+              <div class="spinner-grow text-info" role="status">
+                <span class="visually-hidden">Loading...</span>
+              </div>
+              <div class="spinner-grow text-dark" role="status">
+                <span class="visually-hidden">Loading...</span>
+              </div>
+            </div>
             <form id="search-form" class="mb-5">
               <div class="row justify-content-center my-2">
                 <div class="col-6">
@@ -407,9 +407,11 @@
 
         function generateSidebar(results) {
           var sidebar = document.getElementById("sidebar");
-          if (!Array.isArray(results) || !results.length) {     // array does not exist or is empty
+          if (!Array.isArray(results) || !results.length) {
+            // array does not exist or is empty
             document.getElementById("search_error").hidden = false;
-            document.getElementById("search_error").innerText = "This word is not in your notes!";
+            document.getElementById("search_error").innerText =
+              "This word is not in your notes!";
           } else {
             sidebar.innerHTML = "";
             for (let result of results) {
