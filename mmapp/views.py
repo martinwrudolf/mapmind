@@ -28,6 +28,7 @@ import traceback
 # Registration form
 # https://studygyaan.com/django/how-to-create-sign-up-registration-view-in-django
 
+''' FR#4 -- Change.Password can be found in the password_reset html files '''
 # Password reset
 # https://learndjango.com/tutorials/django-password-reset-tutorial
 # https://www.sitepoint.com/django-send-email/
@@ -53,7 +54,11 @@ def index(request):
     return render(request, 'mmapp/index.html', context)
 
 def login(request):
-    """ Redirect to Django provided login page. """
+    """ Allow user to login to their account.
+
+    Requirements:
+        FR#3 -- Request.Login
+    """
     if request.user.is_authenticated:
         print("User is authenticated. Sending to index.")
         return redirect('index')
@@ -64,7 +69,11 @@ def login(request):
 # https://docs.djangoproject.com/en/4.1/topics/auth/passwords/#password-validation
 # https://docs.djangoproject.com/en/4.1/topics/settings/
 def register(request):
-    """ Register a new user. """
+    ''' Register a new user. 
+    
+    Requirements:
+        FR#1 -- Request.Registration
+    '''
     print("Got to register page.")
     if request.method == "GET":
         print("Got to GET request.")
@@ -80,13 +89,16 @@ def register(request):
         email = request.POST["email"]
         print("username", username, "password", password, "email", email)
         try:
+            # check if username is unique
             user = User.objects.get(username=username)
             return HttpResponse(status=400, content="Username is not unique!")
         except User.DoesNotExist:
-            try: 
+            try:
+                # check if email is unique
                 user = User.objects.get(email=email)
                 return HttpResponse(status=400, content="Email is not unique!")
             except User.DoesNotExist:
+                # create new user
                 newUser = User.objects.create_user(
                     username,
                     email,
@@ -100,10 +112,14 @@ def register(request):
                 except ValidationError as error:
                     newUser.delete()
                     return HttpResponse(status=400, content="Password is not valid!")
-          
    
 def upload(request):
-    """ Upload a new note. """
+    ''' Upload a note file.
+
+    Requirements:
+        FR#7 -- Upload.Notes
+        FR#9 -- Edit.Notebook
+    '''
     print("Got to upload page.")
     if not request.user.is_authenticated:
         print("User not authenticated.")
@@ -117,12 +133,10 @@ def upload(request):
                               'application/msword',
                               'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
                               ]
-        # TBD
+        # maximum file size = 450KB
         THRESHOLD = 450000
         try:
             # Get the file from the request
-            #print("request.FILES['file']", request.FILES['file'])
-            #print("request.POST['notebook']", request.POST['notebook'])
             file = request.FILES['file']
             if file.content_type not in accepted_content_types:
                 print(f"File {file.name} is not of correct format")
@@ -131,6 +145,7 @@ def upload(request):
                 print(f"File {file.name} is too large")
                 return HttpResponse(status=400, content="File is too large")
             
+            # get notebook to upload notes into
             notebook = request.POST['notebook']
             notebook = Notebook.objects.get(id=notebook, owner=owner)
             print("notebook", notebook)
@@ -140,13 +155,13 @@ def upload(request):
                 print(f"Note file {file.name} already exists in this notebook")
                 return HttpResponse(status=400, content="Note file already exists in this notebook")
             else:
-                # note doesn't exist i notebook so must process notes
+                # note doesn't exist in notebook so must process notes
                 MODEL_PATH = 'mmapp/ml_models/{0}'
                 path2glovekeys = MODEL_PATH.format('glove_keys.pkl')
-                # get original embeddings
+                
+                # get glove keys
                 if len(glob.glob(path2glovekeys+"*")) == 0:
                     # glove words not there, need to redownload
-                    # listdir for mmapp/ml_models
                     # If mmapp/ml_models doesn't exist, create it
                     if not os.path.exists('mmapp/ml_models'):
                         os.makedirs('mmapp/ml_models')
@@ -154,6 +169,7 @@ def upload(request):
                     aws.s3_download("glove_keys.pkl", path2glovekeys)
                     print("Downloaded glove.pkl from s3 to ", path2glovekeys)
 
+                # load keys and process notes
                 glove_keys = ml.load_embeddings(path2glovekeys)
                 oov, vocab, corpus, pics_or_tables = ml.process_user_notes(file, glove_keys)
 
@@ -176,6 +192,7 @@ def upload(request):
                     return HttpResponse(status=400,
                                         content="Database error: Notebook does not have a vocab file")
                 try:
+                    # load notebook corpus
                     notebook_corpus = aws.s3_read(notebook.corpus)
                     notebook_corpus += " "+corpus
                 except:
@@ -190,11 +207,11 @@ def upload(request):
                 # save new notebook files
                 aws.s3_write(notebook.vocab, notebook_vocab.strip())
                 aws.s3_write(notebook.corpus, notebook_corpus.strip())
-                #print(Task.objects.all())
+
                 # train model on notes
                 # are there any new words?
                 if len(oov) != 0:
-                    # train the model in the background
+                    # train the model on ec2
                     #train_model(notebook_vocab, notebook_oov, notebook.kv, notebook.kv_vectors)
                     aws.train_on_ec2(notebook.vocab, notebook.kv, notebook.kv_vectors)
                 else:
@@ -227,11 +244,13 @@ def upload(request):
         }
         print("Rendering notebooks.html with context: ", context)
         return render(request, 'mmapp/notebooks.html', context)
-    
-"""
-Create a new notebook for the user.
-"""
+
 def create_notebook(request):
+    ''' Create a new notebook.
+
+    Requirements:
+        FR#8 -- Create.Notebook
+    '''
     if not request.user.is_authenticated:
         return HttpResponse(status=401)
     if request.method == 'POST':
@@ -263,13 +282,18 @@ def create_notebook(request):
         # write empty files to s3 for this notebook
         aws.s3_write(vocab_filename, "")
         aws.s3_write(corpus_filename, "")
+
         # Return a response
         return HttpResponse(status=201, content="Notebook created successfully")
     else:
         return HttpResponse(status=405)
     
 def delete_notebook(request):
-    """Deletes a notebook and all notes associated with it."""
+    ''' Delete a notebook and all associate note files.
+
+    Requirements:
+        FR#10 -- Delete.Notebook
+    '''
     if not request.user.is_authenticated:
         return HttpResponse(status=401)
     if request.method == 'POST':
@@ -280,7 +304,7 @@ def delete_notebook(request):
         # Delete the Notebook
         notebook = Notebook.objects.get(id=notebook)
 
-        # delete in background
+        # delete from s3
         aws.s3_delete_folder((str(owner.id)+'/'+notebook.name+'/').replace(" ", "_"))
 
         # delete from database
@@ -292,7 +316,11 @@ def delete_notebook(request):
         return HttpResponse(status=405)
 
 def delete_notes(request):
-    """Deletes a note."""
+    ''' Delete a note file.
+
+    Requirements:
+        FR#9 -- Edit.Notebook
+    '''
     if not request.user.is_authenticated:
         return HttpResponse(status=401)
     if request.method == 'POST':
@@ -313,7 +341,10 @@ def delete_notes(request):
         for notebook in notebooks_to_update:
             # update notebooks files
             notes_list = Note.objects.filter(notebooks=notebook)
-            aws.notebook_update_files(notebook, notes_list)
+            try:
+                aws.notebook_update_files(notebook, notes_list)
+            except:
+                print("error updating notebook files")
 
             # need to retrain model
             MODEL_PATH = 'mmapp/ml_models/{0}'
@@ -326,7 +357,7 @@ def delete_notes(request):
                 aws.s3_download("glove_keys.pkl", path2glovekeys)
 
             glove_keys = ml.load_embeddings(path2glovekeys)
-            
+
             try:
                 # load notebook vocab
                 notebook_vocab = aws.s3_read(notebook.vocab)
@@ -341,7 +372,6 @@ def delete_notes(request):
             # are there any new words?
             if len(notebook_oov) != 0:
                 # train in background
-                
                 print("training model")
                 print("notebook.kv: ", notebook.kv)
                 print("notebook.kv_vectors: ", notebook.kv_vectors)
@@ -364,7 +394,11 @@ def edit_notebook(request):
 
 
 def merge_notebooks(request):
-    """Merges notebooks into one notebook."""
+    ''' Merge several notebooks into one.
+
+    Requirements:
+        FR#11 -- Merge.Notebook
+    '''
     if not request.user.is_authenticated:
         return HttpResponse(status=401)
     if request.method == 'POST':
@@ -421,7 +455,11 @@ def merge_notebooks(request):
             n.delete()
         # update notebook files
         notes_list = Note.objects.filter(notebooks=new_notebook)
-        aws.notebook_update_files(new_notebook, notes_list)
+
+        try:
+            aws.notebook_update_files(new_notebook, notes_list)
+        except:
+            print("error updating notebook files")
         new_notebook.save()
         # need to train model for new notebook
         MODEL_PATH = 'mmapp/ml_models/{0}'
@@ -458,6 +496,7 @@ def merge_notebooks(request):
         return HttpResponse(status=405)
 
 def notebooks(request):
+    ''' Main Notebooks page. '''
     if not request.user.is_authenticated:
         return redirect('login')
     owner = request.user
@@ -471,11 +510,17 @@ def notebooks(request):
 
 # Placeholder response for now
 def settings(request):
+    ''' Settings page '''
     if not request.user.is_authenticated:
         return redirect('login')
     return render(request, 'mmapp/profile.html')
 
 def edit_username(request):
+    ''' Allow user to edit their username.
+
+    Requirements:
+        FR#5 -- Change.Username
+    '''
     if request.method == "POST":
         if not request.user.is_authenticated:
             return HttpResponse(status=401)
@@ -491,6 +536,11 @@ def edit_username(request):
         return HttpResponse(status=405)
     
 def edit_email(request):
+    ''' Allow user to edit their email address.
+
+    Requirements:
+        FR#6 -- Change.Email
+    '''
     if request.method == "POST":
         if not request.user.is_authenticated:
             return HttpResponse(status=401)
@@ -506,6 +556,11 @@ def edit_email(request):
         return HttpResponse(status=405)
     
 def delete_account(request):
+    ''' Delete user account.
+
+    Requirements:
+        FR#2 -- Delete.Account
+    '''
     if request.method == "POST":
         if not request.user.is_authenticated:
             return HttpResponse(status=401)
@@ -525,6 +580,7 @@ def delete_account(request):
         return HttpResponse(status=405)
 
 def search(request):
+    ''' Old search page - deprecated '''
     if not request.user.is_authenticated:
         return redirect('login')
     # Get the user
@@ -537,6 +593,15 @@ def search(request):
     return render(request, "search/search.html", context)
 
 def search_results(request):
+    ''' Search and visualization page.
+
+    Requirements:
+        FR#12 -- Search.Word
+        FR#13 -- Update.Search
+        FR#14 -- Change.Notebook
+        FR#15 -- Visualization.Zoom
+        FR#16 -- Visualization.Rotate
+    '''
     if not request.user.is_authenticated:
         return redirect('login')
     user = request.user
@@ -615,6 +680,11 @@ def search_results(request):
     return render(request, "search/results.html", context)
 
 def inspect_node(request):
+    ''' Inspect a node when the user clicks on it.
+
+    Requirements:
+        FR#17 -- Inspect.Node
+    '''
     # somehow get notebook_id from request
     body = json.loads(request.body)
     notebook_id =  body['notebook_id']
@@ -622,28 +692,6 @@ def inspect_node(request):
     clicked_word = body['word']
     print(notebook_id, searched_words, clicked_word)
     notebook = Notebook.objects.get(id=notebook_id)
-
-    """ if len(glob.glob(MODEL_PATH.format(notebook.kv.replace("/","_")))) == 0:
-        # doesn't already exist so load it
-        # download the files
-        try:
-            aws.s3_download(notebook.kv, MODEL_PATH.format(notebook.kv.replace("/","_")))
-            aws.s3_download(notebook.kv_vectors, MODEL_PATH.format(notebook.kv_vectors.replace("/","_")))
-
-            kv = ml.load_kv(MODEL_PATH.format(notebook.kv.replace('/','_')))
-        except:
-            # if we get here, the notebook hasn't been trained yet so just use GloVe
-            if len(glob.glob(path2glove)) == 0:
-                # need to load glove embeddings
-                aws.s3_download("glove.pkl", path2glove)
-            embed = ml.load_embeddings(path2glove)
-            kv = ml.create_kv_from_embed(embed)
-    else:
-        kv = ml.load_kv(MODEL_PATH.format(notebook.kv.replace('/','_')))
-
-    # do the inspection
-    print(kv)
-    results = ml.inspect_node(clicked_word, searched_words, user_notes, kv) """
     results = aws.inspect_on_ec2(clicked_word, searched_words, notebook.corpus, notebook.kv, notebook.kv_vectors)
     if len(results) == 1 and results[0] == "":
         results = []
@@ -652,6 +700,7 @@ def inspect_node(request):
 
 
 def results(request):
+    ''' Deprecated '''
     if not request.user.is_authenticated:
         return redirect('login')
     # Get the user
@@ -668,6 +717,7 @@ def results(request):
 
 #@background(schedule=10)
 def train_model(vocab, oov, kv_path, kv_vectors_path):
+    ''' Deprecated '''
     MODEL_PATH = 'mmapp/ml_models/{0}'
     path2glove = MODEL_PATH.format('glove.pkl')
     #resp = ec2.send_command(InstanceIds=["i-063cef059dc0f3ca7"], DocumentName="AWS-RunShellScript", Parameters={'commands':["su ec2-user", "cd /home/ec2-user", "source /home/ec2-user/mapmind/env/bin/activate", "python3 train_model.py 3/demonotebook/vocab.txt 3/demonotebook/kv.kv 3/demonotebook/kv.kv.vectors.npy"]})

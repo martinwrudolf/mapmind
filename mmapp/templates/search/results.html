@@ -320,6 +320,7 @@
       }
 
       // Rotation logic
+      // FR#16 -- Visualization.Rotate
       document.addEventListener("keydown", (event) => {
         if (event.key == "ArrowLeft") {
           theta -= 1;
@@ -349,6 +350,7 @@
       });
 
       // For zooming in and out with scroll wheel
+      // FR#15 -- Visualization.Zoom
       document.addEventListener("wheel", (event) => {
         dis += 0.001 * event.deltaY;
         // min zoom
@@ -467,6 +469,7 @@
             .replace(/'/g, "&#039;");
         }
 
+        // FR#17 -- Inspect.Node
         function mouseDown(event) {
           // https://stackoverflow.com/questions/34892328/detection-with-raycaster-not-completely-accurate-when-the-width-of-div-is-reduce
           var rect = renderer.domElement.getBoundingClientRect();
