@@ -172,18 +172,21 @@
     <script>
       const searchForm = document.getElementById("search-form");
       const navButtons = document.getElementById("navbuttons");
-      let scrollTimeout;
+      const sidebar = document.getElementById("sidebar");
+      let scrollTimeout = 250;
 
       window.addEventListener("wheel", () => {
         clearTimeout(scrollTimeout); // Clear any existing timeout
         searchForm.style.display = "none"; // Hide the search form when scrolling
         navButtons.style.display = "none"; // Hide the nav buttons when scrolling
+        sidebar.style.display = "none"; // Hide the sidebar when scrolling
 
         // Set a timeout to show the search form after 100 milliseconds (or any desired time) of inactivity
         scrollTimeout = setTimeout(() => {
           searchForm.style.display = "block";
           navButtons.style.display = "block";
-        }, 100);
+          sidebar.style.display = "block";
+        }, 250);
       });
 
       document.addEventListener("keydown", (event) => {
@@ -195,6 +198,7 @@
         ) {
           searchForm.style.display = "none";
           navButtons.style.display = "none";
+          sidebar.style.display = "none";
         }
       });
 
@@ -207,6 +211,7 @@
         ) {
           searchForm.style.display = "block";
           navButtons.style.display = "block";
+          sidebar.style.display = "block";
         }
       });
     </script>
