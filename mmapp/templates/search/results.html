@@ -173,7 +173,7 @@
       const searchForm = document.getElementById("search-form");
       const navButtons = document.getElementById("navbuttons");
       const sidebar = document.getElementById("sidebar");
-      let scrollTimeout = 1000;
+      let scrollTimeout = 500;
 
       window.addEventListener("wheel", () => {
         clearTimeout(scrollTimeout); // Clear any existing timeout
@@ -186,7 +186,7 @@
           searchForm.style.display = "block";
           navButtons.style.display = "block";
           sidebar.style.display = "block";
-        }, 1000);
+        }, 500);
       });
 
       document.addEventListener("keydown", (event) => {
@@ -209,9 +209,11 @@
           event.key == "ArrowUp" ||
           event.key == "ArrowDown"
         ) {
-          searchForm.style.display = "block";
-          navButtons.style.display = "block";
-          sidebar.style.display = "block";
+          scrollTimeout = setTimeout(() => {
+            searchForm.style.display = "block";
+            navButtons.style.display = "block";
+            sidebar.style.display = "block";
+          }, 1000);
         }
       });
     </script>
