@@ -173,7 +173,7 @@
       const searchForm = document.getElementById("search-form");
       const navButtons = document.getElementById("navbuttons");
       const sidebar = document.getElementById("sidebar");
-      let scrollTimeout = 250;
+      let scrollTimeout = 500;
 
       window.addEventListener("wheel", () => {
         clearTimeout(scrollTimeout); // Clear any existing timeout
@@ -186,7 +186,7 @@
           searchForm.style.display = "block";
           navButtons.style.display = "block";
           sidebar.style.display = "block";
-        }, 250);
+        }, 500);
       });
 
       document.addEventListener("keydown", (event) => {
