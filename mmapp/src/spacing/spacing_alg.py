@@ -4,6 +4,22 @@ import random
 
 # Define the Fruchterman-Reingold algorithm
 def fruchterman_reingold(cosine_similarities, dim=3, iterations=50, temperature=1.0, cooling_factor=0.95):
+    ''' Run the Fruchterman-Reingold Force Directed Graphing algorithm on a set of words.
+
+    Requirements:
+        FR#20 -- MachineLearning.Visualize
+
+    Arguments:
+        cosine_similarities -- an nxn matrix where n is the number of words to display, and position (i,j) contains the similarity
+            value between word i and word j
+        dim -- the dimensions of the result points (default 3)
+        iterations -- the number of iterations to perform (default 50)
+        temperature -- the starting temperature of the system (default 1.0)
+        cooling_factor -- the amount by which to cool the system after each iteration (default 0.95)
+
+    Returns:
+        positions -- a 3D point for each word
+    '''
     # Initialize the positions randomly in a 3D space
     positions = np.random.rand(len(cosine_similarities), dim)
     # Calculate the initial distance matrix
@@ -20,10 +36,8 @@ def fruchterman_reingold(cosine_similarities, dim=3, iterations=50, temperature=
                     continue
                 attractive_force = (distances[i, j] ** 2) / (1-cosine_similarities[i][j])
                 if distances[i,j] == 0:
-                    print(i,j)
+                    # special case to prevent divide by 0 error
                     repulsive_force = (1-cosine_similarities[i][j])** 2 / 0.01
-                    print(repulsive_force)
-                    print(distances[i,j])
                 else:
                     repulsive_force = (1-cosine_similarities[i][j])** 2 / distances[i, j]
                 attractive_forces[i] += attractive_force * (positions[j] - positions[i])
@@ -37,10 +51,12 @@ def fruchterman_reingold(cosine_similarities, dim=3, iterations=50, temperature=
         # Cool down the temperature
         temperature *= cooling_factor
 
+    # normalize the positions so that they are centered around the origin
     positions -= positions.mean(axis=0)
     return positions
 
 def similarity_scores(num_words, num_scores, words):
+    ''' Calculate random similarity scores for a group of words - not used, for testing purposes only '''
     num_scores += 1
     scores = np.zeros((num_words, num_scores))
 
