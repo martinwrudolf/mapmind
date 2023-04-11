@@ -404,7 +404,7 @@ class NotebooksTests(LiveServerTestCase):
 #     def testUploadNotesInvalidFileSize(self):
 #         pass
 
-#     def testDeleteNotes(self):
+#     def testDeleteNotes(self)
 #         pass
 
 #     def testNotebookMerging(self):
