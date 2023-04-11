@@ -282,7 +282,7 @@ def inspect_on_ec2(clicked_word, searched_words, corpus_path, kv_path, kv_vector
         )
     except WaiterError as ex:
         print(ex)
-        return False
+        return
     print("inspect on ec2 successful!")
 
     # read the results from ec2 stdout
