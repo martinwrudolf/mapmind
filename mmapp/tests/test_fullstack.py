@@ -6,8 +6,10 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.common.alert import Alert
+from selenium.webdriver.support.select import Select
 from .. import models
 import time
+import os
 
 # https://ordinarycoders.com/blog/article/testing-django-selenium
 # https://www.selenium.dev/documentation/webdriver/getting_started/install_drivers/
@@ -20,6 +22,8 @@ import time
 # https://www.geeksforgeeks.org/get_attribute-element-method-selenium-python/
 # https://stackoverflow.com/questions/7732125/clear-text-from-textarea-with-selenium
 # https://stackoverflow.com/questions/39125633/how-to-click-on-confirmation-button-using-selenium-with-python
+# https://www.tutorialspoint.com/how-to-get-all-the-options-in-the-dropdown-in-selenium
+# https://www.selenium.dev/documentation/webdriver/support_features/select_lists/
 
 class UserAccountTests(LiveServerTestCase): 
     def setUp(self):
@@ -358,7 +362,7 @@ class UserAccountTests(LiveServerTestCase):
         
 class NotebooksTests(LiveServerTestCase):
     def setUp(self):
-        self.service = service = Service(executable_path="./webdrivers/chromedriver")
+        self.service = Service(executable_path="./webdrivers/chromedriver")
         self.driver = webdriver.Chrome(service=self.service)
         self.driver.get(self.live_server_url)
         assert self.driver.current_url == self.live_server_url + "/accounts/login/"
@@ -382,18 +386,23 @@ class NotebooksTests(LiveServerTestCase):
         submit = self.driver.find_element(By.ID, "submit")
         submit.click()
         assert self.driver.current_url == self.live_server_url + "/"
-        notebookNav = self.driver.find_element(By.ID, "notebooks_nav")
-        notebookNav.click()
-        self.driver.current_url == self.live_server_url + "/notebooks"
+        self.driver.find_element(By.ID, "notebooks_nav").click()
+        time.sleep(2)
+        assert self.driver.current_url == self.live_server_url + "/notebooks"
 
     def testNotebookCreation(self):
         notebook = self.driver.find_element(By.ID, "notebook")
         notebook.send_keys("testnotebook")
-        submit = self.driver.find_element(By.ID, "submit")
+        submit = self.driver.find_element(By.ID, "create_submit")
         submit.click()
         assert self.driver.current_url == self.live_server_url + "/notebooks"
-        notebook_list = self.driver.find_element(By.ID, "notebooks-select")
-        # trying to figure out how to find if the notebook shows up in the list
+        time.sleep(10)
+        notebooks_select = Select(self.driver.find_element(By.ID, "notebooks-select"))
+        assert len(notebooks_select.options) == 1
+        assert notebooks_select.options[0].text == "testnotebook"
+        notebook_id = notebooks_select.options[0].get_attribute("value")
+        notebook_header = self.driver.find_element(By.ID, "heading-"+str(notebook_id))
+        assert "testnotebook" in notebook_header.find_element(By.CLASS_NAME, "accordion-button").text 
 
 #     def testUploadNotes(self):
 #         pass
@@ -414,30 +423,32 @@ class NotebooksTests(LiveServerTestCase):
 #         pass
 
 
-# class SearchAndVisualizationTests(LiveServerTestCase):
-#     def setUp(self):
-#         self.service = service = Service(executable_path="./webdrivers/chromedriver")
-#         self.driver = webdriver.Chrome(service=self.service)
-#         self.driver.get(self.live_server_url)
-#         assert self.driver.current_url == self.live_server_url + "/accounts/login/"
-#         self.driver.find_element(By.LINK_TEXT, "Don't have an account?").click()
-#         assert self.driver.current_url == self.live_server_url  + "/register/"
-#         username = self.driver.find_element(By.ID, "username")
-#         password = self.driver.find_element(By.ID, "password")
-#         email = self.driver.find_element(By.ID, "email")
-#         username.send_keys("end2endTest")
-#         password.send_keys("mapmind493")
-#         email.send_keys("end2end@gmail.com")
-#         submit = self.driver.find_element(By.ID, "submit")
-#         submit.click()
-#         assert self.driver.current_url == self.live_server_url + "/accounts/login/"
-#         username = self.driver.find_element(By.ID, "id_username")
-#         password = self.driver.find_element(By.ID, "id_password")
-#         username.send_keys("end2endTest")
-#         password.send_keys("mapmind493")
-#         submit = self.driver.find_element(By.ID, "submit")
-#         submit.click()
-#         assert self.driver.current_url == self.live_server_url + "/"
+class SearchAndVisualizationTests(LiveServerTestCase):
+    def setUp(self):
+        self.service = Service(executable_path="./webdrivers/chromedriver")
+        self.driver = webdriver.Chrome(service=self.service)
+        self.driver.get(self.live_server_url)
+        assert self.driver.current_url == self.live_server_url + "/accounts/login/"
+        self.driver.find_element(By.LINK_TEXT, "Don't have an account?").click()
+        time.sleep(3)
+        assert self.driver.current_url == self.live_server_url  + "/register/"
+        username = self.driver.find_element(By.ID, "username")
+        password = self.driver.find_element(By.ID, "password")
+        email = self.driver.find_element(By.ID, "email")
+        username.send_keys("end2endTest")
+        password.send_keys("mapmind493")
+        email.send_keys("end2end@gmail.com")
+        submit = self.driver.find_element(By.ID, "submit")
+        submit.click()
+        time.sleep(3)
+        assert self.driver.current_url == self.live_server_url + "/accounts/login/"
+        username = self.driver.find_element(By.ID, "id_username")
+        password = self.driver.find_element(By.ID, "id_password")
+        username.send_keys("end2endTest")
+        password.send_keys("mapmind493")
+        submit = self.driver.find_element(By.ID, "submit")
+        submit.click()
+        assert self.driver.current_url == self.live_server_url + "/"
 
 #     def testSearch(self):
 #         pass
