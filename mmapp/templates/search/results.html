@@ -299,7 +299,7 @@
       // Spherical coordinates of camera
       var theta = 0;
       var phi = 90;
-      var dis = 20;
+      var dis = 50;
 
       console.log("reporting to you live from results");
 
@@ -356,8 +356,8 @@
           dis = 5;
         }
         // max zoom
-        else if (dis > 50.0) {
-          dis = 50;
+        else if (dis > 100.0) {
+          dis = 100;
         }
         computeNewCameraPostion();
         camera.lookAt(0, 0, 0);
@@ -382,7 +382,7 @@
       // const cube = new THREE.Mesh( geometry, material );
       // scene.add( cube );
 
-      const axesHelper = new THREE.AxesHelper(dis * 20);
+      const axesHelper = new THREE.AxesHelper(dis * 100);
       scene.add(axesHelper);
 
       computeNewCameraPostion();
