@@ -88,11 +88,11 @@
             <div
               class="alert alert-danger"
               role="alert"
-              id="search_error"
+              id="search-error"
               hidden
             ></div>
             {% else %}
-            <div class="alert alert-danger" role="alert" id="search_error">
+            <div class="alert alert-danger" role="alert" id="search-error">
               {{errorMsg}}
             </div>
             {% endif %}
@@ -167,6 +167,29 @@
           </div>
         </div>
         <div class="col"></div>
+      </div>
+    </div>
+    <div id="loading-spinner" class="text-center sticky-bottom" hidden>
+      <div class="spinner-grow text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+      <div class="spinner-grow text-secondary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+      <div class="spinner-grow text-success" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+      <div class="spinner-grow text-danger" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+      <div class="spinner-grow text-warning" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+      <div class="spinner-grow text-info" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+      <div class="spinner-grow text-dark" role="status">
+        <span class="visually-hidden">Loading...</span>
       </div>
     </div>
     <script>
@@ -297,8 +320,8 @@
       // https://stackoverflow.com/questions/45353282/how-to-zoom-a-three-js-scene-with-the-mouse-wheel
 
       // Spherical coordinates of camera
-      var theta = 5;
-      var phi = 85;
+      var theta = 0;
+      var phi = 90;
       var dis = 30;
 
       console.log("reporting to you live from results");
@@ -365,6 +388,16 @@
         camera.lookAt(0, 0, 0);
       });
 
+      
+      function showSpinner() {
+        document.getElementById("loading-spinner").hidden = false;
+      }
+
+      function hideSpinner() {
+        document.getElementById("loading-spinner").hidden = true;
+      }
+
+
       var div = document.getElementById("viewbox");
       const scene = new THREE.Scene();
       scene.background = new THREE.Color(0xffffff);
@@ -424,16 +457,28 @@
             size: 1,
             height: 0.1,
           });
+          geometry.translate(40 * list[i].pos[0],  40 * list[i].pos[2], 40 * list[i].pos[1]);
           const material = new THREE.MeshBasicMaterial({ color: 0x000000 });
           const textMesh = new THREE.Mesh(geometry, material);
-
-          textMesh.position.x = 40 * list[i].pos[0];
-          textMesh.position.y = 40 * list[i].pos[2];
-          textMesh.position.z = 40 * list[i].pos[1];
-          textMesh.userData = list[i].string;
+          // https://threejs.org/docs/#api/en/math/Box3
           searched_terms.push(list[i].string);
+          const box = new THREE.Box3();
+          textMesh.geometry.computeBoundingBox();
+          box.copy(textMesh.geometry.boundingBox).applyMatrix4(textMesh.matrixWorld);
+          const center = new Vector3()
+          box.getCenter(center)
+          const size = new Vector3()
+          box.getSize(size);
+          const boxGeo = new THREE.BoxGeometry(size.x, size.y, size.z);
+          const material_col = new THREE.MeshBasicMaterial({visible: false});
+          const collMesh = new THREE.Mesh(boxGeo, material_col);
+          collMesh.position.x = center.x;
+          collMesh.position.y = center.y;
+          collMesh.position.z = center.z;
           scene.add(textMesh);
-          meshes.push(textMesh);
+          scene.add(collMesh);
+          collMesh.userData = list[i].string;
+          meshes.push(collMesh);
           textMesh.lookAt(camera.position);
         }
 
@@ -484,11 +529,14 @@
             1;
           raycaster.setFromCamera(mouse, camera);
           const intersects = raycaster.intersectObjects(meshes, false);
+          console.log(mouse)
+          console.log(intersects);
           if (intersects.length > 0) {
             // just to verify the sidebar function works
             // generateSidebar(["hello", "world", "item", "yes"]);
 
             // send request to backend
+            showSpinner();
             var request = new XMLHttpRequest();
             request.open("POST", "/inspect_node");
             request.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
@@ -498,14 +546,17 @@
                   let obj = JSON.parse(request.responseText);
                   console.log(obj);
                   generateSidebar(obj);
+                  hideSpinner();
                 } else if (request.status == 400) {
                   document.getElementById("search-error").hidden = false;
                   document.getElementById("search-error").innerText =
                     request.responseText;
+                    hideSpinner();
                 } else {
                   document.getElementById("search-error").hidden = false;
                   document.getElementById("search-error").innerText =
                     "Error when inspecting node!";
+                    hideSpinner();
                 }
               }
             };
