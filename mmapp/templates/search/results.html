@@ -106,7 +106,7 @@
                     class="form-control w-10 rounded-pill"
                     placeholder="Search..."
                     maxlength="200"
-                    pattern="[A-Za-z0-9-\w]*"
+                    pattern="[A-Za-z0-9\-\s]*"
                     title="Enter words as space separated values with no punctuation."
                     required
                   />
@@ -390,7 +390,6 @@
         camera.lookAt(0, 0, 0);
       });
 
-      
       function showSpinner() {
         document.getElementById("loading-spinner").hidden = false;
       }
@@ -398,7 +397,6 @@
       function hideSpinner() {
         document.getElementById("loading-spinner").hidden = true;
       }
-
 
       var div = document.getElementById("viewbox");
       const scene = new THREE.Scene();
@@ -459,20 +457,26 @@
             size: 1,
             height: 0.1,
           });
-          geometry.translate(40 * list[i].pos[0],  40 * list[i].pos[2], 40 * list[i].pos[1]);
+          geometry.translate(
+            40 * list[i].pos[0],
+            40 * list[i].pos[2],
+            40 * list[i].pos[1]
+          );
           const material = new THREE.MeshBasicMaterial({ color: 0x000000 });
           const textMesh = new THREE.Mesh(geometry, material);
           // https://threejs.org/docs/#api/en/math/Box3
           searched_terms.push(list[i].string);
           const box = new THREE.Box3();
           textMesh.geometry.computeBoundingBox();
-          box.copy(textMesh.geometry.boundingBox).applyMatrix4(textMesh.matrixWorld);
-          const center = new Vector3()
-          box.getCenter(center)
-          const size = new Vector3()
+          box
+            .copy(textMesh.geometry.boundingBox)
+            .applyMatrix4(textMesh.matrixWorld);
+          const center = new Vector3();
+          box.getCenter(center);
+          const size = new Vector3();
           box.getSize(size);
           const boxGeo = new THREE.BoxGeometry(size.x, size.y, size.z);
-          const material_col = new THREE.MeshBasicMaterial({visible: false});
+          const material_col = new THREE.MeshBasicMaterial({ visible: false });
           const collMesh = new THREE.Mesh(boxGeo, material_col);
           collMesh.position.x = center.x;
           collMesh.position.y = center.y;
@@ -531,7 +535,7 @@
             1;
           raycaster.setFromCamera(mouse, camera);
           const intersects = raycaster.intersectObjects(meshes, false);
-          console.log(mouse)
+          console.log(mouse);
           console.log(intersects);
           if (intersects.length > 0) {
             // just to verify the sidebar function works
@@ -553,12 +557,12 @@
                   document.getElementById("search-error").hidden = false;
                   document.getElementById("search-error").innerText =
                     request.responseText;
-                    hideSpinner();
+                  hideSpinner();
                 } else {
                   document.getElementById("search-error").hidden = false;
                   document.getElementById("search-error").innerText =
                     "Error when inspecting node!";
-                    hideSpinner();
+                  hideSpinner();
                 }
               }
             };
