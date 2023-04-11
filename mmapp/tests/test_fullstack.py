@@ -449,6 +449,21 @@ class SearchAndVisualizationTests(LiveServerTestCase):
         submit = self.driver.find_element(By.ID, "submit")
         submit.click()
         assert self.driver.current_url == self.live_server_url + "/"
+        self.driver.find_element(By.ID, "notebooks_nav").click()
+        time.sleep(2)
+        assert self.driver.current_url == self.live_server_url + "/notebooks"
+        notebook = self.driver.find_element(By.ID, "notebook")
+        notebook.send_keys("testnotebook")
+        submit = self.driver.find_element(By.ID, "create_submit")
+        submit.click()
+        assert self.driver.current_url == self.live_server_url + "/notebooks"
+        time.sleep(10)
+        notebooks_select = Select(self.driver.find_element(By.ID, "notebooks-select"))
+        assert len(notebooks_select.options) == 1
+        assert notebooks_select.options[0].text == "testnotebook"
+        notebook_id = notebooks_select.options[0].get_attribute("value")
+        notebook_header = self.driver.find_element(By.ID, "heading-"+str(notebook_id))
+        assert "testnotebook" in notebook_header.find_element(By.CLASS_NAME, "accordion-button").text 
 
 #     def testSearch(self):
 #         pass
