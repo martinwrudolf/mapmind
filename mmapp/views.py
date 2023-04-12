@@ -215,8 +215,8 @@ def upload(request):
                     return HttpResponse(status=200, content="There were pictures and/or tables that were disregarded. File uploaded successfully!")
                 return HttpResponse(status=200, content="File uploaded successfully")
         except Notebook.DoesNotExist:
-            print("Notebook does not exists")
-            return HttpResponse(status=400, content="Notebook does not exists")
+            print("Notebook does not exist")
+            return HttpResponse(status=400, content="Notebook does not exist")
         except Exception as e:
             print("Bad request")
             print("Unexpected error:", e)

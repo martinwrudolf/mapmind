@@ -218,6 +218,20 @@ class UploadViewTest(TestCase):
             self.assertEqual(response.status_code, 400)
             self.assertEqual(response.content.decode(), "Note file already exists in this notebook")
 
+    
+    def test_upload_notebook_does_not_exist(self):
+        with tempfile.NamedTemporaryFile(suffix=".txt") as txt_file:
+            txt_file.write(b"Dummy file content")
+            txt_file.seek(0)
+            request = self.factory.post('/upload/', {
+                'file': txt_file,
+                'notebook': 999,
+            })
+            request.user = self.user
+            response = upload(request)
+            self.assertEqual(response.status_code, 400)
+            self.assertEqual(response.content.decode(), "Notebook does not exist")
+
     @override_settings(MEDIA_ROOT=tempfile.gettempdir())
     @patch('mmapp.views.aws.s3_write')
     @patch('mmapp.views.aws.s3_read')
@@ -548,7 +562,7 @@ class NoteViewTest(TestCase):
 
 
 
-from mmapp.views import edit_username, edit_email, delete_account
+from mmapp.views import edit_username, edit_email, delete_account, settings
 class AccountViewTest(TestCase):
 
     def setUp(self):
@@ -566,6 +580,23 @@ class AccountViewTest(TestCase):
             kv='kv',
             kv_vectors='kv_v'
         )
+
+    def test_settings(self):
+        request = HttpRequest()
+
+        # Test user authentication check
+        request.method = 'GET'
+        request.user = AnonymousUser()
+        response = settings(request)
+        assert response.status_code == 302
+        assert response.url == '/accounts/login/'
+
+        # Test settings view
+        request.user = self.user
+        response = settings(request)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'settings')
+
 
     def test_edit_username(self):
         request = HttpRequest()
@@ -724,5 +755,4 @@ class SearchViewTest(TestCase):
             response = inspect_node(request)
             self.assertEqual(response.status_code, 200)
             self.assertEqual(json.loads(response.content), ['test_result'])
-
 
