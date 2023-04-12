@@ -357,11 +357,11 @@ if __name__ == "__main__":
     ''' This can be used to test the machine learning module by commenting out individual lines. '''
     # Define paths to various sources
     # TODO: Change these to relative paths
-    path2notes = r"C:/Users/clair/Documents/Year 5/ECE 493/Project/Testing_ML/Study notes.docx"
-    path2glovetxt = r"C:/Users/clair/Documents/Year 5/ECE 493/Project/Testing_ML/glove.6B.300d.txt"
-    path2glovepickle = "glove_embed.pkl"
-    path2glovecompressedpickle = "glove_embed_compressed.bz"
-    path2kv = "finetuned_embed.kv"
+    # path2notes = r"C:/Users/clair/Documents/Year 5/ECE 493/Project/Testing_ML/Study notes.docx"
+    # path2glovetxt = r"C:/Users/clair/Documents/Year 5/ECE 493/Project/Testing_ML/glove.6B.300d.txt"
+    # path2glovepickle = "glove_embed.pkl"
+    # path2glovecompressedpickle = "glove_embed_compressed.bz"
+    # path2kv = "finetuned_embed.kv"
     
     # LOAD EMBEDDINGS FROM THE ORIGINAL TEXT FILE
     #glove_embeddings = load_embeddings_from_txt(path2glovetxt)
@@ -370,13 +370,13 @@ if __name__ == "__main__":
     #save_embeddings(glove_embeddings, "glove_embed.pkl")
 
     # LOAD GLOVE EMBEDDINGS FROM PICKLE FILE
-    glove_embeddings = load_embeddings(path2glovepickle)
+    # glove_embeddings = load_embeddings(path2glovepickle)
 
     # LOAD AND PROCESS USER NOTES
-    t0 = time.time()
-    oov_vocab, scrubbed_vocab, full_corpus, pics_or_tables = process_user_notes(path2notes, glove_embeddings.keys)
-    t1 = time.time()
-    print("Time to process user input notes: %s"%(t1-t0))
+    # t0 = time.time()
+    # oov_vocab, scrubbed_vocab, full_corpus, pics_or_tables = process_user_notes(path2notes, glove_embeddings.keys)
+    # t1 = time.time()
+    # print("Time to process user input notes: %s"%(t1-t0))
 
     # TRAIN MODEL
     # t0 = time.time()
@@ -404,16 +404,16 @@ if __name__ == "__main__":
     # print("Time to load kv: %s"%(t1-t0))
 
     # SEARCH FOR SOME WORDS AND GET A SIMILARITY MATRIX
-    t0 = time.time()
-    searched_words = ["semaphore", "lock", "binary"]
-    # search function needs SCRUBBED VOCAB only
-    #res_matrix, result_words, skipwords = search(searched_words, kv, 5, scrubbed_vocab)
-    t1 = time.time()
-    print("Time to search: %s"%(t1-t0))
+    # t0 = time.time()
+    # searched_words = ["semaphore", "lock", "binary"]
+    # # search function needs SCRUBBED VOCAB only
+    # #res_matrix, result_words, skipwords = search(searched_words, kv, 5, scrubbed_vocab)
+    # t1 = time.time()
+    # print("Time to search: %s"%(t1-t0))
 
-    # INSPECT A NODE
-    t0 = time.time()
-    # inspect node needs FULL USER CORPUS (not scrubbed) and USER VOCAB (scrubbed)
-    click_results = inspect_node("parallel", searched_words, full_corpus, kv, 5)
-    t1 = time.time()
-    print("Time to inspect: %s"%(t1-t0))
+    # # INSPECT A NODE
+    # t0 = time.time()
+    # # inspect node needs FULL USER CORPUS (not scrubbed) and USER VOCAB (scrubbed)
+    # click_results = inspect_node("parallel", searched_words, full_corpus, kv, 5)
+    # t1 = time.time()
+    # print("Time to inspect: %s"%(t1-t0))
