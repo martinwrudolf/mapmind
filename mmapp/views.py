@@ -462,7 +462,7 @@ def merge_notebooks(request):
             notebook_vocab = aws.s3_read(new_notebook.vocab)
         except:
             # notebook did not have an associated vocab, so it must still be uploading
-            return HttpResponse("Database error: Notebook does not have a vocab file")
+            return HttpResponse(status=405, content="Database error: Notebook does not have a vocab file")
 
         notebook_oov = [word for word in notebook_vocab.split() if word not in glove_keys]
         notebook_oov = list(set(notebook_oov))

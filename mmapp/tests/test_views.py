@@ -470,6 +470,7 @@ class NotebookViewTest(TestCase):
         response = merge_notebooks(request)
         self.assertEqual(response.status_code, 405)
 
+
     def test_notebooks(self):
         request = HttpRequest()
 
@@ -712,6 +713,29 @@ class SearchViewTest(TestCase):
         response = search_results(request)
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "search_results")
+
+        # Test search_results view with notesonly and spellcheck in GET parameters
+        request.GET = {
+            "search_words": "test search",
+            "notesonly": "on",
+            "spellcheck": "on",
+            "notebook": self.notebook.id,
+        }
+        with patch('mmapp.views.aws.search_on_ec2') as mock_search_on_ec2:
+            mock_search_on_ec2.return_value = 'test_filename'
+            with patch('mmapp.views.ml.load_embeddings') as mock_load_embeddings:
+                mock_load_embeddings.return_value = {
+                    'res_matrix': [],
+                    'words': [],
+                    'skipwords': [],
+                    'spell_checked': [],
+                }
+                with patch('mmapp.views.sp.fruchterman_reingold') as mock_fruchterman_reingold:
+                    mock_fruchterman_reingold.return_value = []
+                    response = search_results(request)
+                    self.assertEqual(response.status_code, 200)
+                    self.assertContains(response, "search_results")
+
 
         # Test search_results view with search_words parameter and mock search_on_ec2
         request.GET = {
