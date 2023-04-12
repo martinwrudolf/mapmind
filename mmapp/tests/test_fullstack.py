@@ -11,6 +11,7 @@ from .. import models
 import time
 import os
 
+# Sources:
 # https://ordinarycoders.com/blog/article/testing-django-selenium
 # https://www.selenium.dev/documentation/webdriver/getting_started/install_drivers/
 # https://selenium-python.readthedocs.io/locating-elements.html#locating-hyperlinks-by-link-text
