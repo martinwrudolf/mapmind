@@ -3,6 +3,7 @@ from django.test import TestCase, RequestFactory
 from django.contrib.auth.models import User, AnonymousUser
 from mmapp.models import Notebook, Note
 from mmapp.views import inspect_node, login
+from django.http import QueryDict
 
 class LoginViewTest(TestCase):
     def setUp(self):
@@ -190,28 +191,32 @@ class UploadViewTest(TestCase):
             self.assertEqual(response.status_code, 400)
             self.assertEqual(response.content.decode(), "File is too large")
 
-    # @override_settings(MEDIA_ROOT=tempfile.gettempdir())
-    # def test_upload_existing_file(self):
-    #     # Create a Note with a specific file name
-    #     note = Note.objects.create(
-    #         file_name='existing_file.txt',
-    #         file_type='text/plain',
-    #         owner=self.user,
-    #         notebooks=self.notebook,
-    #         vocab='vocab',
-    #         corpus='corpus'
-    #     )
-    #     with tempfile.NamedTemporaryFile(suffix=".txt") as txt_file:
-    #         txt_file.write(b"Dummy file content")
-    #         txt_file.seek(0)
-    #         request = self.factory.post('/upload/', {
-    #             'file': txt_file,
-    #             'notebook': self.notebook.id,
-    #         })
-    #         request.user = self.user
-    #         response = upload(request)
-    #         self.assertEqual(response.status_code, 400)
-    #         self.assertEqual(response.content.decode(), "Note file already exists in this notebook")
+    @override_settings(MEDIA_ROOT=tempfile.gettempdir())
+    @patch('mmapp.views.aws.s3_read')
+    def test_upload_existing_file(self, mock_s3_read):
+        # Create a Note with a specific file name
+        note = Note.objects.create(
+            file_name='existing_file.txt',
+            file_type='text/plain',
+            owner=self.user,
+            notebooks=self.notebook,
+            vocab='vocab',
+            corpus='corpus'
+        )
+
+        mock_s3_read.side_effect = ["dummy_vocab", "dummy_corpus"]
+        with tempfile.NamedTemporaryFile(suffix=".txt") as txt_file:
+            txt_file.write(b"Dummy file content")
+            txt_file.seek(0)
+            request = self.factory.post('/upload/', {
+                'file': txt_file,
+                'notebook': self.notebook.id,
+            })
+            request.user = self.user
+            response = upload(request)
+            response = upload(request)
+            self.assertEqual(response.status_code, 400)
+            self.assertEqual(response.content.decode(), "Note file already exists in this notebook")
 
     @override_settings(MEDIA_ROOT=tempfile.gettempdir())
     @patch('mmapp.views.aws.s3_write')
@@ -385,55 +390,71 @@ class NotebookViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.content.decode(), "This is the URL where we edit notebooks!")
 
-    # def test_merge_notebooks(self):
-    #     request = HttpRequest()
+    def test_merge_notebooks(self):
+        request = HttpRequest()
 
-    #     # Test user authentication check
-    #     request.user = AnonymousUser()
-    #     request.method = 'POST'
-    #     response = merge_notebooks(request)
-    #     self.assertEqual(response.status_code, 401)
+        # Test user authentication check
+        request.user = AnonymousUser()
+        request.method = 'POST'
+        response = merge_notebooks(request)
+        self.assertEqual(response.status_code, 401)
 
-    #     # Test merge_notebooks successful case
-    #     request.user = self.user
-    #     request.method = 'POST'
+        # Test merge_notebooks successful case
+        request.user = self.user
+        request.method = 'POST'
 
-    #     notebook1 = Notebook.objects.create(
-    #         name='Notebook1',
-    #         owner=self.user,
-    #         vocab='vocab1',
-    #         corpus='corpus1',
-    #         kv='kv1',
-    #         kv_vectors='kv_v1'
-    #     )
+        notebook1 = Notebook.objects.create(
+            name='Notebook1',
+            owner=self.user,
+            vocab='vocab1',
+            corpus='corpus1',
+            kv='kv1',
+            kv_vectors='kv_v1'
+        )
 
-    #     notebook2 = Notebook.objects.create(
-    #         name='Notebook2',
-    #         owner=self.user,
-    #         vocab='vocab2',
-    #         corpus='corpus2',
-    #         kv='kv2',
-    #         kv_vectors='kv_v2'
-    #     )
+        notebook2 = Notebook.objects.create(
+            name='Notebook2',
+            owner=self.user,
+            vocab='vocab2',
+            corpus='corpus2',
+            kv='kv2',
+            kv_vectors='kv_v2'
+        )
 
-    #     request.POST = {'notebooks[]': [notebook1.id, notebook2.id], 'merged_notebook_name': 'MergedNotebook'}
+        self.note = Note.objects.create(
+            file_name='testnote3',
+            file_type='text/plain',
+            owner=self.user,
+            notebooks=notebook1,
+            vocab='vocab',
+            corpus='corpus'
+        )
 
-    #     with patch('mmapp.views.aws.move_file') as mock_move_file, \
-    #          patch('mmapp.views.aws.s3_delete_folder') as mock_s3_delete_folder, \
-    #          patch('mmapp.views.aws.notebook_update_files') as mock_notebook_update_files, \
-    #          patch('mmapp.views.aws.train_on_ec2') as mock_train_on_ec2:
-    #         response = merge_notebooks(request)
-    #         self.assertEqual(response.status_code, 201)
-    #         self.assertEqual(response.content.decode(), "Notebooks merged successfully")
-    #         mock_move_file.assert_called()
-    #         mock_s3_delete_folder.assert_called()
-    #         mock_notebook_update_files.assert_called()
-    #         mock_train_on_ec2.assert_called()
 
-    #     # Test invalid HTTP method
-    #     request.method = 'GET'
-    #     response = merge_notebooks(request)
-    #     self.assertEqual(response.status_code, 405)
+        request.POST = QueryDict('', mutable=True)
+        request.POST.setlist('notebooks[]', [notebook1.id, notebook2.id])
+        request.POST['merged_notebook_name'] = 'MergedNotebook'
+
+        with patch('mmapp.views.aws.move_file') as mock_move_file, \
+             patch('mmapp.views.aws.s3_delete_folder') as mock_s3_delete_folder, \
+             patch('mmapp.views.aws.notebook_update_files') as mock_notebook_update_files, \
+             patch('mmapp.views.aws.train_on_ec2') as mock_train_on_ec2, \
+                patch('mmapp.views.aws.s3_read') as mock_s3_read:
+            
+            mock_s3_read.return_value = 'sample_vocab_value'
+
+            response = merge_notebooks(request)
+            self.assertEqual(response.status_code, 201)
+            self.assertEqual(response.content.decode(), "Notebooks merged successfully")
+            mock_move_file.assert_called()
+            mock_s3_delete_folder.assert_called()
+            mock_notebook_update_files.assert_called()
+            mock_train_on_ec2.assert_called()
+
+        # Test invalid HTTP method
+        request.method = 'GET'
+        response = merge_notebooks(request)
+        self.assertEqual(response.status_code, 405)
 
     def test_notebooks(self):
         request = HttpRequest()
@@ -472,53 +493,59 @@ class NoteViewTest(TestCase):
         )
 
 
-    # def test_delete_notes(self):
-    #     request = HttpRequest()
+    def test_delete_notes(self):
+        request = HttpRequest()
 
-    #     # Test user authentication check
-    #     request.user = AnonymousUser()
-    #     request.method = 'POST'
-    #     response = delete_notes(request)
-    #     self.assertEqual(response.status_code, 401)
+        # Test user authentication check
+        request.user = AnonymousUser()
+        request.method = 'POST'
+        response = delete_notes(request)
+        self.assertEqual(response.status_code, 401)
 
-    #     # Test successful notes deletion
-    #     request.user = self.user
-    #     request.method = 'POST'
+        # Test successful notes deletion
+        request.user = self.user
+        request.method = 'POST'
 
-    #     notebook = Notebook.objects.create(
-    #         name='Notebook for Note Deletion',
-    #         owner=self.user,
-    #         vocab='vocab',
-    #         corpus='corpus',
-    #         kv='kv',
-    #         kv_vectors='kv_v'
-    #     )
+        notebook = Notebook.objects.create(
+            name='Notebook for Note Deletion',
+            owner=self.user,
+            vocab='vocab',
+            corpus='corpus',
+            kv='kv',
+            kv_vectors='kv_v'
+        )
 
-    #     note = Note.objects.create(
-    #         file_name='Note to Delete',
-    #         file_type='text/plain',
-    #         owner=self.user,
-    #         notebooks=notebook,
-    #         vocab='vocab',
-    #         corpus='corpus'
-    #     )
+        note = Note.objects.create(
+            file_name='Note to Delete',
+            file_type='text/plain',
+            owner=self.user,
+            notebooks=notebook,
+            vocab='vocab',
+            corpus='corpus'
+        )
 
-    #     request.POST = {'note': [note.id]}
+        request.POST = QueryDict('', mutable=True)
+        request.POST.setlist('note', [note.id])
 
-    #     with patch('mmapp.views.aws.s3_delete_folder') as mock_s3_delete_folder, \
-    #          patch('mmapp.views.aws.notebook_update_files') as mock_notebook_update_files, \
-    #          patch('mmapp.views.aws.train_on_ec2') as mock_train_on_ec2:
-    #         response = delete_notes(request)
-    #         self.assertEqual(response.status_code, 200)
-    #         self.assertEqual(response.content.decode(), "Notes deleted successfully")
-    #         mock_s3_delete_folder.assert_called()
-    #         mock_notebook_update_files.assert_called()
-    #         mock_train_on_ec2.assert_called()
+        with patch('mmapp.views.aws.s3_delete_folder') as mock_s3_delete_folder, \
+            patch('mmapp.views.aws.notebook_update_files') as mock_notebook_update_files, \
+            patch('mmapp.views.aws.train_on_ec2') as mock_train_on_ec2, \
+                patch('mmapp.views.aws.s3_read') as mock_s3_read:
+            
+            mock_s3_read.return_value = 'sample_vocab_value'
 
-    #     # Test invalid HTTP method
-    #     request.method = 'GET'
-    #     response = delete_notes(request)
-    #     self.assertEqual(response.status_code, 405)
+            response = delete_notes(request)
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.content.decode(), "Notes deleted successfully")
+            mock_s3_delete_folder.assert_called()
+            mock_notebook_update_files.assert_called()
+            mock_train_on_ec2.assert_called()
+
+        # Test invalid HTTP method
+        request.method = 'GET'
+        response = delete_notes(request)
+        self.assertEqual(response.status_code, 405)
+
 
 
 from mmapp.views import edit_username, edit_email, delete_account
@@ -676,23 +703,26 @@ class SearchViewTest(TestCase):
                     self.assertContains(response, "search_results")
 
 
-    # def test_inspect_node(self):
-    #     request = HttpRequest()
-    #     request.method = 'POST'
-    #     request.META['CONTENT_TYPE'] = 'application/json'
 
-    #     # Test user authentication check
-    #     request.user = self.user
-    #     request.POST = {
-    #         'notebook_id': self.notebook.id,
-    #         'searched_words': ['test', 'search'],
-    #         'word': 'test'
-    #     }
+    def test_inspect_node(self):
+        request_factory = RequestFactory()
+        request = request_factory.post(
+            '/',
+            content_type='application/json',
+            data=json.dumps({
+                'notebook_id': self.notebook.id,
+                'searched_words': ['test', 'search'],
+                'word': 'test'
+            })
+        )
 
-    #     # Test inspect_node view with mock inspect_on_ec2
-    #     with patch('mmapp.views.aws.inspect_on_ec2') as mock_inspect_on_ec2:
-    #         mock_inspect_on_ec2.return_value = ['test_result']
-    #         response = inspect_node(request)
-    #         self.assertEqual(response.status_code, 200)
-    #         self.assertEqual(json.loads(response.content), ['test_result'])
+        request.user = self.user
+
+        # Test inspect_node view with mock inspect_on_ec2
+        with patch('mmapp.views.aws.inspect_on_ec2') as mock_inspect_on_ec2:
+            mock_inspect_on_ec2.return_value = ['test_result']
+            response = inspect_node(request)
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(json.loads(response.content), ['test_result'])
+
 
