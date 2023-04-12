@@ -241,7 +241,6 @@ class UserAccountTests(LiveServerTestCase):
         email.send_keys("end2end@")
         self.driver.find_element(By.ID, "submit").click()
         assert self.driver.current_url == self.live_server_url + "/accounts/password_reset/" 
-        print(email.get_attribute("validationMessage"))
         assert "Please enter a part following '@'" in email.get_attribute("validationMessage") 
 
     def testResetPasswordBlankEmail(self):
@@ -355,7 +354,6 @@ class UserAccountTests(LiveServerTestCase):
         self.driver.find_element(By.ID, "delete_account").click()
         Alert(self.driver).accept()
         time.sleep(5)
-        print(self.driver.current_url)
         assert self.driver.current_url == self.live_server_url + "/accounts/login/"
 
     def testLogout(self):
@@ -417,7 +415,6 @@ class NotebooksTests(LiveServerTestCase):
         self.driver.find_element(By.ID, "submit-"+str(notebook_id)).click()
         assert self.driver.current_url == self.live_server_url + "/notebooks"
         time.sleep(60)
-        print(self.driver.find_element(By.ID, "collapse-"+str(notebook_id)).find_element(By.TAG_NAME, "li").text)
         assert "testNotes.txt" in self.driver.find_element(By.ID, "collapse-"+str(notebook_id)).find_element(By.TAG_NAME, "li").text
 
 
@@ -505,7 +502,6 @@ class SearchAndVisualizationTests(LiveServerTestCase):
         self.driver.find_element(By.ID, "submit-"+str(notebook_id)).click()
         assert self.driver.current_url == self.live_server_url + "/notebooks"
         time.sleep(60)
-        print(self.driver.find_element(By.ID, "collapse-"+str(notebook_id)).find_element(By.TAG_NAME, "li").text)
         assert "testNotes.txt" in self.driver.find_element(By.ID, "collapse-"+str(notebook_id)).find_element(By.TAG_NAME, "li").text
         self.driver.find_element(By.ID, "search_nav").click()
         time.sleep(2)
