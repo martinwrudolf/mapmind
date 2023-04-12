@@ -1,3 +1,6 @@
 [run]
-omit = */mmapp/tests/*
+omit = 
+    */mmapp/tests/*
+    mm/wsgi.py
+    mm/asgi.py
 
