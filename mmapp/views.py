@@ -25,14 +25,16 @@ from smart_open import open
 import json
 import traceback
 
-# Registration form
+# Registration form sources:
 # https://studygyaan.com/django/how-to-create-sign-up-registration-view-in-django
 
 ''' FR#4 -- Change.Password can be found in the password_reset html files '''
-# Password reset
+# Password reset HTML files from: 
 # https://learndjango.com/tutorials/django-password-reset-tutorial
-# https://www.sitepoint.com/django-send-email/
+
+# Setting up email and SMTP client:
 # https://www.geeksforgeeks.org/setup-sending-email-in-django-project/
+# https://www.sitepoint.com/django-send-email/
 # https://suhailvs.github.io/blog02.html#mail-setup-on-django-using-gmail
 # https://stackoverflow.com/questions/73422664/django-email-sending-smtp-error-cant-send-a-mail
 # https://stackoverflow.com/questions/10147455/how-to-send-an-email-with-gmail-as-provider-using-python/27515833#27515833
@@ -49,7 +51,7 @@ def login(request):
     print("User is not authenticated. Sending to login.")
     return redirect('login')
 
-# Register page
+# Register page sources:
 # https://docs.djangoproject.com/en/4.1/topics/auth/passwords/#password-validation
 # https://docs.djangoproject.com/en/4.1/topics/settings/
 def register(request):
@@ -632,13 +634,13 @@ def search_results(request):
     for word in words_pos:
         word_list.append({"string":word, "pos":list(words_pos[word])})
     print(word_list)
-    # https://stackoverflow.com/questions/43305020/how-to-use-the-context-variables-passed-from-django-in-javascript
-    
+   
     user = request.user
     notebooks = Notebook.objects.filter(owner=user)
     if (len(skipwords) > 0 and skipwords[0]== None):
         skipwords = []
-
+    
+    # Source: https://stackoverflow.com/questions/43305020/how-to-use-the-context-variables-passed-from-django-in-javascript
     context = {
         "res": res_matrix,
         "words_pos": json.dumps(word_list),

@@ -12,6 +12,7 @@ from .. import models
 import time
 import os
 
+# Sources:
 # https://ordinarycoders.com/blog/article/testing-django-selenium
 # https://www.selenium.dev/documentation/webdriver/getting_started/install_drivers/
 # https://selenium-python.readthedocs.io/locating-elements.html#locating-hyperlinks-by-link-text
@@ -26,6 +27,7 @@ import os
 # https://www.tutorialspoint.com/how-to-get-all-the-options-in-the-dropdown-in-selenium
 # https://www.selenium.dev/documentation/webdriver/support_features/select_lists/
 # https://stackoverflow.com/questions/30697991/how-to-access-invisible-unordered-list-element-with-selenium-webdriver-using-jav
+# https://stackoverflow.com/questions/16807258/selenium-click-at-certain-position
 
 class UserAccountTests(LiveServerTestCase): 
     def setUp(self):
@@ -243,7 +245,6 @@ class UserAccountTests(LiveServerTestCase):
         email.send_keys("end2end@")
         self.driver.find_element(By.ID, "submit").click()
         assert self.driver.current_url == self.live_server_url + "/accounts/password_reset/" 
-        print(email.get_attribute("validationMessage"))
         assert "Please enter a part following '@'" in email.get_attribute("validationMessage") 
 
     def testResetPasswordBlankEmail(self):
@@ -357,7 +358,6 @@ class UserAccountTests(LiveServerTestCase):
         self.driver.find_element(By.ID, "delete_account").click()
         Alert(self.driver).accept()
         time.sleep(5)
-        print(self.driver.current_url)
         assert self.driver.current_url == self.live_server_url + "/accounts/login/"
 
     def testLogout(self):
@@ -428,11 +428,29 @@ class NotebooksTests(LiveServerTestCase):
         assert "testNotes.txt" in self.driver.find_element(By.ID, "collapse-"+str(notebook_id)).find_element(By.TAG_NAME, "li").text
 
 
-#     def testUploadNotesInvaildFileFormat(self):
-#         pass
+    def testUploadNotesInvaildFileFormat(self):
+        self.testNotebookCreation()
+        notebooks_select = Select(self.driver.find_element(By.ID, "notebooks-select"))
+        notebook_id = notebooks_select.options[0].get_attribute("value")
+        notebook_header = self.driver.find_element(By.ID, "heading-"+str(notebook_id))
+        notebook_header.find_element(By.CSS_SELECTOR, "button.accordion-button").click()
+        self.driver.find_element(By.ID, "file-"+str(notebook_id)).send_keys(os.path.abspath("./mmapp/tests/test_note_files/testNotes.html"))
+        self.driver.find_element(By.ID, "submit-"+str(notebook_id)).click()
+        assert self.driver.current_url == self.live_server_url + "/notebooks"
+        time.sleep(10)
+        assert self.driver.find_element(By.ID, "notebook_error").text == "File is not of correct format"
 
-#     def testUploadNotesInvalidFileSize(self):
-#         pass
+    def testUploadNotesInvalidFileSize(self):
+        self.testNotebookCreation()
+        notebooks_select = Select(self.driver.find_element(By.ID, "notebooks-select"))
+        notebook_id = notebooks_select.options[0].get_attribute("value")
+        notebook_header = self.driver.find_element(By.ID, "heading-"+str(notebook_id))
+        notebook_header.find_element(By.CSS_SELECTOR, "button.accordion-button").click()
+        self.driver.find_element(By.ID, "file-"+str(notebook_id)).send_keys(os.path.abspath("./mmapp/tests/test_note_files/test_too_large.docx"))
+        self.driver.find_element(By.ID, "submit-"+str(notebook_id)).click()
+        assert self.driver.current_url == self.live_server_url + "/notebooks"
+        time.sleep(10)
+        assert self.driver.find_element(By.ID, "notebook_error").text == "File is too large"
 
     def testDeleteNotes(self):
         self.testUploadNotes()
@@ -541,17 +559,33 @@ class SearchAndVisualizationTests(LiveServerTestCase):
         assert len(notebooks_select.options) == 1
         assert notebooks_select.options[0].text == "testnotebook"
         notebook_id = notebooks_select.options[0].get_attribute("value")
+        self.notebook_id = notebook_id
         notebook_header = self.driver.find_element(By.ID, "heading-"+str(notebook_id))
         assert "testnotebook" in notebook_header.find_element(By.CLASS_NAME, "accordion-button").text 
+        notebooks_select = Select(self.driver.find_element(By.ID, "notebooks-select"))
+        notebook_id = notebooks_select.options[0].get_attribute("value")
+        notebook_header = self.driver.find_element(By.ID, "heading-"+str(notebook_id))
+        notebook_header.find_element(By.CSS_SELECTOR, "button.accordion-button").click()
+        self.driver.find_element(By.ID, "file-"+str(notebook_id)).send_keys(os.path.abspath("./mmapp/tests/test_note_files/testNotes.txt"))
+        self.driver.find_element(By.ID, "submit-"+str(notebook_id)).click()
+        assert self.driver.current_url == self.live_server_url + "/notebooks"
+        time.sleep(60)
+        assert "testNotes.txt" in self.driver.find_element(By.ID, "collapse-"+str(notebook_id)).find_element(By.TAG_NAME, "li").text
+        self.driver.find_element(By.ID, "search_nav").click()
+        time.sleep(2)
+        assert self.driver.current_url == self.live_server_url + "/"
 
-#     def testSearch(self):
-#         pass
+    def testSearch(self):
+        self.driver.find_element(By.ID, "search_words").find_keys("cpu thread system")
+        self.driver.find_element(By.ID, "submit").click()
+        time.sleep(45)
+        assert self.driver.current_url == self.live_server_url + "/?search_words=cpu+thread+system&notebook=" + str(self.notebook_id)
 
-#     def testEmptySearch(self):
-#         pass
+    def testEmptySearch(self):
+        self.driver.find_element(By.ID, "submit").click()
+        assert self.driver.find_element(By.ID, "submit").get_attribute("validationMessage") == "Please fill in this field."
 
-#     def testSearchWithoutNotebook(self):
-#         pass
-
-#     def testInspectNode(self):
-#         pass
+    def testInspectNode(self):
+        # Source: https://stackoverflow.com/questions/16807258/selenium-click-at-certain-position
+        self.testSearch()
+        self.driver.find_element(By.TAG_NAME, "canvas")

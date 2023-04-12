@@ -1,0 +1,31 @@
+Two types of software on a computing system
+System software - OS and utilities
+Application software - programs (things that you usually refer to as programs)
+Operating system - is a resource manager of both time and space 
+Manages the resources of a computer, including the CPU, the main memory (RAM), and I/O devices (devices that receives and sends data to external sources from the CPU)
+I/O devices receive read and write requests from programs running on CPU (sent by the CPU running the program), and they carry it out
+When a program needs some I/O from a certain device (input or output) it sends the request to the device to do that operation
+Different techniques in handling this process (how does the CPU handle waiting for the operation to be completed)
+Standard input: keyboard, standard output: screen
+Different output devices do exists
+When a I/O device is being “used” by a program (handling a request from a program, can’t be used by others)
+Acts to hide the complexity of the underlying hardware from the user and give the user a better view (an abstraction) of the computer
+Roles of an OS:
+Referee
+Resource allocation among users and applications (CPU, RAM etc.)
+Note that the OS can generate some applications/run some programs/start some processes which can compete with user started processes/applications
+Isolation of different users and applications from each other
+Prevent users and applications from affecting each other
+Communication between users and applications
+Allow different programs and users to transfer data
+Illusionist
+To make every application think it has the full machine to itself
+Has the entire CPU, RAM to use
+The application has no idea that other applications may be running on the same machine using the same resources
+To make the application think it has infinite resources (memory, processors) and reliable storage and network
+So programmers can write applications with the perception that they have infinite resources
+Sometimes illusion needs to be broken if what the application is requesting is simply not possible (requesting use of disk space that does not exist etc.)
+Glue
+Libraries, user interface widgets etc….
+Why study OS?
+The specific abstractions of an OS can affect an application/program’s software
