@@ -29,9 +29,10 @@ import traceback
 # https://studygyaan.com/django/how-to-create-sign-up-registration-view-in-django
 
 ''' FR#4 -- Change.Password can be found in the password_reset html files '''
-# Password reset sources:
 # Password reset HTML files from: https://learndjango.com/tutorials/django-password-reset-tutorial
 # https://www.sitepoint.com/django-send-email/
+
+# Setting up email and SMTP client:
 # https://www.geeksforgeeks.org/setup-sending-email-in-django-project/
 # https://suhailvs.github.io/blog02.html#mail-setup-on-django-using-gmail
 # https://stackoverflow.com/questions/73422664/django-email-sending-smtp-error-cant-send-a-mail
