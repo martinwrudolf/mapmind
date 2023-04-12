@@ -30,7 +30,7 @@ import traceback
 
 ''' FR#4 -- Change.Password can be found in the password_reset html files '''
 # Password reset sources:
-# HTML files from: https://learndjango.com/tutorials/django-password-reset-tutorial
+# Password reset HTML files from: https://learndjango.com/tutorials/django-password-reset-tutorial
 # https://www.sitepoint.com/django-send-email/
 # https://www.geeksforgeeks.org/setup-sending-email-in-django-project/
 # https://suhailvs.github.io/blog02.html#mail-setup-on-django-using-gmail
