@@ -466,7 +466,7 @@
           );
           const material = new THREE.MeshBasicMaterial({ color: 0x000000 });
           const textMesh = new THREE.Mesh(geometry, material);
-          // https://threejs.org/docs/#api/en/math/Box3
+          // Source: https://threejs.org/docs/#api/en/math/Box3
           searched_terms.push(list[i].string);
           const box = new THREE.Box3();
           textMesh.geometry.computeBoundingBox();
