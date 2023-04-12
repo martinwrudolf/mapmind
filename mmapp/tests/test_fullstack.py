@@ -26,340 +26,340 @@ import os
 # https://www.selenium.dev/documentation/webdriver/support_features/select_lists/
 # https://stackoverflow.com/questions/30697991/how-to-access-invisible-unordered-list-element-with-selenium-webdriver-using-jav
 
-# class UserAccountTests(LiveServerTestCase): 
-#     def setUp(self):
-#         self.service = service = Service(executable_path="./webdrivers/chromedriver")
-#         self.driver = webdriver.Chrome(service=self.service)
-#         self.driver.get(self.live_server_url)
-#         assert self.driver.current_url == self.live_server_url + "/accounts/login/"
+class UserAccountTests(LiveServerTestCase): 
+    def setUp(self):
+        self.service = service = Service(executable_path="./webdrivers/chromedriver")
+        self.driver = webdriver.Chrome(service=self.service)
+        self.driver.get(self.live_server_url)
+        assert self.driver.current_url == self.live_server_url + "/accounts/login/"
 
-#     def testValidRegister(self):
-#         self.driver.find_element(By.LINK_TEXT, "Don't have an account?").click()
-#         time.sleep(3)
-#         assert self.driver.current_url == self.live_server_url  + "/register/"
-#         username = self.driver.find_element(By.ID, "username")
-#         password = self.driver.find_element(By.ID, "password")
-#         email = self.driver.find_element(By.ID, "email")
-#         username.send_keys("end2endTest")
-#         password.send_keys("mapmind493")
-#         email.send_keys("end2end@gmail.com")
-#         submit = self.driver.find_element(By.ID, "submit")
-#         submit.click()
-#         time.sleep(3)
-#         assert self.driver.current_url == self.live_server_url + "/accounts/login/"
+    def testValidRegister(self):
+        self.driver.find_element(By.LINK_TEXT, "Don't have an account?").click()
+        time.sleep(3)
+        assert self.driver.current_url == self.live_server_url  + "/register/"
+        username = self.driver.find_element(By.ID, "username")
+        password = self.driver.find_element(By.ID, "password")
+        email = self.driver.find_element(By.ID, "email")
+        username.send_keys("end2endTest")
+        password.send_keys("mapmind493")
+        email.send_keys("end2end@gmail.com")
+        submit = self.driver.find_element(By.ID, "submit")
+        submit.click()
+        time.sleep(3)
+        assert self.driver.current_url == self.live_server_url + "/accounts/login/"
 
-#     def testDupilcateUsernameRegister(self):
-#         self.testValidRegister()
-#         self.driver.find_element(By.LINK_TEXT, "Don't have an account?").click()
-#         assert self.driver.current_url == self.live_server_url  + "/register/"
-#         username = self.driver.find_element(By.ID, "username")
-#         password = self.driver.find_element(By.ID, "password")
-#         email = self.driver.find_element(By.ID, "email")
-#         username.send_keys("end2endTest")
-#         password.send_keys("mapmind493")
-#         email.send_keys("end2end2@gmail.com")
-#         submit = self.driver.find_element(By.ID, "submit")
-#         submit.click()
-#         assert self.driver.current_url == self.live_server_url + "/register/"
-#         self.driver.find_element(By.ID, "register_error").text == "Username is not unique!"
+    def testDupilcateUsernameRegister(self):
+        self.testValidRegister()
+        self.driver.find_element(By.LINK_TEXT, "Don't have an account?").click()
+        assert self.driver.current_url == self.live_server_url  + "/register/"
+        username = self.driver.find_element(By.ID, "username")
+        password = self.driver.find_element(By.ID, "password")
+        email = self.driver.find_element(By.ID, "email")
+        username.send_keys("end2endTest")
+        password.send_keys("mapmind493")
+        email.send_keys("end2end2@gmail.com")
+        submit = self.driver.find_element(By.ID, "submit")
+        submit.click()
+        assert self.driver.current_url == self.live_server_url + "/register/"
+        self.driver.find_element(By.ID, "register_error").text == "Username is not unique!"
 
-#     def testDupilcateEmailRegister(self):
-#         self.testValidRegister()
-#         self.driver.find_element(By.LINK_TEXT, "Don't have an account?").click()
-#         assert self.driver.current_url == self.live_server_url  + "/register/"
-#         username = self.driver.find_element(By.ID, "username")
-#         password = self.driver.find_element(By.ID, "password")
-#         email = self.driver.find_element(By.ID, "email")
-#         username.send_keys("end2endTest2")
-#         password.send_keys("mapmind493")
-#         email.send_keys("end2end@gmail.com")
-#         submit = self.driver.find_element(By.ID, "submit")
-#         submit.click()
-#         assert self.driver.current_url == self.live_server_url + "/register/"
-#         assert self.driver.find_element(By.ID, "register_error").text == "Email is not unique!"
+    def testDupilcateEmailRegister(self):
+        self.testValidRegister()
+        self.driver.find_element(By.LINK_TEXT, "Don't have an account?").click()
+        assert self.driver.current_url == self.live_server_url  + "/register/"
+        username = self.driver.find_element(By.ID, "username")
+        password = self.driver.find_element(By.ID, "password")
+        email = self.driver.find_element(By.ID, "email")
+        username.send_keys("end2endTest2")
+        password.send_keys("mapmind493")
+        email.send_keys("end2end@gmail.com")
+        submit = self.driver.find_element(By.ID, "submit")
+        submit.click()
+        assert self.driver.current_url == self.live_server_url + "/register/"
+        assert self.driver.find_element(By.ID, "register_error").text == "Email is not unique!"
 
-#     def testBlankUsernameRegister(self):
-#         self.driver.find_element(By.LINK_TEXT, "Don't have an account?").click()
-#         assert self.driver.current_url == self.live_server_url  + "/register/"
-#         username = self.driver.find_element(By.ID, "username")
-#         password = self.driver.find_element(By.ID, "password")
-#         email = self.driver.find_element(By.ID, "email")
-#         password.send_keys("mapmind493")
-#         email.send_keys("end2end@gmail.com")
-#         submit = self.driver.find_element(By.ID, "submit")
-#         submit.click()
-#         assert self.driver.current_url == self.live_server_url + "/register/"
-#         assert username.get_attribute("validationMessage") == "Please fill in this field."
+    def testBlankUsernameRegister(self):
+        self.driver.find_element(By.LINK_TEXT, "Don't have an account?").click()
+        assert self.driver.current_url == self.live_server_url  + "/register/"
+        username = self.driver.find_element(By.ID, "username")
+        password = self.driver.find_element(By.ID, "password")
+        email = self.driver.find_element(By.ID, "email")
+        password.send_keys("mapmind493")
+        email.send_keys("end2end@gmail.com")
+        submit = self.driver.find_element(By.ID, "submit")
+        submit.click()
+        assert self.driver.current_url == self.live_server_url + "/register/"
+        assert username.get_attribute("validationMessage") == "Please fill in this field."
 
-#     def testBlankPasswordRegister(self):
-#         self.driver.find_element(By.LINK_TEXT, "Don't have an account?").click()
-#         assert self.driver.current_url == self.live_server_url  + "/register/"
-#         username = self.driver.find_element(By.ID, "username")
-#         password = self.driver.find_element(By.ID, "password")
-#         email = self.driver.find_element(By.ID, "email")
-#         username.send_keys("end2endTest")
-#         email.send_keys("end2end@gmail.com")
-#         submit = self.driver.find_element(By.ID, "submit")
-#         submit.click()
-#         assert self.driver.current_url == self.live_server_url + "/register/"
-#         assert password.get_attribute("validationMessage") == "Please fill in this field."
+    def testBlankPasswordRegister(self):
+        self.driver.find_element(By.LINK_TEXT, "Don't have an account?").click()
+        assert self.driver.current_url == self.live_server_url  + "/register/"
+        username = self.driver.find_element(By.ID, "username")
+        password = self.driver.find_element(By.ID, "password")
+        email = self.driver.find_element(By.ID, "email")
+        username.send_keys("end2endTest")
+        email.send_keys("end2end@gmail.com")
+        submit = self.driver.find_element(By.ID, "submit")
+        submit.click()
+        assert self.driver.current_url == self.live_server_url + "/register/"
+        assert password.get_attribute("validationMessage") == "Please fill in this field."
 
-#     def testBlankEmailRegister(self):
-#         self.driver.find_element(By.LINK_TEXT, "Don't have an account?").click()
-#         assert self.driver.current_url == self.live_server_url  + "/register/"
-#         username = self.driver.find_element(By.ID, "username")
-#         password = self.driver.find_element(By.ID, "password")
-#         email = self.driver.find_element(By.ID, "email")
-#         username.send_keys("end2endTest")
-#         password.send_keys("mapmind493")
-#         submit = self.driver.find_element(By.ID, "submit")
-#         submit.click()
-#         assert self.driver.current_url == self.live_server_url + "/register/"
-#         assert email.get_attribute("validationMessage") == "Please fill in this field."
+    def testBlankEmailRegister(self):
+        self.driver.find_element(By.LINK_TEXT, "Don't have an account?").click()
+        assert self.driver.current_url == self.live_server_url  + "/register/"
+        username = self.driver.find_element(By.ID, "username")
+        password = self.driver.find_element(By.ID, "password")
+        email = self.driver.find_element(By.ID, "email")
+        username.send_keys("end2endTest")
+        password.send_keys("mapmind493")
+        submit = self.driver.find_element(By.ID, "submit")
+        submit.click()
+        assert self.driver.current_url == self.live_server_url + "/register/"
+        assert email.get_attribute("validationMessage") == "Please fill in this field."
 
-#     def testInvaildEmailNoAtRegister(self):
-#         self.driver.find_element(By.LINK_TEXT, "Don't have an account?").click()
-#         assert self.driver.current_url == self.live_server_url  + "/register/"
-#         username = self.driver.find_element(By.ID, "username")
-#         password = self.driver.find_element(By.ID, "password")
-#         email = self.driver.find_element(By.ID, "email")
-#         username.send_keys("end2endTest")
-#         password.send_keys("mapmind493")
-#         email.send_keys("end2end")
-#         submit = self.driver.find_element(By.ID, "submit")
-#         submit.click()
-#         assert self.driver.current_url == self.live_server_url + "/register/"
-#         assert "Please include an '@' in the email address" in email.get_attribute("validationMessage") 
+    def testInvaildEmailNoAtRegister(self):
+        self.driver.find_element(By.LINK_TEXT, "Don't have an account?").click()
+        assert self.driver.current_url == self.live_server_url  + "/register/"
+        username = self.driver.find_element(By.ID, "username")
+        password = self.driver.find_element(By.ID, "password")
+        email = self.driver.find_element(By.ID, "email")
+        username.send_keys("end2endTest")
+        password.send_keys("mapmind493")
+        email.send_keys("end2end")
+        submit = self.driver.find_element(By.ID, "submit")
+        submit.click()
+        assert self.driver.current_url == self.live_server_url + "/register/"
+        assert "Please include an '@' in the email address" in email.get_attribute("validationMessage") 
 
-#     def testInvaildEmailNoDomainRegister(self):
-#         self.driver.find_element(By.LINK_TEXT, "Don't have an account?").click()
-#         assert self.driver.current_url == self.live_server_url  + "/register/"
-#         username = self.driver.find_element(By.ID, "username")
-#         password = self.driver.find_element(By.ID, "password")
-#         email = self.driver.find_element(By.ID, "email")
-#         username.send_keys("end2endTest")
-#         password.send_keys("mapmind493")
-#         email.send_keys("end2end@")
-#         submit = self.driver.find_element(By.ID, "submit")
-#         submit.click()
-#         assert self.driver.current_url == self.live_server_url + "/register/"
-#         assert "Please enter a part following '@'" in email.get_attribute("validationMessage") 
+    def testInvaildEmailNoDomainRegister(self):
+        self.driver.find_element(By.LINK_TEXT, "Don't have an account?").click()
+        assert self.driver.current_url == self.live_server_url  + "/register/"
+        username = self.driver.find_element(By.ID, "username")
+        password = self.driver.find_element(By.ID, "password")
+        email = self.driver.find_element(By.ID, "email")
+        username.send_keys("end2endTest")
+        password.send_keys("mapmind493")
+        email.send_keys("end2end@")
+        submit = self.driver.find_element(By.ID, "submit")
+        submit.click()
+        assert self.driver.current_url == self.live_server_url + "/register/"
+        assert "Please enter a part following '@'" in email.get_attribute("validationMessage") 
 
-#     def testShortPasswordRegister(self):
-#         self.driver.find_element(By.LINK_TEXT, "Don't have an account?").click()
-#         assert self.driver.current_url == self.live_server_url  + "/register/"
-#         username = self.driver.find_element(By.ID, "username")
-#         password = self.driver.find_element(By.ID, "password")
-#         email = self.driver.find_element(By.ID, "email")
-#         username.send_keys("end2endTest")
-#         password.send_keys("mm")
-#         email.send_keys("end2end@gmail.com")
-#         submit = self.driver.find_element(By.ID, "submit")
-#         submit.click()
-#         assert self.driver.current_url == self.live_server_url + "/register/"
-#         assert  "Please lengthen this text to 8 characters or more" in password.get_attribute("validationMessage")
+    def testShortPasswordRegister(self):
+        self.driver.find_element(By.LINK_TEXT, "Don't have an account?").click()
+        assert self.driver.current_url == self.live_server_url  + "/register/"
+        username = self.driver.find_element(By.ID, "username")
+        password = self.driver.find_element(By.ID, "password")
+        email = self.driver.find_element(By.ID, "email")
+        username.send_keys("end2endTest")
+        password.send_keys("mm")
+        email.send_keys("end2end@gmail.com")
+        submit = self.driver.find_element(By.ID, "submit")
+        submit.click()
+        assert self.driver.current_url == self.live_server_url + "/register/"
+        assert  "Please lengthen this text to 8 characters or more" in password.get_attribute("validationMessage")
 
-#     def testValidLogin(self):
-#         self.testValidRegister()
-#         username = self.driver.find_element(By.ID, "id_username")
-#         password = self.driver.find_element(By.ID, "id_password")
-#         username.send_keys("end2endTest")
-#         password.send_keys("mapmind493")
-#         submit = self.driver.find_element(By.ID, "submit")
-#         submit.click()
-#         assert self.driver.current_url == self.live_server_url + "/"
+    def testValidLogin(self):
+        self.testValidRegister()
+        username = self.driver.find_element(By.ID, "id_username")
+        password = self.driver.find_element(By.ID, "id_password")
+        username.send_keys("end2endTest")
+        password.send_keys("mapmind493")
+        submit = self.driver.find_element(By.ID, "submit")
+        submit.click()
+        assert self.driver.current_url == self.live_server_url + "/"
 
-#     def testBlankUserLogin(self):
-#         self.testValidRegister()
-#         username = self.driver.find_element(By.ID, "id_username")
-#         password = self.driver.find_element(By.ID, "id_password")
-#         submit = self.driver.find_element(By.ID, "submit")
-#         password.send_keys("mapmind493")
-#         submit.click()
-#         assert self.driver.current_url == self.live_server_url + "/accounts/login/"
-#         assert username.get_attribute("validationMessage") == "Please fill in this field."
+    def testBlankUserLogin(self):
+        self.testValidRegister()
+        username = self.driver.find_element(By.ID, "id_username")
+        password = self.driver.find_element(By.ID, "id_password")
+        submit = self.driver.find_element(By.ID, "submit")
+        password.send_keys("mapmind493")
+        submit.click()
+        assert self.driver.current_url == self.live_server_url + "/accounts/login/"
+        assert username.get_attribute("validationMessage") == "Please fill in this field."
     
-#     def testBlankPasswordLogin(self):
-#         self.testValidRegister()
-#         username = self.driver.find_element(By.ID, "id_username")
-#         password = self.driver.find_element(By.ID, "id_password")
-#         submit = self.driver.find_element(By.ID, "submit")
-#         username.send_keys("end2endTest")
-#         submit.click()
-#         assert self.driver.current_url == self.live_server_url + "/accounts/login/"
-#         assert password.get_attribute("validationMessage") == "Please fill in this field."
+    def testBlankPasswordLogin(self):
+        self.testValidRegister()
+        username = self.driver.find_element(By.ID, "id_username")
+        password = self.driver.find_element(By.ID, "id_password")
+        submit = self.driver.find_element(By.ID, "submit")
+        username.send_keys("end2endTest")
+        submit.click()
+        assert self.driver.current_url == self.live_server_url + "/accounts/login/"
+        assert password.get_attribute("validationMessage") == "Please fill in this field."
 
 
-#     def testInvaildUserLogin(self):
-#         self.testValidRegister()
-#         username = self.driver.find_element(By.ID, "id_username")
-#         password = self.driver.find_element(By.ID, "id_password")
-#         username.send_keys("doesntexist")
-#         password.send_keys("mapmind493")
-#         submit = self.driver.find_element(By.ID, "submit")
-#         submit.click()
-#         assert self.driver.current_url == self.live_server_url + "/accounts/login/"
-#         assert self.driver.find_element(By.ID, "login_error").text == "Your username and password didn't match. Please try again."
+    def testInvaildUserLogin(self):
+        self.testValidRegister()
+        username = self.driver.find_element(By.ID, "id_username")
+        password = self.driver.find_element(By.ID, "id_password")
+        username.send_keys("doesntexist")
+        password.send_keys("mapmind493")
+        submit = self.driver.find_element(By.ID, "submit")
+        submit.click()
+        assert self.driver.current_url == self.live_server_url + "/accounts/login/"
+        assert self.driver.find_element(By.ID, "login_error").text == "Your username and password didn't match. Please try again."
 
-#     def testInvaildPasswordLogin(self):
-#         self.testValidRegister()
-#         username = self.driver.find_element(By.ID, "id_username")
-#         password = self.driver.find_element(By.ID, "id_password")
-#         username.send_keys("end2endTest")
-#         password.send_keys("mapmind49111111")
-#         submit = self.driver.find_element(By.ID, "submit")
-#         submit.click()
-#         assert self.driver.current_url == self.live_server_url + "/accounts/login/"
-#         assert self.driver.find_element(By.ID, "login_error").text == "Your username and password didn't match. Please try again."
+    def testInvaildPasswordLogin(self):
+        self.testValidRegister()
+        username = self.driver.find_element(By.ID, "id_username")
+        password = self.driver.find_element(By.ID, "id_password")
+        username.send_keys("end2endTest")
+        password.send_keys("mapmind49111111")
+        submit = self.driver.find_element(By.ID, "submit")
+        submit.click()
+        assert self.driver.current_url == self.live_server_url + "/accounts/login/"
+        assert self.driver.find_element(By.ID, "login_error").text == "Your username and password didn't match. Please try again."
 
-#     def testResetPassword(self):
-#         self.testValidRegister()
-#         self.driver.find_element(By.LINK_TEXT, "Lost password?").click()
-#         assert self.driver.current_url == self.live_server_url + "/accounts/password_reset/"
-#         email = self.driver.find_element(By.ID, "id_email")
-#         email.send_keys("end2end@gmail.com")
-#         self.driver.find_element(By.ID, "submit").click()
-#         assert self.driver.current_url == self.live_server_url + "/accounts/password_reset/done/"
+    def testResetPassword(self):
+        self.testValidRegister()
+        self.driver.find_element(By.LINK_TEXT, "Lost password?").click()
+        assert self.driver.current_url == self.live_server_url + "/accounts/password_reset/"
+        email = self.driver.find_element(By.ID, "id_email")
+        email.send_keys("end2end@gmail.com")
+        self.driver.find_element(By.ID, "submit").click()
+        assert self.driver.current_url == self.live_server_url + "/accounts/password_reset/done/"
 
-#     def testResetPasswordInvaildEmailNoAt(self):
-#         self.testValidRegister()
-#         self.driver.find_element(By.LINK_TEXT, "Lost password?").click()
-#         assert self.driver.current_url == self.live_server_url + "/accounts/password_reset/"
-#         email = self.driver.find_element(By.ID, "id_email")
-#         email.send_keys("end2end")
-#         self.driver.find_element(By.ID, "submit").click()
-#         assert self.driver.current_url == self.live_server_url + "/accounts/password_reset/"
-#         assert "Please include an '@' in the email address" in email.get_attribute("validationMessage")
+    def testResetPasswordInvaildEmailNoAt(self):
+        self.testValidRegister()
+        self.driver.find_element(By.LINK_TEXT, "Lost password?").click()
+        assert self.driver.current_url == self.live_server_url + "/accounts/password_reset/"
+        email = self.driver.find_element(By.ID, "id_email")
+        email.send_keys("end2end")
+        self.driver.find_element(By.ID, "submit").click()
+        assert self.driver.current_url == self.live_server_url + "/accounts/password_reset/"
+        assert "Please include an '@' in the email address" in email.get_attribute("validationMessage")
 
-#     def testResetPasswordInvaildEmailNoDomain(self):
-#         self.testValidRegister()
-#         self.driver.find_element(By.LINK_TEXT, "Lost password?").click()
-#         assert self.driver.current_url == self.live_server_url + "/accounts/password_reset/"
-#         email = self.driver.find_element(By.ID, "id_email")
-#         email.send_keys("end2end@")
-#         self.driver.find_element(By.ID, "submit").click()
-#         assert self.driver.current_url == self.live_server_url + "/accounts/password_reset/" 
-#         print(email.get_attribute("validationMessage"))
-#         assert "Please enter a part following '@'" in email.get_attribute("validationMessage") 
+    def testResetPasswordInvaildEmailNoDomain(self):
+        self.testValidRegister()
+        self.driver.find_element(By.LINK_TEXT, "Lost password?").click()
+        assert self.driver.current_url == self.live_server_url + "/accounts/password_reset/"
+        email = self.driver.find_element(By.ID, "id_email")
+        email.send_keys("end2end@")
+        self.driver.find_element(By.ID, "submit").click()
+        assert self.driver.current_url == self.live_server_url + "/accounts/password_reset/" 
+        print(email.get_attribute("validationMessage"))
+        assert "Please enter a part following '@'" in email.get_attribute("validationMessage") 
 
-#     def testResetPasswordBlankEmail(self):
-#         self.testValidRegister()
-#         self.driver.find_element(By.LINK_TEXT, "Lost password?").click()
-#         assert self.driver.current_url == self.live_server_url + "/accounts/password_reset/"
-#         email = self.driver.find_element(By.ID, "id_email")
-#         self.driver.find_element(By.ID, "submit").click()
-#         assert self.driver.current_url == self.live_server_url + "/accounts/password_reset/"
-#         assert email.get_attribute("validationMessage") == "Please fill in this field."
+    def testResetPasswordBlankEmail(self):
+        self.testValidRegister()
+        self.driver.find_element(By.LINK_TEXT, "Lost password?").click()
+        assert self.driver.current_url == self.live_server_url + "/accounts/password_reset/"
+        email = self.driver.find_element(By.ID, "id_email")
+        self.driver.find_element(By.ID, "submit").click()
+        assert self.driver.current_url == self.live_server_url + "/accounts/password_reset/"
+        assert email.get_attribute("validationMessage") == "Please fill in this field."
 
-#     def testResetPasswordFromSettings(self):
-#         self.testValidLogin()
-#         self.driver.find_element(By.ID, "settings_nav").click()
-#         assert self.driver.current_url == self.live_server_url + "/settings"
-#         self.driver.find_element(By.ID, "reset_password").click()
-#         time.sleep(5)
-#         assert self.driver.current_url == self.live_server_url + "/accounts/password_reset/done/"
+    def testResetPasswordFromSettings(self):
+        self.testValidLogin()
+        self.driver.find_element(By.ID, "settings_nav").click()
+        assert self.driver.current_url == self.live_server_url + "/settings"
+        self.driver.find_element(By.ID, "reset_password").click()
+        time.sleep(5)
+        assert self.driver.current_url == self.live_server_url + "/accounts/password_reset/done/"
    
-#     def testChangeEmail(self):
-#         self.testValidLogin()
-#         self.driver.find_element(By.ID, "settings_nav").click()
-#         assert self.driver.current_url == self.live_server_url + "/settings"
-#         assert self.driver.find_element(By.ID, "email").get_attribute("value") == "end2end@gmail.com"
-#         self.driver.find_element(By.ID, "email").clear()
-#         self.driver.find_element(By.ID, "email").send_keys("end2end2@gmail.com")
-#         self.driver.find_element(By.ID, "submit_email").click()
-#         time.sleep(2)
-#         assert self.driver.current_url == self.live_server_url + "/settings"
-#         assert self.driver.find_element(By.ID, "email").get_attribute("value") == "end2end2@gmail.com"
+    def testChangeEmail(self):
+        self.testValidLogin()
+        self.driver.find_element(By.ID, "settings_nav").click()
+        assert self.driver.current_url == self.live_server_url + "/settings"
+        assert self.driver.find_element(By.ID, "email").get_attribute("value") == "end2end@gmail.com"
+        self.driver.find_element(By.ID, "email").clear()
+        self.driver.find_element(By.ID, "email").send_keys("end2end2@gmail.com")
+        self.driver.find_element(By.ID, "submit_email").click()
+        time.sleep(2)
+        assert self.driver.current_url == self.live_server_url + "/settings"
+        assert self.driver.find_element(By.ID, "email").get_attribute("value") == "end2end2@gmail.com"
 
-#     def testChangeUsername(self):
-#         self.testValidLogin()
-#         self.driver.find_element(By.ID, "settings_nav").click()
-#         assert self.driver.current_url == self.live_server_url + "/settings"
-#         assert self.driver.find_element(By.ID, "username").get_attribute("value") == "end2endTest"
-#         self.driver.find_element(By.ID, "username").clear()
-#         self.driver.find_element(By.ID, "username").send_keys("end2end2Test")
-#         self.driver.find_element(By.ID, "submit_username").click()
-#         time.sleep(2)
-#         assert self.driver.current_url == self.live_server_url + "/settings"
-#         assert self.driver.find_element(By.ID, "username").get_attribute("value") == "end2end2Test"
+    def testChangeUsername(self):
+        self.testValidLogin()
+        self.driver.find_element(By.ID, "settings_nav").click()
+        assert self.driver.current_url == self.live_server_url + "/settings"
+        assert self.driver.find_element(By.ID, "username").get_attribute("value") == "end2endTest"
+        self.driver.find_element(By.ID, "username").clear()
+        self.driver.find_element(By.ID, "username").send_keys("end2end2Test")
+        self.driver.find_element(By.ID, "submit_username").click()
+        time.sleep(2)
+        assert self.driver.current_url == self.live_server_url + "/settings"
+        assert self.driver.find_element(By.ID, "username").get_attribute("value") == "end2end2Test"
 
-#     def testChangeUsernameDuplicate(self):
-#         self.testValidLogin()
-#         self.driver.find_element(By.ID, "settings_nav").click()
-#         assert self.driver.current_url == self.live_server_url + "/settings"
-#         assert self.driver.find_element(By.ID, "username").get_attribute("value") == "end2endTest"
-#         self.driver.find_element(By.ID, "submit_username").click()
-#         assert self.driver.current_url == self.live_server_url + "/settings"
-#         assert self.driver.find_element(By.ID, "username").get_attribute("value") == "end2endTest"
-#         assert self.driver.find_element(By.ID, "username_error").text == "Username is not unique!"
+    def testChangeUsernameDuplicate(self):
+        self.testValidLogin()
+        self.driver.find_element(By.ID, "settings_nav").click()
+        assert self.driver.current_url == self.live_server_url + "/settings"
+        assert self.driver.find_element(By.ID, "username").get_attribute("value") == "end2endTest"
+        self.driver.find_element(By.ID, "submit_username").click()
+        assert self.driver.current_url == self.live_server_url + "/settings"
+        assert self.driver.find_element(By.ID, "username").get_attribute("value") == "end2endTest"
+        assert self.driver.find_element(By.ID, "username_error").text == "Username is not unique!"
     
 
-#     def testChangeEmailDuplicate(self):
-#         self.testValidLogin()
-#         self.driver.find_element(By.ID, "settings_nav").click()
-#         assert self.driver.current_url == self.live_server_url + "/settings"
-#         assert self.driver.find_element(By.ID, "email").get_attribute("value") == "end2end@gmail.com"
-#         self.driver.find_element(By.ID, "submit_email").click()
-#         assert self.driver.current_url == self.live_server_url + "/settings"
-#         assert self.driver.find_element(By.ID, "email").get_attribute("value") == "end2end@gmail.com"
-#         assert self.driver.find_element(By.ID, "email_error").text == "Email is not unique!"
+    def testChangeEmailDuplicate(self):
+        self.testValidLogin()
+        self.driver.find_element(By.ID, "settings_nav").click()
+        assert self.driver.current_url == self.live_server_url + "/settings"
+        assert self.driver.find_element(By.ID, "email").get_attribute("value") == "end2end@gmail.com"
+        self.driver.find_element(By.ID, "submit_email").click()
+        assert self.driver.current_url == self.live_server_url + "/settings"
+        assert self.driver.find_element(By.ID, "email").get_attribute("value") == "end2end@gmail.com"
+        assert self.driver.find_element(By.ID, "email_error").text == "Email is not unique!"
 
     
-#     def testChangeEmailBlank(self):
-#         self.testValidLogin()
-#         self.driver.find_element(By.ID, "settings_nav").click()
-#         assert self.driver.current_url == self.live_server_url + "/settings"
-#         assert self.driver.find_element(By.ID, "email").get_attribute("value") == "end2end@gmail.com"
-#         self.driver.find_element(By.ID, "email").clear()
-#         self.driver.find_element(By.ID, "submit_email").click()
-#         assert self.driver.current_url == self.live_server_url + "/settings"
-#         assert self.driver.find_element(By.ID, "email").get_attribute("validationMessage") == "Please fill in this field."
+    def testChangeEmailBlank(self):
+        self.testValidLogin()
+        self.driver.find_element(By.ID, "settings_nav").click()
+        assert self.driver.current_url == self.live_server_url + "/settings"
+        assert self.driver.find_element(By.ID, "email").get_attribute("value") == "end2end@gmail.com"
+        self.driver.find_element(By.ID, "email").clear()
+        self.driver.find_element(By.ID, "submit_email").click()
+        assert self.driver.current_url == self.live_server_url + "/settings"
+        assert self.driver.find_element(By.ID, "email").get_attribute("validationMessage") == "Please fill in this field."
 
     
-#     def testChangeUsernameBlank(self):
-#         self.testValidLogin()
-#         self.driver.find_element(By.ID, "settings_nav").click()
-#         assert self.driver.current_url == self.live_server_url + "/settings"
-#         assert self.driver.find_element(By.ID, "username").get_attribute("value") == "end2endTest"
-#         self.driver.find_element(By.ID, "username").clear()
-#         self.driver.find_element(By.ID, "submit_username").click()
-#         assert self.driver.current_url == self.live_server_url + "/settings"
-#         assert self.driver.find_element(By.ID, "username").get_attribute("validationMessage") == "Please fill in this field."
+    def testChangeUsernameBlank(self):
+        self.testValidLogin()
+        self.driver.find_element(By.ID, "settings_nav").click()
+        assert self.driver.current_url == self.live_server_url + "/settings"
+        assert self.driver.find_element(By.ID, "username").get_attribute("value") == "end2endTest"
+        self.driver.find_element(By.ID, "username").clear()
+        self.driver.find_element(By.ID, "submit_username").click()
+        assert self.driver.current_url == self.live_server_url + "/settings"
+        assert self.driver.find_element(By.ID, "username").get_attribute("validationMessage") == "Please fill in this field."
 
-#     def testChangeEmailInvaildNoAt(self):
-#         self.testValidLogin()
-#         self.driver.find_element(By.ID, "settings_nav").click()
-#         assert self.driver.current_url == self.live_server_url + "/settings"
-#         assert self.driver.find_element(By.ID, "email").get_attribute("value") == "end2end@gmail.com"
-#         self.driver.find_element(By.ID, "email").clear()
-#         self.driver.find_element(By.ID, "email").send_keys("end2end")
-#         self.driver.find_element(By.ID, "submit_email").click()
-#         assert "Please include an '@' in the email address" in self.driver.find_element(By.ID, "email").get_attribute("validationMessage") 
+    def testChangeEmailInvaildNoAt(self):
+        self.testValidLogin()
+        self.driver.find_element(By.ID, "settings_nav").click()
+        assert self.driver.current_url == self.live_server_url + "/settings"
+        assert self.driver.find_element(By.ID, "email").get_attribute("value") == "end2end@gmail.com"
+        self.driver.find_element(By.ID, "email").clear()
+        self.driver.find_element(By.ID, "email").send_keys("end2end")
+        self.driver.find_element(By.ID, "submit_email").click()
+        assert "Please include an '@' in the email address" in self.driver.find_element(By.ID, "email").get_attribute("validationMessage") 
 
-#     def testChangeEmailInvaildNoDomain(self):
-#         self.testValidLogin()
-#         self.driver.find_element(By.ID, "settings_nav").click()
-#         assert self.driver.current_url == self.live_server_url + "/settings"
-#         assert self.driver.find_element(By.ID, "email").get_attribute("value") == "end2end@gmail.com"
-#         self.driver.find_element(By.ID, "email").clear()
-#         self.driver.find_element(By.ID, "email").send_keys("end2end@")
-#         self.driver.find_element(By.ID, "submit_email").click()
-#         assert "Please enter a part following '@'" in self.driver.find_element(By.ID, "email").get_attribute("validationMessage") 
+    def testChangeEmailInvaildNoDomain(self):
+        self.testValidLogin()
+        self.driver.find_element(By.ID, "settings_nav").click()
+        assert self.driver.current_url == self.live_server_url + "/settings"
+        assert self.driver.find_element(By.ID, "email").get_attribute("value") == "end2end@gmail.com"
+        self.driver.find_element(By.ID, "email").clear()
+        self.driver.find_element(By.ID, "email").send_keys("end2end@")
+        self.driver.find_element(By.ID, "submit_email").click()
+        assert "Please enter a part following '@'" in self.driver.find_element(By.ID, "email").get_attribute("validationMessage") 
 
-#     def testDeleteAccount(self):
-#         self.testValidLogin()
-#         self.driver.find_element(By.ID, "settings_nav").click()
-#         assert self.driver.current_url == self.live_server_url + "/settings"
-#         self.driver.find_element(By.ID, "delete_account").click()
-#         Alert(self.driver).accept()
-#         time.sleep(5)
-#         print(self.driver.current_url)
-#         assert self.driver.current_url == self.live_server_url + "/accounts/login/"
+    def testDeleteAccount(self):
+        self.testValidLogin()
+        self.driver.find_element(By.ID, "settings_nav").click()
+        assert self.driver.current_url == self.live_server_url + "/settings"
+        self.driver.find_element(By.ID, "delete_account").click()
+        Alert(self.driver).accept()
+        time.sleep(5)
+        print(self.driver.current_url)
+        assert self.driver.current_url == self.live_server_url + "/accounts/login/"
 
-#     def testLogout(self):
-#         self.testValidLogin()
-#         self.driver.find_element(By.ID, "logout_button").click()
-#         assert self.driver.current_url == self.live_server_url + "/accounts/logout/"
+    def testLogout(self):
+        self.testValidLogin()
+        self.driver.find_element(By.ID, "logout_button").click()
+        assert self.driver.current_url == self.live_server_url + "/accounts/logout/"
         
 class NotebooksTests(LiveServerTestCase):
     def setUp(self):
