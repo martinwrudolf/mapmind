@@ -100,7 +100,7 @@ def train_on_ec2(vocab_path, kv_path, kv_vectors_path):
         waiter.wait(
             InstanceIds=[ec2_id]
         )
-    except WaiterError as ex:
+    except WaiterError as ex: # pragma: no cover
         print(ex)
         return
     
@@ -125,7 +125,7 @@ def train_on_ec2(vocab_path, kv_path, kv_vectors_path):
             CommandId=command_id,
             InstanceId=ec2_id,
         )
-    except WaiterError as ex:
+    except WaiterError as ex: # pragma: no cover
         print(ex)
         return
     print("training on ec2 successful!")
@@ -179,7 +179,7 @@ def search_on_ec2(query, kv_path, kv_vectors_path, vocab_path, spellcheck, notes
         waiter.wait(
             InstanceIds=[ec2_id]
         )
-    except WaiterError as ex:
+    except WaiterError as ex: # pragma: no cover
         print(ex)
         return
     print("instance running")
@@ -206,7 +206,7 @@ def search_on_ec2(query, kv_path, kv_vectors_path, vocab_path, spellcheck, notes
             CommandId=command_id,
             InstanceId=ec2_id,
         )
-    except WaiterError as ex:
+    except WaiterError as ex: # pragma: no cover
         print(ex)
         return False
     print("searching on ec2 successful!")
@@ -253,7 +253,7 @@ def inspect_on_ec2(clicked_word, searched_words, corpus_path, kv_path, kv_vector
         waiter.wait(
             InstanceIds=[ec2_id]
         )
-    except WaiterError as ex:
+    except WaiterError as ex: # pragma: no cover
         print(ex)
         return
     print("instance running")
@@ -280,7 +280,7 @@ def inspect_on_ec2(clicked_word, searched_words, corpus_path, kv_path, kv_vector
             CommandId=command_id,
             InstanceId=ec2_id,
         )
-    except WaiterError as ex:
+    except WaiterError as ex: # pragma: no cover
         print(ex)
         return
     print("inspect on ec2 successful!")
