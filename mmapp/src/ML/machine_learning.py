@@ -56,11 +56,11 @@ def process_user_notes(notefile, keys):
         docText = []
         for para in doc.paragraphs:
             if len(para.text) > 0:
+                docText.append(para.text)
+            else:
                 print("not text so skipping")
                 pics_or_tables = True
-            else:
-                docText.append(para.text)
-        
+
         for sentence in docText:
             sentence = sentence.translate(translator)
             for word in sentence.split():
