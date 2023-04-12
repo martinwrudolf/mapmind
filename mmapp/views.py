@@ -25,12 +25,12 @@ from smart_open import open
 import json
 import traceback
 
-# Registration form
+# Registration form sources:
 # https://studygyaan.com/django/how-to-create-sign-up-registration-view-in-django
 
 ''' FR#4 -- Change.Password can be found in the password_reset html files '''
-# Password reset
-# https://learndjango.com/tutorials/django-password-reset-tutorial
+# Password reset sources:
+# HTML files from: https://learndjango.com/tutorials/django-password-reset-tutorial
 # https://www.sitepoint.com/django-send-email/
 # https://www.geeksforgeeks.org/setup-sending-email-in-django-project/
 # https://suhailvs.github.io/blog02.html#mail-setup-on-django-using-gmail
@@ -49,7 +49,7 @@ def login(request):
     print("User is not authenticated. Sending to login.")
     return redirect('login')
 
-# Register page
+# Register page sources:
 # https://docs.djangoproject.com/en/4.1/topics/auth/passwords/#password-validation
 # https://docs.djangoproject.com/en/4.1/topics/settings/
 def register(request):
