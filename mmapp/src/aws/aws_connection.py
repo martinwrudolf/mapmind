@@ -5,18 +5,18 @@ import time
 from datetime import datetime
 #from background_task import background
 
-def s3_download(src, dest):
+def s3_download(src, dest): # pragma: no code
     ''' Download an object from the S3 bucket '''
     s3_client = boto3.client('s3')
     s3_client.download_file(Bucket="mapmind-ml-models", Key=src, Filename=dest)
 
 #@background(schedule=1)
-def s3_upload(src, dest):
+def s3_upload(src, dest): # pragma: no code
     ''' Upload an object to the S3 bucket '''
     s3_client = boto3.client('s3')
     s3_client.upload_file(Bucket="mapmind-ml-models", Key=dest, Filename=src)
 
-def s3_delete_file(file):
+def s3_delete_file(file): # pragma: no code
     ''' Delete an individual file from the S3 bucket '''
     s3_resource = boto3.resource('s3')
     try:
@@ -25,7 +25,7 @@ def s3_delete_file(file):
         print("error while deleteing file from s3", file)
 
 #@background(schedule=1)
-def s3_delete_folder(folder):
+def s3_delete_folder(folder): # pragma: no code
     ''' Delete a folder from the S3 bucket, including all subfolders and files within it '''
     s3_resource = boto3.resource('s3')
     try:
@@ -37,7 +37,7 @@ def s3_delete_folder(folder):
         print("error while deleting folder from s3", folder)
 
 #@background(schedule=1)
-def s3_write(filename, contents):
+def s3_write(filename, contents): # pragma: no code
     ''' Write a file to the S3 bucket '''
     s3_client = boto3.client('s3')
     try:
@@ -46,7 +46,7 @@ def s3_write(filename, contents):
     except:
         print("error while writing to s3")
 
-def s3_read(filename):
+def s3_read(filename): # pragma: no code
     ''' Read a file from the S3 bucket '''
     s3_client = boto3.client('s3')
     with open('s3://mapmind-ml-models/'+filename, mode='r', transport_params={'client': s3_client}) as f:
@@ -66,7 +66,7 @@ def notebook_update_files(notebook, notes_list):
     s3_write(notebook.corpus, corpus.strip())
 
 #@background(schedule=1)
-def move_file(src, dest):
+def move_file(src, dest): # pragma: no code
     ''' Move a file from one location to another in the S3 bucket '''
     s3_resource = boto3.resource('s3')
     try:
