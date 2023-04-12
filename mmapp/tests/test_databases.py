@@ -2,7 +2,14 @@ from django.test import TestCase
 from ..models import Note, Notebook, User
 
 class test_databases(TestCase):
+    ''' Tests for Django databases '''
     def test_user(self):
+        ''' Test user objects.
+
+        Requirements:
+            FR#1 -- Request.Registration
+            FR#2 -- Delete.Account
+        '''
         user = User.objects.create_user(
             username="testuser1",
             email="testemail1@email.com",
@@ -23,6 +30,14 @@ class test_databases(TestCase):
         self.assertRaises(Note.DoesNotExist, Note.objects.get, owner=user)
 
     def test_notebook(self):
+        ''' Test notebook objects.
+
+        Requirements:
+            FR#8 -- Create.Notebook
+            FR#9 -- Edit.Notebook
+            FR#10 -- Delete.Notebook
+            FR#11 -- Merge.Notebook
+        '''
         user = User.objects.create_user(
             username="testuser2",
             email="testemail2@email.com",
@@ -49,6 +64,12 @@ class test_databases(TestCase):
         user.delete()
 
     def test_note(self):
+        ''' Test note objects.
+
+        Requirements:
+            FR#7 -- Upload.Notes
+            FR#9 -- Edit.Notebook
+        '''
         user = User.objects.create_user(
             username="testuser3",
             email="testemail3@email.com",

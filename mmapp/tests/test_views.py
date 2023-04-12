@@ -6,6 +6,7 @@ from mmapp.views import inspect_node, login
 from django.http import QueryDict
 
 class LoginViewTest(TestCase):
+    ''' Test login views '''
     def setUp(self):
         self.factory = RequestFactory()
         self.user = User.objects.create_user(
@@ -36,6 +37,11 @@ class LoginViewTest(TestCase):
         )
 
     def test_login_authenticated(self):
+        ''' Test login authenticated.
+
+        Requirements:
+            FR#3 - Request.Log-in
+        '''
         request = self.factory.get('/login/')
         request.user = self.user
         response = login(request)
@@ -43,6 +49,11 @@ class LoginViewTest(TestCase):
         self.assertEqual(response.url, '/')
 
     def test_login_not_authenticated(self):
+        ''' Test login not authenticated.
+
+        Requirements:
+            FR#3 - Request.Log-in
+        '''
         request = self.factory.get('/login/')
         request.user = AnonymousUser()
         response = login(request)
@@ -58,6 +69,7 @@ from mmapp.models import Notebook, Note
 from mmapp.views import register
 
 class RegisterViewTest(TestCase):
+    ''' Registration Tests '''
     def setUp(self):
         self.factory = RequestFactory()
         self.user = User.objects.create_user(
@@ -67,6 +79,11 @@ class RegisterViewTest(TestCase):
         )
         
     def test_register_authenticated(self):
+        ''' Test register authenticated.
+
+        Requirements:
+            FR#1 - Request.Registration
+        '''
         request = self.factory.get('/register/')
         request.user = self.user
         response = register(request)
@@ -74,6 +91,11 @@ class RegisterViewTest(TestCase):
         self.assertEqual(response.url, '/')
 
     def test_register_get_request(self):
+        ''' Test register get.
+
+        Requirements:
+            FR#1 - Request.Registration
+        '''
         request = self.factory.get('/register/')
         request.user = AnonymousUser()
         response = register(request)
@@ -81,6 +103,11 @@ class RegisterViewTest(TestCase):
         self.assertContains(response, '/register/')
 
     def test_register_non_unique_username(self):
+        ''' Test register duplicate username.
+
+        Requirements:
+            FR#1 - Request.Registration
+        '''
         request = self.factory.post('/register/', {
             'username': 'testuser3',
             'email': 'newemail@email.com',
@@ -92,6 +119,11 @@ class RegisterViewTest(TestCase):
         self.assertEqual(response.content.decode(), "Username is not unique!")
 
     def test_register_non_unique_email(self):
+        ''' Test register duplicate email.
+
+        Requirements:
+            FR#1 - Request.Registration
+        '''
         request = self.factory.post('/register/', {
             'username': 'newusername',
             'email': 'testemail3@email.com',
@@ -103,6 +135,11 @@ class RegisterViewTest(TestCase):
         self.assertEqual(response.content.decode(), "Email is not unique!")
 
     def test_register_invalid_password(self):
+        ''' Test register invalid password.
+
+        Requirements:
+            FR#1 - Request.Registration
+        '''
         request = self.factory.post('/register/', {
             'username': 'newusername',
             'email': 'newemail@email.com',
@@ -114,6 +151,11 @@ class RegisterViewTest(TestCase):
         self.assertEqual(response.content.decode(), "Password is not valid!")
 
     def test_register_valid_registration(self):
+        ''' Test valid registration.
+
+        Requirements:
+            FR#1 - Request.Registration
+        '''
         request = self.factory.post('/register/', {
             'username': 'newusername',
             'email': 'newemail@email.com',
@@ -133,6 +175,7 @@ from mmapp.views import upload
 from unittest.mock import MagicMock, patch
 
 class UploadViewTest(TestCase):
+    ''' Test upload '''
     def setUp(self):
         self.factory = RequestFactory()
         self.user = User.objects.create_user(
@@ -150,6 +193,11 @@ class UploadViewTest(TestCase):
         )
 
     def test_upload_not_authenticated(self):
+        ''' Test upload not authenticated.
+
+        Requirements:
+            FR#7 - Upload.Notes
+        '''
         request = self.factory.post('/upload/')
         request.user = AnonymousUser()
         response = upload(request)
@@ -157,6 +205,11 @@ class UploadViewTest(TestCase):
         self.assertEqual(response.url, '/accounts/login/')
 
     def test_upload_get_request(self):
+        ''' Test upload get.
+
+        Requirements:
+            FR#7 - Upload.Notes
+        '''
         request = self.factory.get('/upload/')
         request.user = self.user
         response = upload(request)
@@ -165,6 +218,11 @@ class UploadViewTest(TestCase):
 
     @override_settings(MEDIA_ROOT=tempfile.gettempdir())
     def test_upload_invalid_file_format(self):
+        ''' Test upload invalid file.
+
+        Requirements:
+            FR#7 - Upload.Notes
+        '''
         with tempfile.NamedTemporaryFile(suffix=".jpg") as img_file:
             img_file.write(b"Dummy file content")
             img_file.seek(0)
@@ -179,6 +237,11 @@ class UploadViewTest(TestCase):
 
     @override_settings(MEDIA_ROOT=tempfile.gettempdir())
     def test_upload_large_file(self):
+        ''' Test upload large file.
+
+        Requirements:
+            FR#7 - Upload.Notes
+        '''
         with tempfile.NamedTemporaryFile(suffix=".txt") as txt_file:
             txt_file.write(b"Dummy file content" * 200000)  # Create a file larger than 450KB
             txt_file.seek(0)
@@ -194,6 +257,11 @@ class UploadViewTest(TestCase):
     @override_settings(MEDIA_ROOT=tempfile.gettempdir())
     @patch('mmapp.views.aws.s3_read')
     def test_upload_existing_file(self, mock_s3_read):
+        ''' Test upload existing file.
+
+        Requirements:
+            FR#7 - Upload.Notes
+        '''
         # Create a Note with a specific file name
         note = Note.objects.create(
             file_name='existing_file.txt',
@@ -220,6 +288,11 @@ class UploadViewTest(TestCase):
 
     
     def test_upload_notebook_does_not_exist(self):
+        ''' Test upload to nonexistent notebook.
+
+        Requirements:
+            FR#7 - Upload.Notes
+        '''
         with tempfile.NamedTemporaryFile(suffix=".txt") as txt_file:
             txt_file.write(b"Dummy file content")
             txt_file.seek(0)
@@ -239,6 +312,11 @@ class UploadViewTest(TestCase):
     @patch('mmapp.views.ml.load_embeddings')
     @patch('mmapp.views.ml.process_user_notes')
     def test_upload_valid_file(self, mock_process_user_notes, mock_load_embeddings, mock_train_on_ec2, mock_s3_read, mock_s3_write):
+        ''' Test upload valid file.
+
+        Requirements:
+            FR#7 - Upload.Notes
+        '''
         mock_load_embeddings.return_value = ["embedding1", "embedding2"]
         mock_process_user_notes.return_value = ([], "dummy_vocab", "dummy_corpus", [])
         mock_s3_read.side_effect = ["dummy_vocab", "dummy_corpus"]
@@ -262,6 +340,11 @@ class UploadViewTest(TestCase):
     @patch('mmapp.views.ml.load_embeddings')
     @patch('mmapp.views.ml.process_user_notes')
     def test_upload_missing_vocab_or_corpus(self, mock_process_user_notes, mock_load_embeddings, mock_train_on_ec2, mock_s3_read, mock_s3_write):
+        ''' Test upload missing vocab or corpus.
+
+        Requirements:
+            FR#7 - Upload.Notes
+        '''
         mock_load_embeddings.return_value = ["embedding1", "embedding2"]
         mock_process_user_notes.return_value = ([], "dummy_vocab", "dummy_corpus", [])
         mock_s3_read.side_effect = [Exception("Missing vocab"), "dummy_vocab", Exception("Missing corpus"), "dummy_corpus"]
@@ -298,7 +381,7 @@ from django.contrib.auth.models import User, AnonymousUser
 from mmapp.views import create_notebook, delete_notebook, edit_notebook, merge_notebooks, notebooks
 
 class NotebookViewTest(TestCase):
-
+    ''' Notebook tests '''
     def setUp(self):
         self.factory = RequestFactory()
         self.user = User.objects.create_user(
@@ -316,6 +399,11 @@ class NotebookViewTest(TestCase):
         )
 
     def test_create_notebook(self):
+        ''' Test create notebook.
+
+        Requirements:
+            FR#8 - Create.Notebook
+        '''
         request = HttpRequest()
 
         # Test user authentication check
@@ -356,6 +444,11 @@ class NotebookViewTest(TestCase):
 
 
     def test_delete_notebook(self):
+        ''' Test delete notebook.
+
+        Requirements:
+            FR#10 - Delete.Notebook
+        '''
         request = HttpRequest()
 
         # Test user authentication check
@@ -391,6 +484,11 @@ class NotebookViewTest(TestCase):
         self.assertEqual(response.status_code, 405)
 
     def test_edit_notebook(self):
+        ''' Test edit notebook.
+
+        Requirements:
+            FR#9 - Edit.Notebook
+        '''
         request = HttpRequest()
 
         # Test user authentication check
@@ -405,6 +503,11 @@ class NotebookViewTest(TestCase):
         self.assertEqual(response.content.decode(), "This is the URL where we edit notebooks!")
 
     def test_merge_notebooks(self):
+        ''' Test merge notebooks.
+
+        Requirements:
+            FR#11 - Merge.Notebook
+        '''
         request = HttpRequest()
 
         # Test user authentication check
@@ -472,6 +575,14 @@ class NotebookViewTest(TestCase):
 
 
     def test_notebooks(self):
+        ''' Test notebooks.
+
+        Requirements:
+            FR#8 - Create.Notebook
+            FR#9 - Edit.Notebook
+            FR#10 - Delete.Notebook
+            FR#11 - Merge.Notebook
+        '''
         request = HttpRequest()
 
         # Test user authentication check
@@ -490,7 +601,7 @@ class NotebookViewTest(TestCase):
 from mmapp.views import delete_notes
 
 class NoteViewTest(TestCase):
-
+    ''' Test notes '''
     def setUp(self):
         self.factory = RequestFactory()
         self.user = User.objects.create_user(
@@ -509,6 +620,11 @@ class NoteViewTest(TestCase):
 
 
     def test_delete_notes(self):
+        ''' Test delete notes.
+
+        Requirements:
+            FR#9 - Edit.Notebook
+        '''
         request = HttpRequest()
 
         # Test user authentication check
@@ -565,7 +681,7 @@ class NoteViewTest(TestCase):
 
 from mmapp.views import edit_username, edit_email, delete_account, settings
 class AccountViewTest(TestCase):
-
+    ''' Test accounts '''
     def setUp(self):
         self.factory = RequestFactory()
         self.user = User.objects.create_user(
@@ -583,6 +699,14 @@ class AccountViewTest(TestCase):
         )
 
     def test_settings(self):
+        ''' Test settings.
+
+        Requirements:
+            FR#2 - Delete.Account
+            FR#4 - Change.Password
+            FR#5 - Change.Username
+            FR#6 - Change.Email
+        '''
         request = HttpRequest()
 
         # Test user authentication check
@@ -600,6 +724,11 @@ class AccountViewTest(TestCase):
 
 
     def test_edit_username(self):
+        ''' Test edit username.
+
+        Requirements:
+            FR#5 - Change.Username
+        '''
         request = HttpRequest()
 
         # Test user authentication check
@@ -628,6 +757,11 @@ class AccountViewTest(TestCase):
         self.assertEqual(response.status_code, 405)
 
     def test_edit_email(self):
+        ''' Test edit email.
+
+        Requirements:
+            FR#6 - Change.Email
+        '''
         request = HttpRequest()
 
         # Test user authentication check
@@ -656,6 +790,11 @@ class AccountViewTest(TestCase):
         self.assertEqual(response.status_code, 405)
 
     def test_delete_account(self):
+        ''' Test delete account.
+
+        Requirements:
+            FR#2 - Delete.Account
+        '''
         request = HttpRequest()
 
         # Test user authentication check
@@ -680,7 +819,7 @@ class AccountViewTest(TestCase):
 
 from mmapp.views import search_results
 class SearchViewTest(TestCase):
-
+    ''' Test search '''
     def setUp(self):
         self.factory = RequestFactory()
         self.user = User.objects.create_user(
@@ -699,6 +838,12 @@ class SearchViewTest(TestCase):
 
 
     def test_search_results(self):
+        ''' Test search.
+
+        Requirements:
+            FR#12 - Search.Word
+            FR#13 - Update.Search
+        '''
         request = HttpRequest()
 
         # Test user authentication check
@@ -760,6 +905,11 @@ class SearchViewTest(TestCase):
 
 
     def test_inspect_node(self):
+        ''' Test inspect node.
+
+        Requirements:
+            FR#17 - Inspect.Node
+        '''
         request_factory = RequestFactory()
         request = request_factory.post(
             '/',

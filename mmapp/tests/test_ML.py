@@ -9,7 +9,14 @@ from gensim.models import KeyedVectors
 import sys
 
 class test_ML(TestCase):
+    ''' Tests for Machine Learning '''
     def test_process_user_notes(self):
+        ''' Test process notes.
+
+        Requirements:
+            FR#7 - Upload.Notes
+            FR#18 - MachineLearning.Train
+        '''
         document = docx.Document()
         document.add_paragraph("hello world! I am testing - punctuation. test-word")
         document.save('test.docx')
@@ -36,11 +43,17 @@ class test_ML(TestCase):
         os.remove('test.docx')
 
     def test_remove_stop_words(self):
+        ''' Test remove stop words.
+
+        Requirements:
+            FR#7 - Upload.Notes
+        '''
         corpus = "this is my corpus. John Cleese. I am blue! My favourite is red"
         vocab = ml.remove_stop_words(corpus)
         self.assertEqual(vocab, "corpus. john cleese. blue! favourite red")
 
     def test_load_embeddings_from_txt(self):
+        ''' Test load embeddings from txt. Not used in Application '''
         txt = b'the 0.04656 0.21318\nhello 0.40 0.50\njohn 0.20 -0.456\ntest 0.79 0.29\n'
         path2txt = "test.txt"
         with open(path2txt, 'wb') as f:
@@ -57,6 +70,11 @@ class test_ML(TestCase):
         os.remove('test.txt')
 
     def test_save_embeddings(self):
+        ''' Test save embeddings.
+
+        Requirements:
+            FR#18 - MachineLearning.Train
+        '''
         embed = {
             'the': [0.04656, 0.21318],
             'hello': [0.40, 0.50],
@@ -75,6 +93,11 @@ class test_ML(TestCase):
         os.remove('test.pkl')
 
     def test_load_embeddings(self):
+        ''' Test load embeddings.
+
+        Requirements:
+            FR#18 - MachineLearning.Train
+        '''
         embed = {
             'the': [0.04656, 0.21318],
             'hello': [0.40, 0.50],
@@ -91,6 +114,11 @@ class test_ML(TestCase):
         os.remove('test.pkl')
 
     def test_create_cooccurrence(self):
+        ''' Test cooccurrence matrix.
+
+        Requirements:
+            FR#18 - MachineLearning.Train
+        '''
         vocab = "name name name claire hello"
         oov = ["claire", "hello"]
 
@@ -98,6 +126,11 @@ class test_ML(TestCase):
         self.assertTrue(np.array_equal(arr, np.array([[0, 1], [1, 0]])))
 
     def test_train_mittens(self):
+        ''' Test train mittens.
+
+        Requirements:
+            FR#18 - MachineLearning.Train
+        '''
         arr = np.array([[0,1],[1,0]])
         oov = ["claire", "hello"]
         embed = {
@@ -112,6 +145,11 @@ class test_ML(TestCase):
         self.assertEqual(len(new_embed["hello"]), 300)
 
     def test_create_kv_from_embed(self):
+        ''' Test create kv.
+
+        Requirements:
+            FR#18 - MachineLearning.Train
+        '''
         embed = {
             "name": np.random.rand(300),
             "claire": np.random.rand(300),
@@ -135,6 +173,11 @@ class test_ML(TestCase):
         self.assertIsNotNone(kv.similarity("claire", "name"))
     
     def test_model_quality(self):
+        ''' Test quality of model.
+
+        Requirements:
+            FR#18 - MachineLearning.Train
+        '''
         current_directory = os.path.dirname(__file__)
         parent_directory = os.path.split(current_directory)[0]
         file_path = os.path.join(parent_directory, 'ml_models', 'glove.pkl')
@@ -151,6 +194,11 @@ class test_ML(TestCase):
         self.assertLess(kv.distance("red", "name"), kv.distance("red", "hello") + kv.distance("name", "hello"))
     
     def test_save_and_load_kv(self):
+        ''' Test save and load embeddings.
+
+        Requirements:
+            FR#18 - MachineLearning.Train
+        '''
         embed = {
             "name": np.random.rand(300),
             "claire": np.random.rand(300),
@@ -179,6 +227,11 @@ class test_ML(TestCase):
         os.remove('test_kv')
 
     def test_search(self):
+        ''' Test search.
+
+        Requirements:
+            FR#19 - MachineLearning.Search
+        '''
         words = ["hello", "red", "car", "computer"]
         current_directory = os.path.dirname(__file__)
         parent_directory = os.path.split(current_directory)[0]
@@ -209,6 +262,12 @@ class test_ML(TestCase):
         self.assertEqual(len(result_words), 0)
         
     def test_inspect_node(self):
+        ''' Test inspect node.
+
+        Requirements:
+            FR#17 - Inspect.Node
+            FR#19 - MachineLearning.Search
+        '''
         words = ["hello", "red", "car", "computer"]
         current_directory = os.path.dirname(__file__)
         parent_directory = os.path.split(current_directory)[0]

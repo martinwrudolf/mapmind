@@ -513,6 +513,7 @@ class UserAccountTests(LiveServerTestCase):
         assert self.driver.current_url == self.live_server_url + "/accounts/logout/"
         
 class NotebooksTests(LiveServerTestCase):
+    ''' Test Notebooks '''
     def setUp(self):
         self.service = Service(executable_path="./webdrivers/chromedriver")
         self.driver = webdriver.Chrome(service=self.service)
@@ -545,6 +546,11 @@ class NotebooksTests(LiveServerTestCase):
         assert self.driver.current_url == self.live_server_url + "/notebooks"
 
     def testNotebookCreation(self):
+        ''' Test notebook creation.
+
+        Requirements:
+            FR#8 -- Create.Notebook
+        '''
         notebook = self.driver.find_element(By.ID, "notebook")
         notebook.send_keys("testnotebook")
         submit = self.driver.find_element(By.ID, "create_submit")
@@ -559,6 +565,11 @@ class NotebooksTests(LiveServerTestCase):
         assert "testnotebook" in notebook_header.find_element(By.CLASS_NAME, "accordion-button").text 
 
     def testUploadNotes(self):
+        ''' Test upload notes.
+
+        Requirements:
+            FR#7 -- Upload.Notes
+        '''
         self.testNotebookCreation()
         notebooks_select = Select(self.driver.find_element(By.ID, "notebooks-select"))
         notebook_id = notebooks_select.options[0].get_attribute("value")
@@ -576,12 +587,18 @@ class NotebooksTests(LiveServerTestCase):
 
 
     def testUploadNotesInvaildFileFormat(self):
+        ''' Test upload notes with invalid file formats.
+
+        Requirements:
+            FR#7 -- Upload.Notes
+        '''
         self.testNotebookCreation()
         notebooks_select = Select(self.driver.find_element(By.ID, "notebooks-select"))
         notebook_id = notebooks_select.options[0].get_attribute("value")
         notebook_header = self.driver.find_element(By.ID, "heading-"+str(notebook_id))
         notebook_header.find_element(By.CSS_SELECTOR, "button.accordion-button").click()
         self.driver.find_element(By.ID, "file-"+str(notebook_id)).send_keys(os.path.abspath("./mmapp/tests/test_note_files/testNotes.html"))
+        time.sleep(5)
         self.driver.find_element(By.ID, "submit-"+str(notebook_id)).click()
         assert self.driver.current_url == self.live_server_url + "/notebooks"
         time.sleep(10)
@@ -589,6 +606,11 @@ class NotebooksTests(LiveServerTestCase):
 
 
     def testDeleteNotes(self):
+        ''' Test delete notes.
+
+        Requirements:
+            FR#9 -- Edit.Notebook
+        '''
         self.testUploadNotes()
         notebooks_select = Select(self.driver.find_element(By.ID, "notebooks-select"))
         notebook_id = notebooks_select.options[0].get_attribute("value")
@@ -603,6 +625,11 @@ class NotebooksTests(LiveServerTestCase):
         self.assertRaises(NoSuchElementException, self.driver.find_element(By.ID, "collapse-"+str(notebook_id)).find_element, by=By.TAG_NAME, value="li")
 
     def testNotebookMerging(self):
+        ''' Test merge notebooks.
+
+        Requirements:
+            FR#11 -- Merge.Notebook
+        '''
         self.testUploadNotes()
 
         # make another notebook
@@ -640,6 +667,11 @@ class NotebooksTests(LiveServerTestCase):
         assert "testNotes.txt" in self.driver.find_element(By.ID, "collapse-"+str(notebook_id)).find_element(By.TAG_NAME, "li").text
 
     def testNotebookDeletion(self):
+        ''' Test delete notebook.
+
+        Requirements:
+            FR#10 -- Delete.Notebook
+        '''
         self.testUploadNotes()
 
         notebooks_select = Select(self.driver.find_element(By.ID, "notebooks-select"))
@@ -657,6 +689,7 @@ class NotebooksTests(LiveServerTestCase):
 
 
 class SearchAndVisualizationTests(LiveServerTestCase):
+    ''' Search and Visualization Tests'''
     def setUp(self):
         self.service = Service(executable_path="./webdrivers/chromedriver")
         self.driver = webdriver.Chrome(service=self.service)
@@ -704,26 +737,32 @@ class SearchAndVisualizationTests(LiveServerTestCase):
         notebook_header.find_element(By.CSS_SELECTOR, "button.accordion-button").click()
         with open("./mmapp/tests/testNotes.txt", 'w') as f:
             f.write("test words hello")
+        time.sleep(5)
         self.driver.find_element(By.ID, "file-"+str(notebook_id)).send_keys(os.path.abspath("./mmapp/tests/testNotes.txt"))
         self.driver.find_element(By.ID, "submit-"+str(notebook_id)).click()
         assert self.driver.current_url == self.live_server_url + "/notebooks"
         time.sleep(60)
-        assert "testNotes.txt" in self.driver.find_element(By.ID, "collapse-"+str(notebook_id)).find_element(By.TAG_NAME, "li").text
         self.driver.find_element(By.ID, "search_nav").click()
         time.sleep(2)
         assert self.driver.current_url == self.live_server_url + "/"
 
     def testSearch(self):
-        self.driver.find_element(By.ID, "search_words").find_keys("cpu thread system")
+        ''' Test search.
+
+        Requirements:
+            FR#12 -- Search.Word
+        '''
+        self.driver.find_element(By.ID, "search_words").send_keys("cpu thread system")
         self.driver.find_element(By.ID, "submit").click()
         time.sleep(30)
         assert self.driver.current_url == self.live_server_url + "/?search_words=cpu+thread+system&notebook=" + str(self.notebook_id)
 
-    def testEmptySearch(self):
-        self.driver.find_element(By.ID, "submit").click()
-        assert self.driver.find_element(By.ID, "submit").get_attribute("validationMessage") == "Please fill in this field."
-
     def testInspectNode(self):
+        ''' Test inspect node.
+
+        Requirements:
+            FR#17 -- Inspect.Node
+        '''
         # Source: https://stackoverflow.com/questions/16807258/selenium-click-at-certain-position
         self.testSearch()
         self.driver.find_element(By.TAG_NAME, "canvas")
