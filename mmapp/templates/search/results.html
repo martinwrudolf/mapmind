@@ -278,12 +278,12 @@
           },
           error: function(jqXhr, textStatus, errorMessage) {
             if (jqXhr.status == 400) {
-              document.getElementById("search_error").hidden = false;
-              document.getElementById("search_error").innerText = jqXhr.responseText;
+              document.getElementById("search-error").hidden = false;
+              document.getElementById("search-error").innerText = jqXhr.responseText;
             }
             else {
-              document.getElementById("search_error").hidden = false;
-              document.getElementById("search_error").innerText = "Error when searching!";
+              document.getElementById("search-error").hidden = false;
+              document.getElementById("search-error").innerText = "Error when searching!";
             }
           }
         });
@@ -307,6 +307,7 @@
       import { TextGeometry } from "three/addons/geometries/TextGeometry.js";
       import { Vector3 } from "three";
 
+      // Sources:
       // https://threejs.org/docs/#api/en/helpers/AxesHelper
       // https://stackoverflow.com/questions/13039589/rotate-the-camera-around-an-object-using-the-arrow-keys-in-three-js
       // http://jsfiddle.net/HXms8/4/
@@ -317,7 +318,6 @@
       // https://sbcode.net/threejs/raycaster/
       // https://discourse.threejs.org/t/click-event-on-object/1320/2
       // https://stackoverflow.com/questions/1085801/get-selected-value-in-dropdown-list-using-javascript
-      // use this? https://github.com/yomotsu/camera-controls
       // https://www.freecodecamp.org/news/here-is-the-most-popular-ways-to-make-an-http-request-in-javascript-954ce8c95aaa/
       // https://stackoverflow.com/questions/45353282/how-to-zoom-a-three-js-scene-with-the-mouse-wheel
 
@@ -436,7 +436,7 @@
       var notebookId = document.getElementById("notebook").value;
 
       function generateText(font) {
-        //https://stackoverflow.com/questions/43305020/how-to-use-the-context-variables-passed-from-django-in-javascript
+        // Source: https://stackoverflow.com/questions/43305020/how-to-use-the-context-variables-passed-from-django-in-javascript
         var list = JSON.parse("{{words_pos|escapejs}}");
         var skipped_list = JSON.parse("{{skipwords|escapejs}}");
         var skipped_string = "";
@@ -445,8 +445,8 @@
           skipped_string += skipped_list[i] + ", ";
         }
         if (skipped_list.length > 0) {
-          document.getElementById("search_error").hidden = false;
-          document.getElementById("search_error").innerText =
+          document.getElementById("search-error").hidden = false;
+          document.getElementById("search-error").innerText =
             "The following words were not in your notes and skipped: " +
             skipped_string.substring(0, skipped_string.length - 2);
         }
@@ -464,7 +464,7 @@
           );
           const material = new THREE.MeshBasicMaterial({ color: 0x000000 });
           const textMesh = new THREE.Mesh(geometry, material);
-          // https://threejs.org/docs/#api/en/math/Box3
+          // Source: https://threejs.org/docs/#api/en/math/Box3
           searched_terms.push(list[i].string);
           const box = new THREE.Box3();
           textMesh.geometry.computeBoundingBox();
@@ -494,11 +494,11 @@
           var sidebar = document.getElementById("sidebar");
           if (!Array.isArray(results) || !results.length) {
             // array does not exist or is empty
-            document.getElementById("search_error").hidden = false;
-            document.getElementById("search_error").innerText =
+            document.getElementById("search-error").hidden = false;
+            document.getElementById("search-error").innerText =
               "This word is not in your notes!";
           } else {
-            document.getElementById("search_error").hidden = true;
+            document.getElementById("search-error").hidden = true;
             sidebar.innerHTML = "";
             for (let result of results) {
               let newRow = document.createElement("li");
@@ -509,7 +509,7 @@
           }
         }
 
-        // https://stackoverflow.com/questions/6234773/can-i-escape-html-special-chars-in-javascript
+        // Source: https://stackoverflow.com/questions/6234773/can-i-escape-html-special-chars-in-javascript
         // in case they somehow inject HTML?
         function escapeHtml(unsafe) {
           return unsafe
@@ -522,7 +522,7 @@
 
         // FR#17 -- Inspect.Node
         function mouseDown(event) {
-          // https://stackoverflow.com/questions/34892328/detection-with-raycaster-not-completely-accurate-when-the-width-of-div-is-reduce
+          // Source: https://stackoverflow.com/questions/34892328/detection-with-raycaster-not-completely-accurate-when-the-width-of-div-is-reduce
           var rect = renderer.domElement.getBoundingClientRect();
           const mouse = new THREE.Vector2();
           mouse.x =
