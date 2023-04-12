@@ -176,7 +176,7 @@
                     <input
                       type="file"
                       class="form-control rounded-pill"
-                      id="file"
+                      id="file-{{notebook.id}}"
                       name="file"
                       accept=".doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document, .rtf, .txt"
                       required
@@ -188,6 +188,7 @@
                       class="btn btn-primary ms-3 rounded-pill"
                       data-toggle="tooltip"
                       data-placement="right"
+                      id="submit-{{notebook.id}}"
                       title="Uploading notes will ignore any images or other media and retrains the model with the new notes. This process may take a few seconds."
                     >
                       Upload

@@ -24,6 +24,7 @@ import os
 # https://stackoverflow.com/questions/39125633/how-to-click-on-confirmation-button-using-selenium-with-python
 # https://www.tutorialspoint.com/how-to-get-all-the-options-in-the-dropdown-in-selenium
 # https://www.selenium.dev/documentation/webdriver/support_features/select_lists/
+# https://stackoverflow.com/questions/30697991/how-to-access-invisible-unordered-list-element-with-selenium-webdriver-using-jav
 
 class UserAccountTests(LiveServerTestCase): 
     def setUp(self):
@@ -404,8 +405,18 @@ class NotebooksTests(LiveServerTestCase):
         notebook_header = self.driver.find_element(By.ID, "heading-"+str(notebook_id))
         assert "testnotebook" in notebook_header.find_element(By.CLASS_NAME, "accordion-button").text 
 
-#     def testUploadNotes(self):
-#         pass
+    def testUploadNotes(self):
+        self.testNotebookCreation()
+        notebooks_select = Select(self.driver.find_element(By.ID, "notebooks-select"))
+        notebook_id = notebooks_select.options[0].get_attribute("value")
+        notebook_header = self.driver.find_element(By.ID, "heading-"+str(notebook_id))
+        notebook_header.find_element(By.CSS_SELECTOR, "button.accordion-button").click()
+        self.driver.find_element(By.ID, "file-"+str(notebook_id)).send_keys(os.path.abspath("./mmapp/tests/test_note_files/testNotes.txt"))
+        self.driver.find_element(By.ID, "submit-"+str(notebook_id)).click()
+        assert self.driver.current_url == self.live_server_url + "/notebooks"
+        time.sleep(60)
+        assert "testNotes.txt" in self.driver.find_element(By.ID, "collapse-"+str(notebook_id)).find_element(By.TAG_NAME, "li").text
+
 
 #     def testUploadNotesInvaildFileFormat(self):
 #         pass
@@ -413,7 +424,7 @@ class NotebooksTests(LiveServerTestCase):
 #     def testUploadNotesInvalidFileSize(self):
 #         pass
 
-#     def testDeleteNotes(self)
+#     def testDeleteNotes(self):
 #         pass
 
 #     def testNotebookMerging(self):
