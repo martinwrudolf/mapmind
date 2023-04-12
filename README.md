@@ -5,7 +5,7 @@ Capstone Project for Group 6 in ECE 493 W2023 at the University of Alberta
 Website available at https://mapmind.herokuapp.com/
 
 ## User Guide
-Use this User Guide to walk through all the functional requirements from our SRS.
+Use this User Guide to walk through all the functional requirements from our SRS. There is no other setup required as this is deployed and uses several paid cloud services including Heroku Postgres, AWS S3, and AWS EC2. Since these services require private keys, we do not offer our environment variables as we would be exposing ourselves to malicious actors.
 
 1. FR#1 - Request.Registration: 
  - Navigate to https://mapmind.herokuapp.com/
