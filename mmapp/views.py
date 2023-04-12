@@ -44,8 +44,8 @@ def login(request):
         FR#3 -- Request.Login
     """
     if request.user.is_authenticated:
-        print("User is authenticated. Sending to index.")
-        return redirect('index')
+        print("User is authenticated. Sending to main page.")
+        return redirect('search_results')
     print("User is not authenticated. Sending to login.")
     return redirect('login')
 
@@ -63,7 +63,7 @@ def register(request):
         print("Got to GET request.")
         if request.user.is_authenticated:
             print("User is authenticated. Sending to index.")
-            return redirect('')
+            return redirect('search_results')
         print("User is not authenticated. Sending to register.")
         return render(request, 'registration/register.html')
     elif request.method == "POST":
@@ -563,18 +563,6 @@ def delete_account(request):
     else:
         return HttpResponse(status=405)
 
-def search(request):
-    ''' Old search page - deprecated '''
-    if not request.user.is_authenticated:
-        return redirect('login')
-    # Get the user
-    user = request.user
-    # Get the user's notebooks
-    notebooks = Notebook.objects.filter(owner=user)
-    context = {
-        'notebooks' : notebooks
-    }
-    return render(request, "search/search.html", context)
 
 def search_results(request):
     ''' Search and visualization page.
@@ -683,24 +671,8 @@ def inspect_node(request):
     return HttpResponse(status=200, content=json.dumps(results))
 
 
-def results(request):
-    ''' Deprecated '''
-    if not request.user.is_authenticated:
-        return redirect('login')
-    # Get the user
-    user = request.user
-    # Get the user's notebooks
-    notebooks = Notebook.objects.filter(owner=user)
-    # Get the user's notes
-    notes = Note.objects.filter(owner=user)
-    context = {
-        'notebooks': notebooks,
-        'notes': notes
-    }
-    return render(request, "search/results.html", context)
-
 #@background(schedule=10)
-def train_model(vocab, oov, kv_path, kv_vectors_path):
+def train_model(vocab, oov, kv_path, kv_vectors_path):  # pragma: no cover
     ''' Deprecated '''
     MODEL_PATH = 'mmapp/ml_models/{0}'
     path2glove = MODEL_PATH.format('glove.pkl')
