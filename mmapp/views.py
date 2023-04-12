@@ -37,22 +37,6 @@ import traceback
 # https://stackoverflow.com/questions/73422664/django-email-sending-smtp-error-cant-send-a-mail
 # https://stackoverflow.com/questions/10147455/how-to-send-an-email-with-gmail-as-provider-using-python/27515833#27515833
 
-def index(request):
-    """" Display the index page. """
-    print("Got to index page.")
-    if not request.user.is_authenticated:
-        print("User not authenticated.")
-        return redirect('login')
-    user = request.user
-    notebooks = Notebook.objects.filter(owner=user)
-    notes = Note.objects.filter(owner=user)
-    context = {
-        'notebooks': notebooks,
-        'notes': notes
-    }
-    print("Rendering index page with context ", context)
-    return render(request, 'mmapp/index.html', context)
-
 def login(request):
     """ Allow user to login to their account.
 
