@@ -8,6 +8,7 @@ from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.common.alert import Alert
 from selenium.webdriver.support.select import Select
 from selenium.common.exceptions import NoSuchElementException
+import unittest.mock as mock
 from .. import models
 import time
 import os
@@ -29,7 +30,8 @@ import os
 # https://stackoverflow.com/questions/30697991/how-to-access-invisible-unordered-list-element-with-selenium-webdriver-using-jav
 # https://stackoverflow.com/questions/16807258/selenium-click-at-certain-position
 
-class UserAccountTests(LiveServerTestCase): 
+class UserAccountTests(LiveServerTestCase):
+    ''' Tests for User Accounts.'''
     def setUp(self):
         self.service = service = Service(executable_path="./webdrivers/chromedriver")
         self.driver = webdriver.Chrome(service=self.service)
@@ -37,6 +39,11 @@ class UserAccountTests(LiveServerTestCase):
         assert self.driver.current_url == self.live_server_url + "/accounts/login/"
 
     def testValidRegister(self):
+        ''' Test registration with a valid username, password and email.
+
+        Requirements:
+            FR#1 -- Request.Registration
+        '''
         self.driver.find_element(By.LINK_TEXT, "Don't have an account?").click()
         time.sleep(3)
         assert self.driver.current_url == self.live_server_url  + "/register/"
@@ -51,7 +58,12 @@ class UserAccountTests(LiveServerTestCase):
         time.sleep(3)
         assert self.driver.current_url == self.live_server_url + "/accounts/login/"
 
-    def testDupilcateUsernameRegister(self):
+    def testDuplicateUsernameRegister(self):
+        ''' Test registration with a username that already exists.
+
+        Requirements:
+            FR#1 -- Request.Registration
+        '''
         self.testValidRegister()
         self.driver.find_element(By.LINK_TEXT, "Don't have an account?").click()
         assert self.driver.current_url == self.live_server_url  + "/register/"
@@ -66,7 +78,12 @@ class UserAccountTests(LiveServerTestCase):
         assert self.driver.current_url == self.live_server_url + "/register/"
         self.driver.find_element(By.ID, "register_error").text == "Username is not unique!"
 
-    def testDupilcateEmailRegister(self):
+    def testDuplicateEmailRegister(self):
+        ''' Test registration with an email that already exists.
+
+        Requirements:
+            FR#1 -- Request.Registration
+        '''
         self.testValidRegister()
         self.driver.find_element(By.LINK_TEXT, "Don't have an account?").click()
         assert self.driver.current_url == self.live_server_url  + "/register/"
@@ -82,6 +99,11 @@ class UserAccountTests(LiveServerTestCase):
         assert self.driver.find_element(By.ID, "register_error").text == "Email is not unique!"
 
     def testBlankUsernameRegister(self):
+        ''' Test registration with a blank username.
+
+        Requirements:
+            FR#1 -- Request.Registration
+        '''
         self.driver.find_element(By.LINK_TEXT, "Don't have an account?").click()
         assert self.driver.current_url == self.live_server_url  + "/register/"
         username = self.driver.find_element(By.ID, "username")
@@ -95,6 +117,11 @@ class UserAccountTests(LiveServerTestCase):
         #assert username.get_attribute("validationMessage") == "Please fill in this field."
 
     def testBlankPasswordRegister(self):
+        ''' Test registration with a blank password.
+
+        Requirements:
+            FR#1 -- Request.Registration
+        '''
         self.driver.find_element(By.LINK_TEXT, "Don't have an account?").click()
         assert self.driver.current_url == self.live_server_url  + "/register/"
         username = self.driver.find_element(By.ID, "username")
@@ -108,6 +135,11 @@ class UserAccountTests(LiveServerTestCase):
         #assert password.get_attribute("validationMessage") == "Please fill in this field."
 
     def testBlankEmailRegister(self):
+        ''' Test registration with a blank email.
+
+        Requirements:
+            FR#1 -- Request.Registration
+        '''
         self.driver.find_element(By.LINK_TEXT, "Don't have an account?").click()
         assert self.driver.current_url == self.live_server_url  + "/register/"
         username = self.driver.find_element(By.ID, "username")
@@ -124,6 +156,11 @@ class UserAccountTests(LiveServerTestCase):
         #print(email.get_attribute("validationMessage"))
 
     def testInvaildEmailNoAtRegister(self):
+        ''' Test registration with an invalid email.
+
+        Requirements:
+            FR#1 -- Request.Registration
+        '''
         self.driver.find_element(By.LINK_TEXT, "Don't have an account?").click()
         assert self.driver.current_url == self.live_server_url  + "/register/"
         username = self.driver.find_element(By.ID, "username")
@@ -138,6 +175,11 @@ class UserAccountTests(LiveServerTestCase):
         assert "Please include an '@' in the email address" in email.get_attribute("validationMessage") 
 
     def testInvaildEmailNoDomainRegister(self):
+        ''' Test registration with an invalid email.
+
+        Requirements:
+            FR#1 -- Request.Registration
+        '''
         self.driver.find_element(By.LINK_TEXT, "Don't have an account?").click()
         assert self.driver.current_url == self.live_server_url  + "/register/"
         username = self.driver.find_element(By.ID, "username")
@@ -152,6 +194,11 @@ class UserAccountTests(LiveServerTestCase):
         assert "Please enter a part following '@'" in email.get_attribute("validationMessage") 
 
     def testShortPasswordRegister(self):
+        ''' Test registration with a password that is too short.
+
+        Requirements:
+            FR#1 -- Request.Registration
+        '''
         self.driver.find_element(By.LINK_TEXT, "Don't have an account?").click()
         assert self.driver.current_url == self.live_server_url  + "/register/"
         username = self.driver.find_element(By.ID, "username")
@@ -166,6 +213,11 @@ class UserAccountTests(LiveServerTestCase):
         assert  "Please lengthen this text to 8 characters or more" in password.get_attribute("validationMessage")
 
     def testValidLogin(self):
+        ''' Test login with a valid username, password and email.
+
+        Requirements:
+            FR#3 -- Request.Login
+        '''
         self.testValidRegister()
         username = self.driver.find_element(By.ID, "id_username")
         password = self.driver.find_element(By.ID, "id_password")
@@ -176,6 +228,11 @@ class UserAccountTests(LiveServerTestCase):
         assert self.driver.current_url == self.live_server_url + "/"
 
     def testBlankUserLogin(self):
+        ''' Test login with a blank username.
+
+        Requirements:
+            FR#3 -- Request.Login
+        '''
         self.testValidRegister()
         username = self.driver.find_element(By.ID, "id_username")
         password = self.driver.find_element(By.ID, "id_password")
@@ -186,6 +243,11 @@ class UserAccountTests(LiveServerTestCase):
         #assert username.get_attribute("validationMessage") == "Please fill in this field."
     
     def testBlankPasswordLogin(self):
+        ''' Test login with a blank password.
+
+        Requirements:
+            FR#3 -- Request.Login
+        '''
         self.testValidRegister()
         username = self.driver.find_element(By.ID, "id_username")
         password = self.driver.find_element(By.ID, "id_password")
@@ -196,7 +258,12 @@ class UserAccountTests(LiveServerTestCase):
         #assert password.get_attribute("validationMessage") == "Please fill in this field."
 
 
-    def testInvaildUserLogin(self):
+    def testInvalidUserLogin(self):
+        ''' Test login with an invalid username.
+
+        Requirements:
+            FR#3 -- Request.Login
+        '''
         self.testValidRegister()
         username = self.driver.find_element(By.ID, "id_username")
         password = self.driver.find_element(By.ID, "id_password")
@@ -207,7 +274,12 @@ class UserAccountTests(LiveServerTestCase):
         assert self.driver.current_url == self.live_server_url + "/accounts/login/"
         assert self.driver.find_element(By.ID, "login_error").text == "Your username and password didn't match. Please try again."
 
-    def testInvaildPasswordLogin(self):
+    def testInvalidPasswordLogin(self):
+        ''' Test login with an invalid password.
+
+        Requirements:
+            FR#3 -- Request.Login
+        '''
         self.testValidRegister()
         username = self.driver.find_element(By.ID, "id_username")
         password = self.driver.find_element(By.ID, "id_password")
@@ -219,6 +291,11 @@ class UserAccountTests(LiveServerTestCase):
         assert self.driver.find_element(By.ID, "login_error").text == "Your username and password didn't match. Please try again."
 
     def testResetPassword(self):
+        ''' Test reset password functionality.
+
+        Requirements:
+            FR#4 -- Change.Password
+        '''
         self.testValidRegister()
         self.driver.find_element(By.LINK_TEXT, "Lost password?").click()
         assert self.driver.current_url == self.live_server_url + "/accounts/password_reset/"
@@ -228,6 +305,11 @@ class UserAccountTests(LiveServerTestCase):
         assert self.driver.current_url == self.live_server_url + "/accounts/password_reset/done/"
 
     def testResetPasswordInvaildEmailNoAt(self):
+        ''' Test reset password with an invalid email address.
+
+        Requirements:
+            FR#4 -- Change.Password
+        '''
         self.testValidRegister()
         self.driver.find_element(By.LINK_TEXT, "Lost password?").click()
         assert self.driver.current_url == self.live_server_url + "/accounts/password_reset/"
@@ -238,6 +320,11 @@ class UserAccountTests(LiveServerTestCase):
         assert "Please include an '@' in the email address" in email.get_attribute("validationMessage")
 
     def testResetPasswordInvaildEmailNoDomain(self):
+        ''' Test reset password with a invalid email address.
+
+        Requirements:
+            FR#4 -- Change.Password
+        '''
         self.testValidRegister()
         self.driver.find_element(By.LINK_TEXT, "Lost password?").click()
         assert self.driver.current_url == self.live_server_url + "/accounts/password_reset/"
@@ -248,6 +335,11 @@ class UserAccountTests(LiveServerTestCase):
         assert "Please enter a part following '@'" in email.get_attribute("validationMessage") 
 
     def testResetPasswordBlankEmail(self):
+        ''' Test reset password with a blank email.
+
+        Requirements:
+            FR#4 -- Change.Password
+        '''
         self.testValidRegister()
         self.driver.find_element(By.LINK_TEXT, "Lost password?").click()
         assert self.driver.current_url == self.live_server_url + "/accounts/password_reset/"
@@ -257,6 +349,11 @@ class UserAccountTests(LiveServerTestCase):
         #assert email.get_attribute("validationMessage") == "Please fill in this field."
 
     def testResetPasswordFromSettings(self):
+        ''' Test reset password from settings page.
+
+        Requirements:
+            FR#4 -- Change.Password
+        '''
         self.testValidLogin()
         self.driver.find_element(By.ID, "settings_nav").click()
         assert self.driver.current_url == self.live_server_url + "/settings"
@@ -265,6 +362,11 @@ class UserAccountTests(LiveServerTestCase):
         assert self.driver.current_url == self.live_server_url + "/accounts/password_reset/done/"
    
     def testChangeEmail(self):
+        ''' Test change email functionality.
+
+        Requirements:
+            FR#6 -- Change.Email
+        '''
         self.testValidLogin()
         self.driver.find_element(By.ID, "settings_nav").click()
         assert self.driver.current_url == self.live_server_url + "/settings"
@@ -277,6 +379,11 @@ class UserAccountTests(LiveServerTestCase):
         assert self.driver.find_element(By.ID, "email").get_attribute("value") == "end2end2@gmail.com"
 
     def testChangeUsername(self):
+        ''' Test change username functionality.
+
+        Requirements:
+            FR#5 -- Change.Username
+        '''
         self.testValidLogin()
         self.driver.find_element(By.ID, "settings_nav").click()
         assert self.driver.current_url == self.live_server_url + "/settings"
@@ -289,6 +396,11 @@ class UserAccountTests(LiveServerTestCase):
         assert self.driver.find_element(By.ID, "username").get_attribute("value") == "end2end2Test"
 
     def testChangeUsernameDuplicate(self):
+        ''' Test change username to a duplicate username.
+
+        Requirements:
+            FR#5 -- Change.Username
+        '''
         self.testValidLogin()
         self.driver.find_element(By.ID, "settings_nav").click()
         assert self.driver.current_url == self.live_server_url + "/settings"
@@ -300,6 +412,11 @@ class UserAccountTests(LiveServerTestCase):
     
 
     def testChangeEmailDuplicate(self):
+        ''' Test change email to a duplicate email.
+
+        Requirements:
+            FR#6 -- Change.Email
+        '''
         self.testValidLogin()
         self.driver.find_element(By.ID, "settings_nav").click()
         assert self.driver.current_url == self.live_server_url + "/settings"
@@ -311,6 +428,11 @@ class UserAccountTests(LiveServerTestCase):
 
     
     def testChangeEmailBlank(self):
+        ''' Test change email to a blank email.
+
+        Requirements:
+            FR#6 -- Change.Email
+        '''
         self.testValidLogin()
         self.driver.find_element(By.ID, "settings_nav").click()
         assert self.driver.current_url == self.live_server_url + "/settings"
@@ -322,6 +444,11 @@ class UserAccountTests(LiveServerTestCase):
 
     
     def testChangeUsernameBlank(self):
+        ''' Test change username to a blank username.
+
+        Requirements:
+            FR#5 -- Change.Username
+        '''
         self.testValidLogin()
         self.driver.find_element(By.ID, "settings_nav").click()
         assert self.driver.current_url == self.live_server_url + "/settings"
@@ -332,6 +459,11 @@ class UserAccountTests(LiveServerTestCase):
         #assert self.driver.find_element(By.ID, "username").get_attribute("validationMessage") == "Please fill in this field."
 
     def testChangeEmailInvaildNoAt(self):
+        ''' Test change email to an invalid email.
+
+        Requirements:
+            FR#6 -- Change.Email
+        '''
         self.testValidLogin()
         self.driver.find_element(By.ID, "settings_nav").click()
         assert self.driver.current_url == self.live_server_url + "/settings"
@@ -342,6 +474,11 @@ class UserAccountTests(LiveServerTestCase):
         assert "Please include an '@' in the email address" in self.driver.find_element(By.ID, "email").get_attribute("validationMessage") 
 
     def testChangeEmailInvaildNoDomain(self):
+        ''' Test change email to an invalid email.
+
+        Requirements:
+            FR#6 -- Change.Email
+        '''
         self.testValidLogin()
         self.driver.find_element(By.ID, "settings_nav").click()
         assert self.driver.current_url == self.live_server_url + "/settings"
@@ -352,6 +489,11 @@ class UserAccountTests(LiveServerTestCase):
         assert "Please enter a part following '@'" in self.driver.find_element(By.ID, "email").get_attribute("validationMessage") 
 
     def testDeleteAccount(self):
+        ''' Test delete account.
+
+        Requirements:
+            FR#2 -- Delete.Account
+        '''
         self.testValidLogin()
         self.driver.find_element(By.ID, "settings_nav").click()
         assert self.driver.current_url == self.live_server_url + "/settings"
@@ -361,6 +503,11 @@ class UserAccountTests(LiveServerTestCase):
         assert self.driver.current_url == self.live_server_url + "/accounts/login/"
 
     def testLogout(self):
+        ''' Test logout.
+
+        Requirements:
+            FR#3 -- Request.Login
+        '''
         self.testValidLogin()
         self.driver.find_element(By.ID, "logout_button").click()
         assert self.driver.current_url == self.live_server_url + "/accounts/logout/"
@@ -446,6 +593,9 @@ class NotebooksTests(LiveServerTestCase):
         notebook_id = notebooks_select.options[0].get_attribute("value")
         notebook_header = self.driver.find_element(By.ID, "heading-"+str(notebook_id))
         notebook_header.find_element(By.CSS_SELECTOR, "button.accordion-button").click()
+        
+        large_file = mock.patch('os.path.getsize', return_value=1000000)
+
         self.driver.find_element(By.ID, "file-"+str(notebook_id)).send_keys(os.path.abspath("./mmapp/tests/test_note_files/test_too_large.docx"))
         self.driver.find_element(By.ID, "submit-"+str(notebook_id)).click()
         assert self.driver.current_url == self.live_server_url + "/notebooks"
@@ -566,7 +716,9 @@ class SearchAndVisualizationTests(LiveServerTestCase):
         notebook_id = notebooks_select.options[0].get_attribute("value")
         notebook_header = self.driver.find_element(By.ID, "heading-"+str(notebook_id))
         notebook_header.find_element(By.CSS_SELECTOR, "button.accordion-button").click()
-        self.driver.find_element(By.ID, "file-"+str(notebook_id)).send_keys(os.path.abspath("./mmapp/tests/test_note_files/testNotes.txt"))
+        with open("./mmapp/tests/testNotes.txt", 'w') as f:
+            f.write("test words hello")
+        self.driver.find_element(By.ID, "file-"+str(notebook_id)).send_keys(os.path.abspath("./mmapp/tests/testNotes.txt"))
         self.driver.find_element(By.ID, "submit-"+str(notebook_id)).click()
         assert self.driver.current_url == self.live_server_url + "/notebooks"
         time.sleep(60)
@@ -578,7 +730,7 @@ class SearchAndVisualizationTests(LiveServerTestCase):
     def testSearch(self):
         self.driver.find_element(By.ID, "search_words").find_keys("cpu thread system")
         self.driver.find_element(By.ID, "submit").click()
-        time.sleep(45)
+        time.sleep(30)
         assert self.driver.current_url == self.live_server_url + "/?search_words=cpu+thread+system&notebook=" + str(self.notebook_id)
 
     def testEmptySearch(self):
