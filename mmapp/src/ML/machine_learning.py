@@ -45,7 +45,10 @@ def process_user_notes(notefile, keys):
     # adding because apparently there are different apostrophes smh
     tmp_dict['/'] = ' '
     tmp_dict['’'] = ''
+    tmp_dict['‘'] = ''
     tmp_dict['`'] = ''
+    tmp_dict['”'] = ''
+    tmp_dict['“'] = ''
     translator = str.maketrans(tmp_dict)        # map punctuation to space
     corpus = ""
     pics_or_tables = False
