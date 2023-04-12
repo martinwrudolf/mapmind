@@ -632,13 +632,13 @@ def search_results(request):
     for word in words_pos:
         word_list.append({"string":word, "pos":list(words_pos[word])})
     print(word_list)
-    # https://stackoverflow.com/questions/43305020/how-to-use-the-context-variables-passed-from-django-in-javascript
-    
+   
     user = request.user
     notebooks = Notebook.objects.filter(owner=user)
     if (len(skipwords) > 0 and skipwords[0]== None):
         skipwords = []
-
+    
+    # Source: https://stackoverflow.com/questions/43305020/how-to-use-the-context-variables-passed-from-django-in-javascript
     context = {
         "res": res_matrix,
         "words_pos": json.dumps(word_list),

@@ -308,6 +308,7 @@
       import { TextGeometry } from "three/addons/geometries/TextGeometry.js";
       import { Vector3 } from "three";
 
+      // Sources:
       // https://threejs.org/docs/#api/en/helpers/AxesHelper
       // https://stackoverflow.com/questions/13039589/rotate-the-camera-around-an-object-using-the-arrow-keys-in-three-js
       // http://jsfiddle.net/HXms8/4/
@@ -437,7 +438,7 @@
       var notebookId = document.getElementById("notebook").value;
 
       function generateText(font) {
-        //https://stackoverflow.com/questions/43305020/how-to-use-the-context-variables-passed-from-django-in-javascript
+        // Source: https://stackoverflow.com/questions/43305020/how-to-use-the-context-variables-passed-from-django-in-javascript
         var list = JSON.parse("{{words_pos|escapejs}}");
         var skipped_list = JSON.parse("{{skipwords|escapejs}}");
         var skipped_string = "";
@@ -495,11 +496,11 @@
           var sidebar = document.getElementById("sidebar");
           if (!Array.isArray(results) || !results.length) {
             // array does not exist or is empty
-            document.getElementById("search_error").hidden = false;
-            document.getElementById("search_error").innerText =
+            document.getElementById("search-error").hidden = false;
+            document.getElementById("search-error").innerText =
               "This word is not in your notes!";
           } else {
-            document.getElementById("search_error").hidden = true;
+            document.getElementById("search-error").hidden = true;
             sidebar.innerHTML = "";
             for (let result of results) {
               let newRow = document.createElement("li");
@@ -510,7 +511,7 @@
           }
         }
 
-        // https://stackoverflow.com/questions/6234773/can-i-escape-html-special-chars-in-javascript
+        // Source: https://stackoverflow.com/questions/6234773/can-i-escape-html-special-chars-in-javascript
         // in case they somehow inject HTML?
         function escapeHtml(unsafe) {
           return unsafe
@@ -523,7 +524,7 @@
 
         // FR#17 -- Inspect.Node
         function mouseDown(event) {
-          // https://stackoverflow.com/questions/34892328/detection-with-raycaster-not-completely-accurate-when-the-width-of-div-is-reduce
+          // Source:  https://stackoverflow.com/questions/34892328/detection-with-raycaster-not-completely-accurate-when-the-width-of-div-is-reduce
           var rect = renderer.domElement.getBoundingClientRect();
           const mouse = new THREE.Vector2();
           mouse.x =

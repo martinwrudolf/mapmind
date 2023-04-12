@@ -11,6 +11,7 @@ from .. import models
 import time
 import os
 
+# Sources:
 # https://ordinarycoders.com/blog/article/testing-django-selenium
 # https://www.selenium.dev/documentation/webdriver/getting_started/install_drivers/
 # https://selenium-python.readthedocs.io/locating-elements.html#locating-hyperlinks-by-link-text
@@ -25,6 +26,7 @@ import os
 # https://www.tutorialspoint.com/how-to-get-all-the-options-in-the-dropdown-in-selenium
 # https://www.selenium.dev/documentation/webdriver/support_features/select_lists/
 # https://stackoverflow.com/questions/30697991/how-to-access-invisible-unordered-list-element-with-selenium-webdriver-using-jav
+# https://stackoverflow.com/questions/16807258/selenium-click-at-certain-position
 
 class UserAccountTests(LiveServerTestCase): 
     def setUp(self):
@@ -519,6 +521,7 @@ class SearchAndVisualizationTests(LiveServerTestCase):
         self.driver.find_element(By.ID, "submit").click()
         assert self.driver.find_element(By.ID, "submit").get_attribute("validationMessage") == "Please fill in this field."
 
-
-#     def testInspectNode(self):
-#         pass
+    def testInspectNode(self):
+        # Source: https://stackoverflow.com/questions/16807258/selenium-click-at-certain-position
+        self.testSearch()
+        self.driver.find_element(By.TAG_NAME, "canvas")
