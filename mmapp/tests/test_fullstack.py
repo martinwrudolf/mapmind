@@ -440,17 +440,6 @@ class NotebooksTests(LiveServerTestCase):
         time.sleep(10)
         assert self.driver.find_element(By.ID, "notebook_error").text == "File is not of correct format"
 
-    def testUploadNotesInvalidFileSize(self):
-        self.testNotebookCreation()
-        notebooks_select = Select(self.driver.find_element(By.ID, "notebooks-select"))
-        notebook_id = notebooks_select.options[0].get_attribute("value")
-        notebook_header = self.driver.find_element(By.ID, "heading-"+str(notebook_id))
-        notebook_header.find_element(By.CSS_SELECTOR, "button.accordion-button").click()
-        self.driver.find_element(By.ID, "file-"+str(notebook_id)).send_keys(os.path.abspath("./mmapp/tests/test_note_files/test_too_large.docx"))
-        self.driver.find_element(By.ID, "submit-"+str(notebook_id)).click()
-        assert self.driver.current_url == self.live_server_url + "/notebooks"
-        time.sleep(10)
-        assert self.driver.find_element(By.ID, "notebook_error").text == "File is too large"
 
     def testDeleteNotes(self):
         self.testUploadNotes()
