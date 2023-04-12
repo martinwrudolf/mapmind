@@ -3,6 +3,7 @@ from unittest.mock import MagicMock, patch
 from mmapp.src.aws.aws_connection import inspect_on_ec2
 
 class TestInspectOnEC2(TestCase):
+    ''' Test inspect on EC2 instance '''
     def setUp(self):
         self.clicked_word = "word"
         self.searched_words = ["word1", "word2"]
@@ -14,6 +15,11 @@ class TestInspectOnEC2(TestCase):
     @patch("mmapp.src.aws.aws_connection.datetime")
     @patch("mmapp.src.aws.aws_connection.s3_write")
     def test_inspect_on_ec2(self, s3_write_mock, datetime_mock, boto3_client_mock):
+        ''' Test inspect node on ec2.
+
+        Requirements:
+            FR#17 - Inspect.Node
+        '''
         # Mock datetime.now() to return a constant value
         datetime_mock.now.return_value = "2023-04-12-00:00:00"
 
@@ -41,6 +47,7 @@ import os
 from mmapp.src.aws.aws_connection import s3_write, search_on_ec2
 
 class TestSearchOnEC2(TestCase):
+    ''' Test search on ec2 instance '''
     def setUp(self):
         self.query = ["word1", "word2"]
         self.kv_path = "path/to/kv"
@@ -53,6 +60,13 @@ class TestSearchOnEC2(TestCase):
     @patch("mmapp.src.aws.aws_connection.datetime")
     @patch("mmapp.src.aws.aws_connection.s3_write")
     def test_search_on_ec2(self, s3_write_mock, datetime_mock, boto3_client_mock):
+        ''' Test search on ec2.
+
+        Requirements:
+            FR#12 - Search.Word
+            FR#13 - Update.Search
+            FR#17 - MachineLearning.Search
+        '''
         # Mock datetime.now() to return a constant value
         datetime_mock.now.return_value = "2023-04-12-00:00:00"
 
@@ -78,7 +92,7 @@ class TestSearchOnEC2(TestCase):
             ec2_instance_mock.send_command.assert_called_once()
 
             # Clean up the temporary file
-            os.remove(query_path)
+            #os.remove(query_path)
 
         # Assert that the function returns the expected result
         self.assertEqual(result, 'result_file')
@@ -89,6 +103,7 @@ from unittest.mock import patch, MagicMock
 from mmapp.src.aws.aws_connection import train_on_ec2
 
 class TestTrainOnEC2(TestCase):
+    ''' Test train on ec2 instance '''
     def setUp(self):
         self.vocab_path = "path/to/vocab"
         self.kv_path = "path/to/kv"
@@ -96,6 +111,11 @@ class TestTrainOnEC2(TestCase):
 
     @patch("mmapp.src.aws.aws_connection.boto3.client")
     def test_train_on_ec2(self, boto3_client_mock):
+        ''' Test train on ec2.
+
+        Requirements:
+            FR#18 - MachineLearning.Train
+        '''
         # Mock the start_instances, get_waiter, and send_command methods
         ec2_instance_mock = MagicMock()
         boto3_client_mock.return_value = ec2_instance_mock
@@ -116,6 +136,7 @@ from unittest.mock import patch, MagicMock
 from mmapp.src.aws.aws_connection import notebook_update_files
 
 class TestNotebookUpdateFiles(TestCase):
+    ''' Test notebook update files '''
     def setUp(self):
         self.notebook = MagicMock()
         self.notebook.vocab = "path/to/notebook/vocab"
@@ -134,6 +155,13 @@ class TestNotebookUpdateFiles(TestCase):
     @patch("mmapp.src.aws.aws_connection.s3_read")
     @patch("mmapp.src.aws.aws_connection.s3_write")
     def test_notebook_update_files(self, s3_write_mock, s3_read_mock):
+        ''' Test notebook update files.
+
+        Requirements:
+            FR#9 - Edit.Notebook
+            FR#10 - Delete.Notebook
+            FR#11 - Merge.Notebook
+        '''
         # Set up s3_read mock return values
         s3_read_mock.side_effect = [
             "note1_vocab", "note1_corpus",
