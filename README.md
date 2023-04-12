@@ -10,7 +10,7 @@ Use this User Guide to walk through all the functional requirements from our SRS
 1. FR#1 - Request.Registration: 
  - Navigate to https://mapmind.herokuapp.com/
  - Click on `Don't have an account?`.
- - Enter a unique username, valid and unique email (will be needed for password resetting later), and a strong password. Click Submit. 
+ - Enter a unique username, valid and unique email (will be needed for password resetting later), and a strong password. Click `Submit`. 
 2. FR#3 - Request.Log-in: 
  - Enter the username and password that you used in Step 1.
  - Click `login`
@@ -42,11 +42,11 @@ Use this User Guide to walk through all the functional requirements from our SRS
 10. FR#11 - Merge.Notebook: 
  - Repeat the Create.Notebook step as we will be merging the notebooks in this step.
  - Once several notebooks exist, CTRL + Click on all the notebooks that you wish to merge. 
- - Enter a "New Notebook Name". Click "Merge".
+ - Enter a "New Notebook Name". Click `Merge`.
 11. FR#12 - Search.Word: 
  - Click on the home icon in the upper right corner. 
  - Once at the redirected page, enter space separated (alphanumeric character) words.
- - Select "Spellcheck" for spellchecking and "Search Notes Only" to search produce a visualization that contains only words that are either from your search or from your notes. 
+ - Select `Spellcheck` for spellchecking and `Search Notes Only` to search produce a visualization that contains only words that are either from your search or from your notes. 
  - Select a notebook to search in from the dropdown menu. Click `Search`. The search executes expensive algorithms and computations in the background so might take a while.
 12. FR#13 - Update.Search: 
  - Once the visualization renders, repeat the previous step with a new search.
@@ -67,6 +67,6 @@ Use this User Guide to walk through all the functional requirements from our SRS
  - This is a background functional requirement that is only visible in the backend source code. 
 20. FR#2 - Delete.Account: 
  - Once you are ready to delete your account, click on the gear icon in the upper right corner. 
- - Click on the "Delete Account" button and confirm with the pop up. 
+ - Click on the `Delete Account` button and confirm with the pop up. 
 
 Thank you for checking out our project!
