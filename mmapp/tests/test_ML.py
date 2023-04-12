@@ -19,7 +19,7 @@ class test_ML(TestCase):
         test_file = SimpleUploadedFile("test.docx", file.read(), content_type='application/msword')
         file.close()
         keys = ["hello", "testing", "punctuation"]
-        oov, vocab, corpus = ml.process_user_notes(test_file, keys)
+        oov, vocab, corpus, pics = ml.process_user_notes(test_file, keys)
 
         #oov
         self.assertSetEqual(set(oov), {"world", "test-word"})
