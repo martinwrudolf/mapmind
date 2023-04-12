@@ -1,1 +1,1 @@
-web: gunicorn mm.wsgi
+web: gunicorn mm.wsgi --max-requests 100
